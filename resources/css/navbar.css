@@ -1,0 +1,64 @@
+.rounded-circle {
+  border: 1px solid #ccc;
+  object-fit: cover;
+}
+
+/* Animation cho dropdown */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.dropdown-menu {
+  animation: slideDown 0.3s ease-in-out;
+}
+
+.dropdown-menu.hide {
+  animation: slideUp 0.3s ease-in-out;
+}
+
+.navbar {
+  position: fixed;
+  width: 100%;
+  z-index: 1030;
+  top: 0;
+  transition: background-color 1s ease, box-shadow 1s ease; /* Tập trung vào các thuộc tính cần thiết */
+}
+
+.navbar-transparent {
+  background-color: transparent !important;
+  box-shadow: none;
+}
+
+.navbar-colored {
+  background-color: #343a40 !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.navbar .nav-link {
+  color: #fff !important;
+  transition: color 1s ease; /* Hiệu ứng mượt hơn khi hover */
+}
+
+.navbar .nav-link:hover {
+  color: #499cee !important; /* Màu chữ khi hover */
+}
