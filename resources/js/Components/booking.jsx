@@ -164,7 +164,7 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow, closePopup }) => {
                                 </div>
                             </div>
                             <div className="mt-4">
-                                <button onClick={handleBooking} className="btn btn-warning w-100">Book jhvguhvghvhgvNow</button>
+                                <button onClick={handleBooking} className="btn btn-warning w-100">Book Now</button>
                             </div>
                         </form>
                     )}
