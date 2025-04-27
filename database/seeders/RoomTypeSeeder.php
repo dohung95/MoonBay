@@ -24,25 +24,25 @@ class RoomTypeSeeder extends Seeder
                 'name' => 'Deluxe Room',
                 'capacity' => 3,
                 'description' => 'The Deluxe Room is spacious and elegantly designed, featuring large windows that let in natural light. Furnished with high-quality amenities and a cozy sitting area, it is perfect for couples or small families looking to relax.',
-                'image' => '/imagesHuy//room_types/deluxe.png',
+                'image' => '/images/Huy/room_types_huy/deluxe.png',
             ],
             [
                 'name' => 'Superior Room',
                 'capacity' => 2,
                 'description' => 'The Superior Room comes with a private balcony offering views of the sea or city. It features premium bedding, a work desk, and a modern bathroom, providing a comfortable and stylish stay.',
-                'image' => '/images/Huy/room_types/superior.png',
+                'image' => '/images/Huy/room_types_huy/superior.png',
             ],
             [
                 'name' => 'Family Room',
                 'capacity' => 4,
                 'description' => 'The Family Room is designed for groups or families, offering two double beds, a shared living space, and various entertainment amenities. It’s ideal for vacations with loved ones.',
-                'image' => '/images/Huy/room_types/family.png',
+                'image' => '/images/Huy/room_types_huy/family.png',
             ],
             [
                 'name' => 'Suite',
                 'capacity' => 3,
                 'description' => 'The Suite is a premium option featuring separate living and sleeping areas, luxurious furnishings, and stunning views. Guests enjoy welcome drinks, a large bathtub, and exclusive perks.',
-                'image' => '/images/Huy/room_types/suite.png',
+                'image' => '/images/Huy/room_types_huy/suite.png',
             ],
         ]);
     }
