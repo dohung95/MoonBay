@@ -18,7 +18,7 @@ class RoomTypeSeeder extends Seeder
                 'name' => 'Standard Room',
                 'capacity' => 2,
                 'description' => 'The Standard Room offers a comfortable space with a simple, modern design. Fully equipped with air conditioning, TV, minibar, and a private bathroom, it is ideal for couples or business travelers.',
-                'image' => '/images/Huy/room_types/standard.png',
+                'image' => '/images/Huy/room_types_huy/standard.png',
             ],
             [
                 'name' => 'Deluxe Room',
