@@ -29,7 +29,7 @@ const AboutUs = () => {
             <div className="banner">
                 <img src="./images/banner/about_banner.jpg" alt="Banner" className='banner-img' />
                 <div className='banner-text anima-text'>
-                    <h1>The Story Behind Moon Bay</h1>
+                    <h1>The Story Behind Moon Bay abc</h1>
                 </div>
             </div>
 
