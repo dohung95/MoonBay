@@ -20,7 +20,7 @@ class BookingController extends Controller
                 'children' => 'required|integer|min:0',
                 'member' => 'required|integer|min:1',
                 'checkin_date' => 'required|date',
-                'checkout_date' => 'required|date|after:checkin_date',
+                'checkout_date' => 'required|date',
             ]);
 
             $booking = Booking::create($validatedData);

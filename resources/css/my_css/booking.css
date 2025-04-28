@@ -1,3 +1,7 @@
+.container{
+    max-width: 1000px !important;
+    top: 18%
+}
 
 .bg {
     padding: 10% 0;
@@ -143,4 +147,8 @@
     overflow: hidden; /* Ẩn phần thừa của video */
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.5); /* Bóng mờ bo tròn màu đen */
     width: fit-content; /* Đảm bảo kích thước vừa với nội dung video */
+}
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
 }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ReactDOM from 'react-dom/client';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 import Navbar from './Components/Navbar.jsx';
 
@@ -20,6 +21,8 @@ import { AuthProvider } from './Components/AuthContext.jsx';
 import Account from './Components/account.jsx';
 import ForgotPassword from './Components/ForgotPassword.jsx';
 import PopupBookNow from './Components/PopupBookNow.jsx';
+
+import NotificationManager from './Components/NotificationManager.jsx'; 
 
 
 const App = () => {
@@ -83,6 +86,7 @@ const App = () => {
                 <Register isPopupRegister={isPopupRegister} closePopup={closePopup} openLoginPopup={openLoginPopup} />
                 <ForgotPassword closePopup={closePopup} openLoginPopup={openLoginPopup} isPopupForgotPassword={isPopupForgotPassword} />
                 <PopupBookNow isPopupBookNow={isPopupBookNow} closePopup={closePopup} />
+                <NotificationManager />
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/booking" element={<Booking checkLogin={checkLogin} checkLogins={checkLogins} isPopupBookNow={isPopupBookNow} closePopup={closePopup} />} />

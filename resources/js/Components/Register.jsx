@@ -62,7 +62,7 @@ export default function Register({ isPopupRegister, closePopup, openLoginPopup }
                 password,
             });
             if (response.status === 201) {
-                alert("Registered successfully!");
+                window.showNotification("Registered successfully!", "success");
                 openLoginPopup();
             }
         } catch (error) {
