@@ -69,7 +69,7 @@ const Footer = () => {
                                         <li className="nav-item">
                                             <Link
                                                 className="nav-link text-#6c6c6e"
-                                                to="#booking" onClick={top}
+                                                to="/Booking" onClick={top}
                                             >
                                                 Booking
                                             </Link>
@@ -105,11 +105,13 @@ const Footer = () => {
                             <div style={{ padding: '4% 0 0 0' }}>
                                 <form action="">
                                     <div className='row'>
-                                        <div className='col-md-8'>
+                                        <div className='col-md-9'>
                                             <input type="email" placeholder='Your Email' />
                                         </div>
-                                        <div className='col-md-4'>
-                                            <button className='btn btn-secondary' type="submit">Send</button>
+                                        <div className='col-md-3' style={{ padding: '3% 0 0 0' }}>
+                                            <div>
+                                                <button className='btn button_send-hung' type="submit" >Send</button>
+                                            </div>
                                         </div>
                                     </div>
                                 </form>
@@ -133,7 +135,9 @@ const Footer = () => {
 
                         <hr />
                         <p>
-                            Copyright ©2025 All rights reserved | This website is made with <span role="img" aria-label="crown">👑</span> by <strong style={{ color: "white" }}>&nbsp;The Brogrammers</strong>
+                            Copyright ©2025 All rights reserved | This website is made with <span role="img" aria-label="crown">👑</span> by <strong style={{ color: "white" }}>&nbsp;<Link to="/About#The_Brogrammers" smooth={true} duration={500} style={{textDecoration:'none',color:'white'}} >
+                                The Brogrammers
+                            </Link></strong>
                         </p>
 
 

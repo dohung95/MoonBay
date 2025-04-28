@@ -38,6 +38,7 @@
 
 .navbar {
   position: fixed;
+  font-weight:700;
   width: 100%;
   z-index: 1030;
   top: 0;
@@ -50,13 +51,13 @@
 }
 
 .navbar-colored {
-  background-color: #343a40 !important;
+  background-color: #04091e !important;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .navbar .nav-link {
   color: #fff !important;
-  transition: color 1s ease; /* Hiệu ứng mượt hơn khi hover */
+  transition: color 0.7s ease; /* Hiệu ứng mượt hơn khi hover */
 }
 
 .navbar .nav-link:hover {
