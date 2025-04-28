@@ -69,7 +69,7 @@ const Footer = () => {
                                         <li className="nav-item">
                                             <Link
                                                 className="nav-link text-#6c6c6e"
-                                                to="#booking" onClick={top}
+                                                to="/Booking" onClick={top}
                                             >
                                                 Booking
                                             </Link>
@@ -135,7 +135,9 @@ const Footer = () => {
 
                         <hr />
                         <p>
-                            Copyright ©2025 All rights reserved | This website is made with <span role="img" aria-label="crown">👑</span> by <strong style={{ color: "white" }}>&nbsp;The Brogrammers</strong>
+                            Copyright ©2025 All rights reserved | This website is made with <span role="img" aria-label="crown">👑</span> by <strong style={{ color: "white" }}>&nbsp;<Link to="/About#The_Brogrammers" smooth={true} duration={500} style={{textDecoration:'none',color:'white'}} >
+                                The Brogrammers
+                            </Link></strong>
                         </p>
 
 

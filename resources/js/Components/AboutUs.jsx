@@ -22,8 +22,17 @@ const renderStars = (rating) => {
 const AboutUs = () => {
     const sitemap = [
         { label: 'Home', link: '/' },
-        { label: 'Rooms' }
+        { label: 'AboutUs' }
     ];
+    React.useEffect(() => {
+        const hash = window.location.hash;
+        if (hash) {
+            const element = document.querySelector(hash);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    }, []);
     return (
         <>
             <div className="banner">
@@ -77,7 +86,7 @@ const AboutUs = () => {
                 </div>
             </div>
 
-            <div style={{ padding: '3% 0' }} className='group2_Hung'>
+            <div style={{ padding: '3% 0' }} className='group2_Hung' id='The_Brogrammers'>
                 <div style={{ textAlign: 'center' }} >
                 <h2>Group 2 with the theme "MoonBay hotels" includes the following members:</h2><br />
                 </div>
