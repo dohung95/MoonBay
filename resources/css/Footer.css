@@ -35,4 +35,12 @@
   width: 50%;
   border-radius: 50%;
 }
+.button_send-hung{
+  border: 1px solid #6c6c6e;
+  color: #6c6c6e;
+}
+.button_send-hung:hover{
+  background-color: #e09d38d5;
+  color: white;
+}
 

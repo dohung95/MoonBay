@@ -105,11 +105,13 @@ const Footer = () => {
                             <div style={{ padding: '4% 0 0 0' }}>
                                 <form action="">
                                     <div className='row'>
-                                        <div className='col-md-8'>
+                                        <div className='col-md-9'>
                                             <input type="email" placeholder='Your Email' />
                                         </div>
-                                        <div className='col-md-4'>
-                                            <button className='btn btn-secondary' type="submit">Send</button>
+                                        <div className='col-md-3' style={{ padding: '3% 0 0 0' }}>
+                                            <div>
+                                                <button className='btn button_send-hung' type="submit" >Send</button>
+                                            </div>
                                         </div>
                                     </div>
                                 </form>
