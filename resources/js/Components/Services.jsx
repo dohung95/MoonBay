@@ -20,13 +20,13 @@ const ServicePopup = ({ service, onClose }) => {
             <p>{service.description}</p>
             {service.detailedDescription && (
               <div className="service-details-extra">
-                <h3>Chi tiết dịch vụ</h3>
+                <h3>Details of the Service</h3>
                 <p>{service.detailedDescription}</p>
               </div>
             )}
             {service.pricing && (
               <div className="service-pricing">
-                <h3>Bảng giá</h3>
+                <h3>Pricing</h3>
                 <ul>
                   {service.pricing.map((price, index) => (
                     <li key={index}>{price.type}: {price.value}</li>
@@ -36,7 +36,7 @@ const ServicePopup = ({ service, onClose }) => {
             )}
             {service.workingHours && (
               <div className="service-hours">
-                <h3>Giờ phục vụ</h3>
+                <h3>Working Hours</h3>
                 <p>{service.workingHours}</p>
               </div>
             )}
