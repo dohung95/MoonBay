@@ -51,6 +51,7 @@ const Login = ({ isPopupLogin, closePopup, openRegisterPopup, openForgotPassword
                     throw new Error("Token not found in response");
                 }
                 login(user, token);
+                window.showNotification("Login successfully!", "success");
                 closePopup();
             } else {
                 throw new Error("Unexpected response status: " + response.message);

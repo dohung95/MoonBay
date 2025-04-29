@@ -19,6 +19,23 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow, closePopup }) => {
         member: 1,
     });
 
+    // Tính thời gian hiện tại và ngày kế tiếp
+    const now = new Date();
+    
+
+    // Định dạng thời gian cho input datetime-local (YYYY-MM-DDThh:mm)
+    const formatDateTime = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${day}-${month}-${year}T${hours}:${minutes}`;
+    };
+
+    // Giá trị min cho checkin (ngày kế tiếp)
+        const minCheckin = formatDateTime(now);
+
     const handleChange = (event) => {
         const { id, value } = event.target;
         setFormData((prevData) => ({
@@ -45,13 +62,27 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow, closePopup }) => {
         }
 
         // Kiểm tra các trường bắt buộc
-        if (!formData.checkin || !formData.checkout || !formData.roomType ) {
-            alert('Please fill in all required fields.');
+        if (!formData.checkin || !formData.checkout || !formData.roomType) {
+            window.showNotification("Please fill in all required fields.", "error");
             return;
         }
 
-        if (!user || !user.id) {
-            alert("User is not logged in or ID is missing.");
+        // Chuyển đổi checkin và checkout thành đối tượng Date
+        const checkinDate = new Date(formData.checkin);
+        const checkoutDate = new Date(formData.checkout);
+        const currentDate = new Date();
+
+        // Kiểm tra checkin không được nhỏ hơn thời gian hiện tại
+        if (checkinDate < currentDate) {
+            window.showNotification("Check-in time cannot be in the past.", "error");
+            return;
+        }
+
+        // Kiểm tra checkout phải lớn hơn checkin (ít nhất 1 giờ)
+        const minCheckoutDate = new Date(checkinDate);
+        minCheckoutDate.setHours(checkinDate.getHours() + 1);
+        if (checkoutDate <= minCheckoutDate) {
+            window.showNotification("Check-out time must be at least 1 hour after check-in.", "error");
             return;
         }
 
@@ -70,13 +101,14 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow, closePopup }) => {
             });
 
             if (response.status === 201) {
-                alert('Booking created successfully!');
+                window.showNotification("Booking created successfully!", "success");
             }
         } catch (error) {
 
             console.error('Error creating booking:', error.response || error);
-            alert('Failed to create booking. Please try again.');
-
+            setTimeout(() => {
+                window.showNotification("Failed to create booking", "error");
+            }, 0);
         }
     };
 
@@ -103,11 +135,22 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow, closePopup }) => {
                             <div className="row g-3">
                                 <div className="col-md-6">
                                     <label htmlFor="checkin" className="form-label">Check-in:</label>
-                                    <input type="date" id="checkin" className="form-control" value={formData.checkin} onChange={handleChange} />
+                                    <input type="datetime-local" id="checkin" className="form-control" value={formData.checkin} onChange={handleChange} min={minCheckin} />
                                 </div>
                                 <div className="col-md-6">
                                     <label htmlFor="checkout" className="form-label">Check-out:</label>
-                                    <input type="date" id="checkout" className="form-control" value={formData.checkout} onChange={handleChange} />
+                                    <input
+                                        type="datetime-local"
+                                        id="checkout"
+                                        className="form-control"
+                                        value={formData.checkout}
+                                        onChange={handleChange}
+                                        min={
+                                            formData.checkin
+                                                ? formatDateTime(new Date(new Date(formData.checkin).setHours(new Date(formData.checkin).getHours() + 1)))
+                                                : minCheckin 
+                                            } 
+                                    />
                                 </div>
                             </div>
 
