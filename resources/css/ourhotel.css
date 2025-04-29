@@ -101,6 +101,7 @@
   align-items: center;
   gap: 5px;
   margin-bottom: 10px;
+  text-align: justify;
 }
 
 .stars-huy {
@@ -123,54 +124,79 @@
 
 .amenities-grid-huy {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(3, 1fr); /* 3 cột mỗi hàng */
+  gap: 16px;
 }
 
 .amenity-card-huy {
-  text-align: center;
-  padding: 15px;
-  background: #f8f8f8;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  background-color: #f8f9fa;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: transform 0.2s;
+}
+
+.amenity-card-huy:hover {
+  transform: scale(1.03);
 }
 
 .amenity-icon-huy {
+  font-size: 18px;
+  margin-right: 10px;
+}
+
+.amenity-name-huy {
+  white-space: nowrap;
+}
+
+/* activities-section */
+.activities-section-huy {
+  margin-top: 40px;
+}
+
+.activities-list-huy {
+  list-style: none;
+  padding: 0;
+}
+
+.activity-item-huy {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.activity-icon-huy {
   font-size: 1.5rem;
-  margin-bottom: 5px;
+  margin-right: 12px;
 }
 
-.map-container-huy {
-  height: 400px;
+.activity-text-huy {
+  color: #333;
 }
 
-.map-placeholder-huy {
-  background: #f0f0f0;
-  height: 100%;
-  text-align: center;
+.tour-price-huy {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  color: #007bff;
 }
 
-.map-image-huy {
+.activity-slider-huy {
+  width: 100%;
+  height: 300px;
+  overflow: hidden;
+  border-radius: 12px;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.activity-slider-image-huy {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 8px;
-}
-
-.location-details-huy {
-  padding: 20px;
-}
-
-.nearby-places-huy {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.place-item-huy {
-  padding: 10px;
-  background: #f8f8f8;
-  border-radius: 8px;
+  transition: opacity 0.5s ease-in-out;
 }
 
 /* Gallery Modal */

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Banner from './banner';
 import '../../css/ourhotel.css';
 import Sitemapmini from './sitemapmini';
+import Slider from './ActivitySlider';
 
 const Ourhotel = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -28,17 +29,46 @@ const Ourhotel = () => {
     mainImage: "/images/Huy/hotel_huy/main.jpg",
     rating: 5,
     reviews: 256,
-    price: "2,500,000 VND",
+    price: "400,000 VND",
     amenities: [
+      { name: "Air Conditioning", icon: "❄️" },
+      { name: "Elevator", icon: "🛗" },
+      { name: "Fine Dining Restaurant", icon: "🍴" },
       { name: "Free Wifi", icon: "📶" },
       { name: "Infinity Pool", icon: "🏊" },
-      { name: "Fine Dining Restaurant", icon: "🍴" },
       { name: "Modern Gym", icon: "🏋️" },
+      { name: "Parking Car", icon: "🅿️" },
       { name: "Smart TV", icon: "📺" },
-      { name: "Tea & Cafe", icon: "☕" },
-      { name: "Air Conditioning", icon: "❄️" },
-      { name: "Parking Car", icon: "🅿️" }
+      { name: "Tea & Cafe", icon: "☕" }
     ],
+    activities: [
+      {
+        name: "Island Hopping",
+        description: "Discover nearby islands like Hon Hai Bo Dap, Hon Mau, Hon Dau...",
+        icon: "🏝️"
+      },
+      {
+        name: "Snorkeling",
+        description: "Explore colorful coral reefs and marine life.",
+        icon: "🤿"
+      },
+      {
+        name: "Sea Fishing",
+        description: "Join locals for a fun ocean fishing trip.",
+        icon: "🎣"
+      },
+      {
+        name: "Enjoy Local Delicacies",
+        description: "Taste traditional “Chao Nhum” (sea urchin porridge).",
+        icon: "🍲"
+      }
+    ],
+    priceTour: "400,000 VND/person (min 10 people/boat) or 4,000,000 VND/private boat.",
+    imagesTour: [
+      "/images/Huy/hotel_huy/haibodap.png",
+      "/images/Huy/hotel_huy/honmau.jpg",
+      "/images/Huy/hotel_huy/driving.jpg"
+    ]
   };
 
   useEffect(() => {
@@ -50,7 +80,6 @@ const Ourhotel = () => {
     setActiveImage(index);
     setShowGalleryModal(true);
   };
-
   const nextImage = () => setActiveImage((prev) => (prev + 1) % hotelInfo.images.length);
   const prevImage = () => setActiveImage((prev) => (prev - 1 + hotelInfo.images.length) % hotelInfo.images.length);
 
@@ -123,7 +152,7 @@ const Ourhotel = () => {
           </div>
 
           <div className="amenities-section-huy">
-            <h2 className="h2-huy">Amenities & Services</h2>
+            <h2 className="h2-huy">Amenities</h2>
             <div className="amenities-grid-huy">
               {hotelInfo.amenities.map((amenity, index) => (
                 <div key={index} className="amenity-card-huy">
@@ -134,40 +163,40 @@ const Ourhotel = () => {
             </div>
           </div>
 
-          <div className="location-section-huy">
-            <h2 className="h2-huy">Location</h2>
+          <div className="activities-section-huy">
+            <h2 className="h2-huy">Activities & Tours</h2>
+            <div className="activities-intro-huy">
+              <h5>Explore Nam Du with Our Exclusive Tour Activities</h5>
+              <p>
+                Experience the best of Nam Du Island with our curated selection of local tours and activities. Whether you're seeking adventure, culture, or relaxation, our guided experiences promise unforgettable memories amidst breathtaking island scenery.
+              </p>
+            </div>
+
             <div className="row">
               <div className="col-md-6">
-                <div className="map-container-huy">
-                  <div className="map-placeholder-huy">
-                    <div style={{ position: 'relative', height: 400, overflow: 'hidden' }}>
-                      <iframe
-                        src="https://www.google.com/maps/d/embed?mid=1FTMogPpDF4RFkkE6-idbOgnK0l6Xq5Y&ehbc=2E312F"
-                        width="100%"
-                        height="500"
-                        style={{ position: 'absolute', top: -65, left: 0, border: 0 }}
-                        allowFullScreen
-                        loading="lazy"
-                        title="Moon Bay Hotel Map"
-                      ></iframe>
-                    </div>
-
-                  </div>
+                <ul className="activities-list-huy">
+                  {hotelInfo.activities.map((activity, index) => (
+                    <li key={index} className="activity-item-huy">
+                      <span className="activity-icon-huy">{activity.icon}</span>
+                      <div className="activity-text-huy">
+                        <strong>{activity.name}:</strong> {activity.description}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                <div className="tour-price-huy">
+                  <strong>Tour Price:</strong> {hotelInfo.priceTour}
                 </div>
               </div>
               <div className="col-md-6">
-                <div className="location-details-huy">
-                  <h3>Nearby Places</h3>
-                  <div className="nearby-places-huy">
-                    <div className="place-item-huy">Hon Lon Beach: 0.5 km - 5-minute walk</div>
-                    <div className="place-item-huy">Nam Du Lighthouse: 2 km - 10-minute boat ride</div>
-                    <div className="place-item-huy">Hon Mau Island: 3 km - 15-minute boat ride</div>
-                    <div className="place-item-huy">Rach Gia City: 80 km - 2-hour ferry ride</div>
-                  </div>
+                <div className="activity-image-huy">
+                  <Slider images={hotelInfo.imagesTour} />
                 </div>
               </div>
             </div>
           </div>
+
+
         </div>
       </section>
 
