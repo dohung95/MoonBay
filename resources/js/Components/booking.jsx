@@ -119,7 +119,7 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow, closePopup }) => {
                 <video autoPlay muted loop playsInline preload="auto" className="background-video video-container " >
                     <source src="/images/Dat/rooms/background.mp4" type="video/mp4" />
                 </video>
-                <div className="container" >
+                <div className="container container-dat" >
                     {isLoading ? (
                         // Hiển thị hiệu ứng loading
                         <div className="loading-container">

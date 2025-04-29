@@ -35,8 +35,9 @@ const Ourhotel = () => {
       { name: "Fine Dining Restaurant", icon: "🍴" },
       { name: "Modern Gym", icon: "🏋️" },
       { name: "Smart TV", icon: "📺" },
-      { name: "Bar & Cafe", icon: "☕" },
-      { name: "Air Conditioning", icon: "❄️" }
+      { name: "Tea & Cafe", icon: "☕" },
+      { name: "Air Conditioning", icon: "❄️" },
+      { name: "Parking Car", icon: "🅿️" }
     ],
   };
 
