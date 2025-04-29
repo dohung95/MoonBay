@@ -126,7 +126,7 @@ const Services = () => {
                   <img src={service.image} alt={service.title} className="w-full h-64 object-cover" />
                   <div className="service_details p-4">
                     <h2 className="text-xl font-bold mb-2">{service.title}</h2>
-                    <p className="text-gray-600 mb-4">{service.description}</p>
+                    <p className="text-gray-600 mb-4 description-long">{service.description}</p>
                     <a href="#" className="view_btn button_hover" onClick={(e) => {
                       e.preventDefault();
                       openServicePopup(service);
@@ -219,34 +219,7 @@ const services = [
       { type: "Private car (4 hours)", value: "$120" }
     ],
     workingHours: "Shuttle service: 8:00 AM - 5:00 PM, Airport transfers: 24 hours (reservation required)"
-  },
-  {
-    title: "Moonbay Casino",
-    image: "./images/Long/Services/Moonbay Casino.jpg",
-    description:
-      "Located on the basement level of Moonbay Hotel, Moonbay Casino features the latest slots, roulette, baccarat, and blackjack machines. Special events every day bring joy to all guests.",
-    detailedDescription:
-      "Our casino offers an exciting gaming experience with over 100 slot machines and 20 gaming tables including blackjack, baccarat, poker, and roulette. Our weekly tournaments and daily promotions add to the excitement, and our lounge serves premium drinks and light snacks.",
-    pricing: [
-      { type: "Minimum bet", value: "Varies by game" },
-      { type: "VIP rooms available", value: "By reservation" }
-    ],
-    workingHours: "Open 24 hours daily"
-  },
-  {
-    title: "Barclub",
-    image: "./images/Long/Services/Barclub.jpg",
-    description:
-      "Step into Barclub – the ultimate nightlife destination where music, lights, and vibes come alive! Barclub is more than just a place to grab a drink – it's where the night begins and the party never ends.",
-    detailedDescription:
-      "Our stylish Barclub features world-class DJs, state-of-the-art sound system, and spectacular lighting effects. Enjoy premium cocktails crafted by our expert mixologists, VIP bottle service, and themed party nights. Our dance floor comes alive with energy every weekend.",
-    pricing: [
-      { type: "Cover charge", value: "$15 (weekends)" },
-      { type: "Signature cocktails", value: "$15-$25" },
-      { type: "VIP table reservation", value: "Starting at $300" }
-    ],
-    workingHours: "Wednesday to Sunday: 9:00 PM - 3:00 AM"
-  },
+  }
 ];
 
 export default Services;

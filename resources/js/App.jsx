@@ -8,8 +8,8 @@ import Home from './Components/Home.jsx';
 import AboutUs from './Components/AboutUs.jsx';
 import OurHotels from './Components/ourhotels.jsx';
 import Rooms from './Components/rooms.jsx';
-import ContactUsPage from './Components/ContactUsPage.jsx';
-import ServicePage from './Components/ServicesPage.jsx';
+import Contact from './Components/Contact.jsx';
+import ServicePage from './Components/Services.jsx';
 
 import Footer from './Components/Footer.jsx';
 
@@ -94,7 +94,7 @@ const App = () => {
                     <Route path="/About" element={<AboutUs />} />
                     <Route path="/Ourhotels" element={<OurHotels />} />
                     <Route path="/Rooms" element={<Rooms />} />
-                    <Route path="/Contact" element={<ContactUsPage />} />
+                    <Route path="/Contact" element={<Contact />} />
                     <Route path="/Services" element={<ServicePage />} />
                     <Route path="*" element={<Home />} />
                 </Routes>
