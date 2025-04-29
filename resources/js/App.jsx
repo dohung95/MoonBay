@@ -25,6 +25,7 @@ import NotificationManager from './Components/NotificationManager.jsx';
 
 
 const App = () => {
+
     const [isPopupLogin, setIsPopupLogin] = useState(false);
     const [isPopupRegister, setIsPopupRegister] = useState(false);
     const [isPopupForgotPassword, setIsPopupForgotPassword] = useState(false);
