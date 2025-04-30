@@ -113,7 +113,7 @@ const AboutUs = () => {
                         <img src="./images/Hung/Long.jpg" alt=""  style={{padding: '0 0 4% 0'}}/>
                         <p><b>Full name: Ngo Truong Long</b></p>
                         <p><b>Position: Developer/Tester</b></p>
-                        <p><b>Slogan: I'm GDragon.</b></p>
+                        <p><b>Slogan: Bugs are friends, not enemies— debug today to succeed tomorrow.</b></p>
                     </div>
                 </div>
             </div>

@@ -9,7 +9,7 @@ const Navbar = ({ openLoginPopup }) => {
   const { user, logout } = useContext(AuthContext);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [isAtTop, setIsAtTop] = useState(true); 
+  const [isAtTop, setIsAtTop] = useState(true);
 
   const handleScroll = () => {
     const currentScrollY = window.scrollY;
@@ -41,11 +41,17 @@ const Navbar = ({ openLoginPopup }) => {
     logout(); // Gọi hàm logout từ AuthContext
   };
 
+  const top = () => {
+    window.scroll({
+      top: 0,
+      behavior: 'smooth'
+    })
+  }
   return (
-    <nav className={`navbar navbar-expand-lg sticky-top ${isVisible ? 'visible' : 'hidden'} ${ isAtTop ? 'navbar-transparent' : 'navbar-colored' }`} style={{ transition: 'top 0.3s', top: isVisible ? '0' : '-80px' }}
+    <nav className={`navbar navbar-expand-lg sticky-top ${isVisible ? 'visible' : 'hidden'} ${isAtTop ? 'navbar-transparent' : 'navbar-colored'}`} style={{ transition: 'top 0.3s', top: isVisible ? '0' : '-80px' }}
     >
       <div className="container">
-        <Link className="navbar-brand d-flex align-items-center gap-2" to="/">
+        <Link className="navbar-brand d-flex align-items-center gap-2" to="/" onClick={top}>
           <img
             src="/images/logo/moonbaylogo.png"
             alt="Logo"
@@ -66,25 +72,25 @@ const Navbar = ({ openLoginPopup }) => {
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto">
             <li className="nav-item">
-              <Link to="/" className="nav-link">Home</Link>
+              <Link to="/" className="nav-link" onClick={top}>Home</Link>
             </li>
             <li className="nav-item">
-              <Link to="/About" className="nav-link">About Us</Link>
+              <Link to="/About" className="nav-link" onClick={top}>About Us</Link>
             </li>
             <li className="nav-item">
-              <Link to="/Ourhotels" className="nav-link">Our Hotels</Link>
+              <Link to="/Ourhotels" className="nav-link" onClick={top}>Our Hotels</Link>
             </li>
             <li className="nav-item">
-              <Link to="/Rooms" className="nav-link">Rooms</Link>
+              <Link to="/Rooms" className="nav-link" onClick={top}>Rooms</Link>
             </li>
             <li className="nav-item">
-              <Link to="/booking" className="nav-link">Booking</Link>
+              <Link to="/booking" className="nav-link" onClick={top}>Booking</Link>
             </li>
             <li className="nav-item">
-              <Link to="/Services" className="nav-link">Services</Link>
+              <Link to="/Services" className="nav-link" onClick={top}>Services</Link>
             </li>
             <li className="nav-item">
-              <Link to="/Contact" className="nav-link">Contact Us</Link>
+              <Link to="/Contact" className="nav-link" onClick={top}>Contact Us</Link>
             </li>
             {user ? (
               <li className="nav-item dropdown d-flex align-items-center">
