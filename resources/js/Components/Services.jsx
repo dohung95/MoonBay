@@ -43,9 +43,6 @@ const ServicePopup = ({ service, onClose }) => {
             )}
           </div>
         </div>
-        <div className="service-popup-footer">
-          <button className="btn-book button-book-hover"></button>
-        </div>
       </div>
     </div>
   );

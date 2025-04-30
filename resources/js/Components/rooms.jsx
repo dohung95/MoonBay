@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import Sitemapmini from './sitemapmini';
+import { Link } from 'react-router-dom';
 
 const Rooms = () => {
   const [rooms, setRooms] = useState([]);
@@ -80,6 +81,9 @@ const Rooms = () => {
                     <i className="bi bi-people-fill me-1"></i> {room.capacity} guests
                   </p>
                   <p>{room.description}</p>
+                  <Link to="/booking#booknow" className="btn btn-primary mt-3">
+                    Book Now
+                  </Link>
                 </div>
               </div>
             ))

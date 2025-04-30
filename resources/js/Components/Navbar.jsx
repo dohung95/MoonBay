@@ -78,7 +78,7 @@ const Navbar = ({ openLoginPopup }) => {
               <Link to="/About" className="nav-link" onClick={top}>About Us</Link>
             </li>
             <li className="nav-item">
-              <Link to="/Ourhotels" className="nav-link" onClick={top}>Our Hotels</Link>
+              <Link to="/Ourhotels" className="nav-link" onClick={top}>Our Hotel</Link>
             </li>
             <li className="nav-item">
               <Link to="/Rooms" className="nav-link" onClick={top}>Rooms</Link>

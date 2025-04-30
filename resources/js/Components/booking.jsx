@@ -5,6 +5,8 @@ import { AuthContext } from "./AuthContext.jsx"; // Import AuthContext
 import axios from "axios";
 import "./AuthContext.jsx"; // Giả sử bạn đã định nghĩa $user trong AuthContext
 import Banner from "./banner.jsx";
+import { useLocation } from "react-router-dom";
+
 
 const Booking = ({ checkLogin, checkLogins, isPopupBookNow, closePopup }) => {
     const { user } = useContext(AuthContext);
@@ -112,23 +114,36 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow, closePopup }) => {
         }
     };
 
+    // Scroll to the selected section
+    const location = useLocation();
+
+    useEffect(() => {
+    if (location.hash) {
+      const element = document.getElementById(location.hash.substring(1));
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, [location]);
+
     return (
         <>
             <Banner title="Booking Now" description="Book your stay with us" />
-            <div style={{}} className="bg" >
+            <div style={{}} className="bg" id="booknow" >
                 <video autoPlay muted loop playsInline preload="auto" className="background-video video-container " >
                     <source src="/images/Dat/rooms/background.mp4" type="video/mp4" />
                 </video>
-                <div className="container container-dat" >
+                <div className="container container-dat">
                     {isLoading ? (
                         // Hiển thị hiệu ứng loading
                         <div className="loading-container">
                             <div className="spinner"></div>
                         </div>
                     ) : (
+
                         <form
                             className="p-4 rounded text-light shadow booking-form"
-                            style={{ backgroundColor: "rgba(33, 37, 41, 0.9)" }}>
+                            style={{ backgroundColor: "rgba(33, 37, 41, 0.9)"}}>
                             <h2 className="mb-4 text-center">Hotel Booking</h2>
 
                             {/* Thời gian Check-in / Check-out */}
