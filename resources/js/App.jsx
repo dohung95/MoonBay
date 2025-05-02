@@ -30,6 +30,7 @@ const App = () => {
     const [isPopupRegister, setIsPopupRegister] = useState(false);
     const [isPopupForgotPassword, setIsPopupForgotPassword] = useState(false);
     const [isPopupBookNow, setIsPopupBookNow] = useState(false);
+    const [selectedRoomName, setSelectedRoomName] = useState(''); // State để lưu roomName
 
     // Mở popup đăng nhập
     const openLoginPopup = () => {
@@ -58,24 +59,25 @@ const App = () => {
         setIsPopupRegister(false);
         setIsPopupForgotPassword(false);
         setIsPopupBookNow(false);
+        setSelectedRoomName(''); // Reset roomName khi đóng popup
     };
 
     const checkLogin = () => {
-        const user = localStorage.getItem('user');
+        const user = document.cookie.split('; ').find(row => row.startsWith('user='));
         if (!user) {
             setIsPopupLogin(true);
             return false;
         }
     }
 
-    const checkLogins = () => {
-        const user = localStorage.getItem('user');
+    const checkLogins = (roomName) => {
+        const user = document.cookie.split('; ').find(row => row.startsWith('user='));
         if (!user) {
             setIsPopupLogin(true);
-            return false;
+            return;
         }
-
         setIsPopupBookNow(true);
+        setSelectedRoomName(roomName); // Lưu roomName
     };
 
     return (
@@ -85,7 +87,7 @@ const App = () => {
                 <Login isPopupLogin={isPopupLogin} closePopup={closePopup} openRegisterPopup={openRegisterPopup} openForgotPassword={openForgotPassword} />
                 <Register isPopupRegister={isPopupRegister} closePopup={closePopup} openLoginPopup={openLoginPopup} />
                 <ForgotPassword closePopup={closePopup} openLoginPopup={openLoginPopup} isPopupForgotPassword={isPopupForgotPassword} />
-                <PopupBookNow isPopupBookNow={isPopupBookNow} closePopup={closePopup} />
+                <PopupBookNow isPopupBookNow={isPopupBookNow} closePopup={closePopup} selectedRoomName={selectedRoomName}/>
                 <NotificationManager />
                 <Routes>
                     <Route path="/" element={<Home />} />

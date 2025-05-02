@@ -76,7 +76,6 @@ export const AuthProvider = ({ children }) => {
 
         // Cập nhật cookie với thời gian sống 30 ngày
         Cookies.set('user', JSON.stringify(user), { expires: 30 }); // 30 ngày
-        console.log('Updated user stored in cookie:', Cookies.get('user')); // Debug
     };
 
     return (

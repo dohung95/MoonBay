@@ -71,9 +71,7 @@ const Login = ({ isPopupLogin, closePopup, openRegisterPopup, openForgotPassword
             {isPopupLogin && (
                 <div className="popup-overlay" onClick={handleOverlayClick}>
                     <div className="popup-content">
-                        <button className="close-popup-btn" onClick={closePopup}>
-                            ×
-                        </button>
+                        <button className="close-popup-btn" style={{ color: 'black' }} onClick={closePopup}>&times;</button>
                         <h2>Login</h2>
 
                         <form onSubmit={handleSubmit}> {/* Thêm onSubmit */}

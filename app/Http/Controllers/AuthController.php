@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
+use App\Models\Booking;
 
 class AuthController extends Controller
 {
@@ -75,7 +76,6 @@ class AuthController extends Controller
                 // Nếu không có token, tạo mới và lưu lại
                 $user->remember_token = \Illuminate\Support\Str::random(60);
                 $user->save();
-                Log::info('New token generated for user', ['user_id' => $user->id]);
             }
 
             return response()->json([
@@ -123,7 +123,6 @@ class AuthController extends Controller
     {
 
         $user = User::findOrFail($id);
-        $user->update($request->all());
 
         try {
             // Lấy token từ header Authorization
@@ -149,7 +148,15 @@ class AuthController extends Controller
                 'phone' => 'nullable|string|max:20',
             ]);
 
+            // Cập nhật thông tin người dùng trong bảng users
             $user->update([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'],
+            ]);
+
+            // Cập nhật thông tin người dùng trong bảng booking_rooms
+            Booking::where('user_id', $id)->update([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],

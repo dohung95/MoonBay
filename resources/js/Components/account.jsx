@@ -17,21 +17,11 @@ const Account = () => {
         phone: '',
     });
     const [latestBooking, setLatestBooking] = useState(null);
-    const [updateMessage, setUpdateMessage] = useState(null);
 
     useEffect(() => {
-        if (updateMessage) {
-            const timer = setTimeout(() => {
-                setUpdateMessage(null); // Xóa thông báo sau 3 giây
-            }, 3000);
-
-            return () => clearTimeout(timer); // Dọn dẹp timer khi component unmount hoặc update
-        }
-    }, [updateMessage]);
-
-    useEffect(() => {
+        window.scrollTo(0, 0);
         if (user === null) {
-            // Chờ AuthContext khôi phục user từ localStorage
+            // Chờ AuthContext khôi phục user
             return;
         }
 
@@ -86,7 +76,6 @@ const Account = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setUpdateMessage(null);
         await axios.get('/sanctum/csrf-cookie');
 
         try {
@@ -99,10 +88,10 @@ const Account = () => {
             // Cập nhật user trong AuthContext
             updateUser(response.data.user);
             setIsEditing(false);
-            setUpdateMessage('Profile updated successfully!');
+            window.showNotification('Profile updated successfully!', 'success');
         } catch (err) {
             console.error('Error updating profile:', err.response?.data || err.message);
-            setUpdateMessage('Failed to update profile' || 'An error occurred.');
+            window.showNotification('Failed to update profile' || 'An error occurred.', 'error');
         }
 
     };
@@ -114,7 +103,6 @@ const Account = () => {
             email: user?.email || '',
             phone: user?.phone || '',
         });
-        setUpdateMessage(null);
     };
 
     if (loading) return <div className="container_account"><p className="text-center text-black mt-5">Loading...</p></div>;
@@ -130,11 +118,6 @@ const Account = () => {
                     </div>
                     <div className="account-right">
                         <h1 className="text-center mb-4">Account</h1>
-                        {updateMessage && (
-                            <p className={`text-center update-message ${updateMessage.includes('Failed') ? 'text-danger' : 'text-success'}`}>
-                                {updateMessage}
-                            </p>
-                        )}
                         {isEditing ? (
                             <form className="edit-form" onSubmit={handleSubmit}>
                                 <div className="mb-3">
