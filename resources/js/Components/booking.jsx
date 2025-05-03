@@ -7,7 +7,6 @@ import "./AuthContext.jsx"; // Giả sử bạn đã định nghĩa $user trong 
 import Banner from "./banner.jsx";
 import { useLocation } from "react-router-dom";
 
-
 const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
     const { user } = useContext(AuthContext);
     const [isLoading, setIsLoading] = useState(true);

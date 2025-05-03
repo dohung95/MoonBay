@@ -140,6 +140,10 @@
                                         } 
                                     required />
                                 </div>
+                                <div>
+                                    <label htmlFor="roomType" className="form-label">Room Type:</label>
+                                    <input type="text" id="roomType" name="roomType" className="form-control bold-placeholder" placeholder={formData.roomType} readOnly />
+                                </div>
                                 <div className="mb-3">
                                     <label htmlFor="room" className="form-label">Number of Rooms:</label>
                                     <select name="room" id="room" className="form-select" onChange={handleChange}>
