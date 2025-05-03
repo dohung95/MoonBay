@@ -22,6 +22,8 @@ import ForgotPassword from './Components/ForgotPassword.jsx';
 import PopupBookNow from './Components/PopupBookNow.jsx';
 
 import NotificationManager from './Components/NotificationManager.jsx'; 
+import Back_top from './Components/Back_top.jsx';
+
 
 
 const App = () => {
@@ -102,6 +104,7 @@ const App = () => {
                     <Route path="*" element={<Home />} />
                 </Routes>
                 <Footer />
+                <Back_top />
             </Router>
         </AuthProvider>
     );
