@@ -3,6 +3,7 @@ import Banner from './banner';
 import '../../css/ourhotel.css';
 import Sitemapmini from './sitemapmini';
 import Slider from './ActivitySlider';
+import { Link } from 'react-router-dom';
 
 const Ourhotel = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -11,7 +12,7 @@ const Ourhotel = () => {
 
   const moonBaySitemap = [
     { label: 'Home', link: '/' },
-    { label: 'Moon Bay Hotel' }
+    { label: 'Our Hotel' }
   ];
 
   const hotelInfo = {
@@ -144,7 +145,7 @@ const Ourhotel = () => {
                       <span className="price-value-huy">{hotelInfo.price}</span>
                       <span className="price-unit-huy">/ night</span>
                     </div>
-                    <a href="#booking-section" className="btn btn-primary">Book Now</a>
+                    <Link to="/booking#booknow" className="btn btn-primary">Book Now</Link>
                   </div>
                 </div>
               </div>

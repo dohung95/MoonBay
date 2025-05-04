@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import Sitemapmini from './sitemapmini';
+import { Link } from 'react-router-dom';
 
 const Rooms = () => {
   const [rooms, setRooms] = useState([]);
@@ -16,7 +17,7 @@ const Rooms = () => {
 
   useEffect(() => {
     axios
-      .get('http://localhost:8000/api/room_types')
+      .get('/api/room_types')
       .then((response) => setRooms(response.data))
       .catch((error) => console.error('Error fetching room_types:', error))
       .finally(() => setLoading(false));
@@ -80,6 +81,9 @@ const Rooms = () => {
                     <i className="bi bi-people-fill me-1"></i> {room.capacity} guests
                   </p>
                   <p>{room.description}</p>
+                  <Link to="/booking#booknow" className="btn btn-primary mt-3">
+                    Book Now
+                  </Link>
                 </div>
               </div>
             ))

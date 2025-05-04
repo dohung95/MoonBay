@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../css/Services.css';
 import Sitemapmini from './sitemapmini';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 // Component Popup cho dịch vụ
 const ServicePopup = ({ service, onClose }) => {
@@ -41,9 +42,6 @@ const ServicePopup = ({ service, onClose }) => {
               </div>
             )}
           </div>
-        </div>
-        <div className="service-popup-footer">
-          <button className="btn-book button_hover">Đặt lịch</button>
         </div>
       </div>
     </div>
@@ -118,11 +116,11 @@ const Services = () => {
                     </div>
                   </div>
                 </div>
-            </div>
-          <div className="row">
+            </div>  
+          <div className="row p-3">
             {services.map((service, index) => (
               <div key={index} className="services_item col-lg-6">
-                <div className="blog_post bg-white shadow-lg rounded-2xl overflow-hidden">
+                <div className="blog_post bg-white shadow-lg rounded-3 overflow-hidden" >
                   <img src={service.image} alt={service.title} className="w-full h-64 object-cover" />
                   <div className="service_details p-4">
                     <h2 className="text-xl font-bold mb-2">{service.title}</h2>

@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ReactDOM from 'react-dom/client';
-import { useNavigate, useLocation } from 'react-router-dom';
-import Cookies from 'js-cookie';
 
 import Navbar from './Components/Navbar.jsx';
 
@@ -26,46 +24,13 @@ import PopupBookNow from './Components/PopupBookNow.jsx';
 import NotificationManager from './Components/NotificationManager.jsx'; 
 
 
-export const PopupContext = React.createContext();
-// Component con để xử lý đăng nhập tự động từ Google
-const AuthHandler = () => {
-    const { user, login } = useContext(AuthContext);
-    const { closePopup } = useContext(PopupContext) || {};
-    const location = useLocation();
-    const hasProcessed = useRef(false);
-
-    useEffect(() => {
-        if (hasProcessed.current) return;
-        const urlParams = new URLSearchParams(location.search);
-        const token = urlParams.get('token');
-        const userData = urlParams.get('user');
-        const error = urlParams.get('error');
-
-        if (token && userData && !user) {
-            hasProcessed.current = true;
-            const parsedUserData = JSON.parse(decodeURIComponent(userData));
-            const authUser = { ...parsedUserData, token };
-            login(authUser);
-            Cookies.set('auth_token', token, { expires: 7, path: '/' });
-            Cookies.set('user_data', JSON.stringify(parsedUserData), { expires: 7, path: '/' });
-            if (closePopup) closePopup();
-            window.location.href = '/'; // Chuyển hướng về trang chủ
-        } else if (error) {
-           console.log(error);
-            window.location.replace('/', { replace: true });
-            if (closePopup) closePopup();
-        }
-    }, [location.search, login, user]);
-
-    return null;
-};
-
-
 const App = () => {
+
     const [isPopupLogin, setIsPopupLogin] = useState(false);
     const [isPopupRegister, setIsPopupRegister] = useState(false);
     const [isPopupForgotPassword, setIsPopupForgotPassword] = useState(false);
     const [isPopupBookNow, setIsPopupBookNow] = useState(false);
+    const [selectedRoomName, setSelectedRoomName] = useState(''); // State để lưu roomName
 
     // Mở popup đăng nhập
     const openLoginPopup = () => {
@@ -94,24 +59,25 @@ const App = () => {
         setIsPopupRegister(false);
         setIsPopupForgotPassword(false);
         setIsPopupBookNow(false);
+        setSelectedRoomName(''); // Reset roomName khi đóng popup
     };
 
     const checkLogin = () => {
-        const user = localStorage.getItem('user');
+        const user = document.cookie.split('; ').find(row => row.startsWith('user='));
         if (!user) {
             setIsPopupLogin(true);
             return false;
         }
     }
 
-    const checkLogins = () => {
-        const user = localStorage.getItem('user');
+    const checkLogins = (roomName) => {
+        const user = document.cookie.split('; ').find(row => row.startsWith('user='));
         if (!user) {
             setIsPopupLogin(true);
-            return false;
+            return;
         }
-
         setIsPopupBookNow(true);
+        setSelectedRoomName(roomName); // Lưu roomName
     };
 
     return (
@@ -123,7 +89,7 @@ const App = () => {
                 <Login isPopupLogin={isPopupLogin} closePopup={closePopup} openRegisterPopup={openRegisterPopup} openForgotPassword={openForgotPassword} />
                 <Register isPopupRegister={isPopupRegister} closePopup={closePopup} openLoginPopup={openLoginPopup} />
                 <ForgotPassword closePopup={closePopup} openLoginPopup={openLoginPopup} isPopupForgotPassword={isPopupForgotPassword} />
-                <PopupBookNow isPopupBookNow={isPopupBookNow} closePopup={closePopup} />
+                <PopupBookNow isPopupBookNow={isPopupBookNow} closePopup={closePopup} selectedRoomName={selectedRoomName}/>
                 <NotificationManager />
                 <Routes>
                     <Route path="/" element={<Home />} />
@@ -138,6 +104,7 @@ const App = () => {
                     <Route path="*" element={<Home />} />
                 </Routes>
                 <Footer />
+                <Back_top />
             </Router>
         </AuthProvider>
         </PopupContext.Provider>

@@ -36,3 +36,9 @@
     border: none;
     cursor: pointer;
 }
+
+.bold-placeholder::placeholder {
+    font-weight: bold;
+    color: #000; /* hoặc màu đậm hơn #555 */
+  }
+  

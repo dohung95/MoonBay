@@ -46,7 +46,7 @@
 .image-wrapper {
     position: relative;
     width: 100%;
-    height: 500px; /* Chiều cao hình ảnh */
+    height: 420px; /* Chiều cao hình ảnh */
 }
 
 .room-image {
