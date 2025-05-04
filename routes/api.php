@@ -24,6 +24,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::get('/room_types', [RoomController::class, 'index']);
 Route::get('/tbhotel', [HotelController::class, 'index']);
 
+Route::get('/google/login', [AuthController::class, 'redirectToGoogle'])->name('google.login');
+Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('google.callback');
+
 Route::apiResource('users', AuthController::class);
 Route::get('/users/{id}/bookings', [BookingController::class, 'getUserBookings']);
 
@@ -32,3 +35,4 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/ForgotPassword', [AuthController::class, 'ForgotPassword']);
 Route::post('/booking', [BookingController::class, 'booking']);
+

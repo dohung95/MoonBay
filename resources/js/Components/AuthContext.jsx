@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
         // Lấy thông tin user và token từ cookie khi component mount
         const storedUser = Cookies.get('user');
         const storedToken = Cookies.get('token');
+        console.log('AuthContext: Initializing user from cookie', { storedToken, storedUser });
 
         if (storedUser && storedToken) {
             try {

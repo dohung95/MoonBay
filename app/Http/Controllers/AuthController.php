@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
+use Laravel\Socialite\Facades\Socialite;
+
 
 class AuthController extends Controller
 {
@@ -162,6 +164,89 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             Log::error('Update User Error: ' . $e->getMessage());
             return response()->json(['message' => 'Failed to update user: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function redirectToGoogle()
+    {
+        try {
+            Log::info('Redirecting to Google for login', [
+                'client_id' => config('services.google.client_id'),
+                'redirect_uri' => config('services.google.redirect'),
+            ]);
+
+            $url = Socialite::driver('google')
+                ->setScopes([
+                    'https://www.googleapis.com/auth/userinfo.email',
+                    'https://www.googleapis.com/auth/userinfo.profile',
+                ])
+                ->setHttpClient(new \GuzzleHttp\Client(['verify' => false]))
+                ->stateless()
+                ->redirect()
+                ->getTargetUrl();
+
+            Log::info('Google redirect URL generated', ['url' => $url]);
+            return response()->json(['url' => $url], 200);
+        } catch (\Exception $e) {
+            Log::error('Google Redirect Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['message' => 'Failed to redirect to Google: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function handleGoogleCallback(Request $request)
+    {
+        try {
+            Log::info('Google callback received', ['request' => $request->all()]);
+
+            $googleUser = Socialite::driver('google')
+                ->setHttpClient(new \GuzzleHttp\Client(['verify' => false]))
+                ->stateless()
+                ->user();
+
+            $user = User::where('email', $googleUser->email)->first();
+
+            if (!$user) {
+                $user = User::create([
+                    'name' => $googleUser->name,
+                    'email' => $googleUser->email,
+                    'password' => Hash::make(uniqid()),
+                    'google_id' => $googleUser->id,
+                    'avatar' => $googleUser->avatar,
+                ]);
+            } else {
+                $user->update([
+                    'google_id' => $googleUser->id,
+                    'avatar' => $googleUser->avatar,
+                ]);
+            }
+
+            if (!$user->remember_token) {
+                $user->remember_token = \Illuminate\Support\Str::random(60);
+                $user->save();
+            }
+
+            $userData = [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'avatar' => $user->avatar,
+            ];
+
+            // Redirect về frontend với token và user trong query string
+            $redirectUrl = 'http://localhost:8000/auth/callback?' . http_build_query([
+                'token' => $user->remember_token,
+                'user' => json_encode($userData),
+            ]);
+
+            return redirect($redirectUrl);
+        } catch (\Exception $e) {
+            // Redirect về frontend với lỗi
+            $redirectUrl = 'http://localhost:8000/auth/callback?' . http_build_query([
+                'error' => 'Google login failed: ' . $e->getMessage(),
+            ]);
+            return redirect($redirectUrl);
         }
     }
 

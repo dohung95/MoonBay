@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ReactDOM from 'react-dom/client';
+import { useNavigate, useLocation } from 'react-router-dom';
+import Cookies from 'js-cookie';
 
 import Navbar from './Components/Navbar.jsx';
 
@@ -16,12 +18,47 @@ import Footer from './Components/Footer.jsx';
 import Booking from './Components/booking.jsx';
 import Login from './Components/login.jsx';
 import Register from './Components/Register.jsx';
-import { AuthProvider } from './Components/AuthContext.jsx';
+import { AuthProvider, AuthContext } from './Components/AuthContext.jsx';
 import Account from './Components/account.jsx';
 import ForgotPassword from './Components/ForgotPassword.jsx';
 import PopupBookNow from './Components/PopupBookNow.jsx';
 
 import NotificationManager from './Components/NotificationManager.jsx'; 
+
+
+export const PopupContext = React.createContext();
+// Component con để xử lý đăng nhập tự động từ Google
+const AuthHandler = () => {
+    const { user, login } = useContext(AuthContext);
+    const { closePopup } = useContext(PopupContext) || {};
+    const location = useLocation();
+    const hasProcessed = useRef(false);
+
+    useEffect(() => {
+        if (hasProcessed.current) return;
+        const urlParams = new URLSearchParams(location.search);
+        const token = urlParams.get('token');
+        const userData = urlParams.get('user');
+        const error = urlParams.get('error');
+
+        if (token && userData && !user) {
+            hasProcessed.current = true;
+            const parsedUserData = JSON.parse(decodeURIComponent(userData));
+            const authUser = { ...parsedUserData, token };
+            login(authUser);
+            Cookies.set('auth_token', token, { expires: 7, path: '/' });
+            Cookies.set('user_data', JSON.stringify(parsedUserData), { expires: 7, path: '/' });
+            if (closePopup) closePopup();
+            window.location.href = '/'; // Chuyển hướng về trang chủ
+        } else if (error) {
+           console.log(error);
+            window.location.replace('/', { replace: true });
+            if (closePopup) closePopup();
+        }
+    }, [location.search, login, user]);
+
+    return null;
+};
 
 
 const App = () => {
@@ -78,9 +115,11 @@ const App = () => {
     };
 
     return (
+        <PopupContext.Provider value={{ closePopup }}>
         <AuthProvider>
             <Router>
                 <Navbar openLoginPopup={openLoginPopup} />
+                <AuthHandler /> {/* Xử lý đăng nhập tự động từ Google */}
                 <Login isPopupLogin={isPopupLogin} closePopup={closePopup} openRegisterPopup={openRegisterPopup} openForgotPassword={openForgotPassword} />
                 <Register isPopupRegister={isPopupRegister} closePopup={closePopup} openLoginPopup={openLoginPopup} />
                 <ForgotPassword closePopup={closePopup} openLoginPopup={openLoginPopup} isPopupForgotPassword={isPopupForgotPassword} />
@@ -101,6 +140,7 @@ const App = () => {
                 <Footer />
             </Router>
         </AuthProvider>
+        </PopupContext.Provider>
     );
 };
 

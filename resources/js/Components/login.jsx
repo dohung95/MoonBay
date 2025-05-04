@@ -1,14 +1,17 @@
-import React, { useState, useContext } from 'react'; // Thêm useContext
+import React, { useState, useContext, useEffect } from 'react'; // Thêm useContext
 import { Link } from 'react-router-dom'; // Thêm Link nếu dùng thẻ <a> với onClick
 import axios from 'axios'; // Thêm axios
 import '../../css/my_css/login.css';
 import { AuthContext } from './AuthContext.jsx'; // Thêm AuthContext
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Login = ({ isPopupLogin, closePopup, openRegisterPopup, openForgotPassword }) => {
     const [email, setEmail] = useState(''); // Thêm state email
     const [password, setPassword] = useState(''); // Thêm state password
     const [errors, setErrors] = useState({});
-    const { login } = useContext(AuthContext); // Lấy login từ AuthContext
+    const { login, setUser } = useContext(AuthContext); // Lấy login từ AuthContext
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const handleOverlayClick = (e) => {
         if (e.target.classList.contains("popup-overlay")) {
@@ -61,8 +64,21 @@ const Login = ({ isPopupLogin, closePopup, openRegisterPopup, openForgotPassword
             console.log("Login error:", error);
             setErrors({
                 ...newErrors,
-                general:  "Email or password is incorrect.",
+                general: "Email or password is incorrect.",
             });
+        }
+    };
+
+    // Xử lý query string từ redirect Google
+    const handleGoogleLogin = async () => {
+        try {
+            const response = await axios.get('/api/google/login');
+            if (response.status === 200 && response.data.url) {
+                window.location.href = response.data.url;
+            }
+        } catch (error) {
+            console.error('Google login error:', error.response || error);
+            window.showNotification('Failed to initiate Google login: ' + (error.response?.data?.message || error.message), 'error');
         }
     };
 
@@ -111,8 +127,12 @@ const Login = ({ isPopupLogin, closePopup, openRegisterPopup, openForgotPassword
                         <hr />
 
                         <div className="social-login">
-                            <button className="google-login-btn">Sign in with Google</button>
-                            <button className="facebook-login-btn">Sign in with Facebook</button>
+                            <button
+                                className="google-login-btn btn btn-outline-primary w-100"
+                                onClick={handleGoogleLogin}
+                            >
+                                Sign in with Google
+                            </button>
                         </div>
                     </div>
                 </div>
