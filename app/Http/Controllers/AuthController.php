@@ -7,12 +7,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
-<<<<<<< HEAD
 use Laravel\Socialite\Facades\Socialite;
-
-=======
 use App\Models\Booking;
->>>>>>> e21819e56b6ef482e2664a2b2a3acea3825ce056
 
 class AuthController extends Controller
 {
