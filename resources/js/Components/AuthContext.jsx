@@ -6,13 +6,13 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const [token, setToken] = useState(Cookies.get('token') || '');
+    const [token, setToken] = useState(Cookies.get('auth_token') || '');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         // Lấy thông tin user và token từ cookie khi component mount
         const storedUser = Cookies.get('user');
-        const storedToken = Cookies.get('token');
+        const storedToken = Cookies.get('auth_token');
 
         if (storedUser && storedToken) {
             try {
@@ -48,10 +48,10 @@ export const AuthProvider = ({ children }) => {
 
         // Lưu user và token vào cookie với thời gian sống 30 ngày
         Cookies.set('user', JSON.stringify(user), { expires: 30 }); // 30 ngày
-        Cookies.set('token', authToken, { expires: 30 }); // 30 ngày
+        Cookies.set('auth_token', authToken, { expires: 30, path: '/', sameSite: 'lax', secure: false });
 
         console.log('User stored in cookie:', Cookies.get('user')); // Debug
-        console.log('Token stored in cookie:', Cookies.get('token')); // Debug
+        console.log('Token stored in cookie:', Cookies.get('storedToken')); // Debug
         axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
     };
 
@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }) => {
 
         // Xóa cookie khi logout
         Cookies.remove('user');
-        Cookies.remove('token');
+        Cookies.remove('auth_token');
 
         delete axios.defaults.headers.common['Authorization'];
         console.log('User and token removed from cookie');

@@ -126,7 +126,7 @@ const Account = () => {
                                 </div>
                                 <div className="mb-3">
                                     <label htmlFor="email" className="form-label">Email:</label>
-                                    <input type="email" id="email" name="email" className="form-control" value={formData.email} onChange={handleChange} required />
+                                    <input type="email" id="email" name="email" className="form-control" value={formData.email} onChange={handleChange} disabled={user.provider === 'google'} required />
                                 </div>
                                 <div className="mb-3">
                                     <label htmlFor="phone" className="form-label">Phone:</label>
@@ -177,16 +177,13 @@ const Account = () => {
                                                 </div>
                                                 <div className="info-row">
                                                     <span className="info-item">
-                                                        <strong>Children:</strong> <span className="text-muted">{booking.children}</span>
+                                                        <strong>Children Ages:</strong> <span className="text-muted">{booking.children}</span>
                                                     </span>
                                                     <span className="info-item">
                                                         <strong>Member:</strong> <span className="text-muted">{booking.member}</span>
                                                     </span>
                                                 </div>
                                             </div>
-                                            <p className="card-text text-danger mt-2">
-                                                <strong>Price:</strong> <span>${booking.price}</span>
-                                            </p>
                                         </div>
                                     </div>
                                 ))}

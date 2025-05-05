@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('role')->default('user');
             $table->string('status')->default('active');
             $table->rememberToken();
+            $table->string('provider')->nullable()->after('email');
             $table->timestamps();
             $table->string('avatar')->nullable()->default('/images/Dat/avatar/default.png');
         });
@@ -52,5 +53,6 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn('avatar'); 
         });
+        $table->dropColumn('provider');
     }
 };

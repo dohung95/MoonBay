@@ -66,6 +66,19 @@ const Login = ({ isPopupLogin, closePopup, openRegisterPopup, openForgotPassword
         }
     };
 
+    // Xử lý query string từ redirect Google
+    const handleGoogleLogin = async () => {
+        try {
+            const response = await axios.get('/api/google/login');
+            if (response.status === 200 && response.data.url) {
+                window.location.href = response.data.url;
+            }
+        } catch (error) {
+            console.error('Google login error:', error.response || error);
+            window.showNotification('Failed to initiate Google login: ' + (error.response?.data?.message || error.message), 'error');
+        }
+    };
+
     return (
         <>
             {isPopupLogin && (
@@ -109,8 +122,7 @@ const Login = ({ isPopupLogin, closePopup, openRegisterPopup, openForgotPassword
                         <hr />
 
                         <div className="social-login">
-                            <button className="google-login-btn">Sign in with Google</button>
-                            <button className="facebook-login-btn">Sign in with Facebook</button>
+                            <button onClick={handleGoogleLogin} className="google-login-btn">Sign in with Google</button>
                         </div>
                     </div>
                 </div>
