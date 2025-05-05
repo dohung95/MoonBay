@@ -32,7 +32,8 @@ Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallbac
 
 Route::apiResource('users', AuthController::class);
 Route::get('/users/{id}/bookings', [BookingController::class, 'getUserBookings']);
-
+Route::post('/users/{id}/change-password', [AuthController::class, 'changePassword']);
+Route::delete('/bookings/{id}', [BookingController::class, 'destroy']);
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);

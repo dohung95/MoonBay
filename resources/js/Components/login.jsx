@@ -60,7 +60,6 @@ const Login = ({ isPopupLogin, closePopup, openRegisterPopup, openForgotPassword
                 throw new Error("Unexpected response status: " + response.message);
             }
         } catch (error) {
-            console.error("Login error:");
             console.log("Login error:", error);
             setErrors({
                 ...newErrors,

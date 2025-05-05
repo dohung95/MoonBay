@@ -99,21 +99,21 @@ const App = () => {
     };
 
     const checkLogin = () => {
-        const user = localStorage.getItem('user');
+        const user = Cookies.get('user');
         if (!user) {
             setIsPopupLogin(true);
             return false;
         }
     }
 
-    const checkLogins = () => {
-        const user = localStorage.getItem('user');
-        if (!user) {
+    const checkLogins = (roomName) => {
+        if (!checkLogin) {
             setIsPopupLogin(true);
             return false;
         }
 
         setIsPopupBookNow(true);
+        setSelectedRoomName(roomName);
     };
 
     return (

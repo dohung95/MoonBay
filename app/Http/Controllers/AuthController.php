@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\Booking;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
@@ -19,7 +20,7 @@ class AuthController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email',
                 'phone' => 'required|numeric|digits_between:10,15|unique:users,phone',
-                'password' => 'required|string|min:6',
+                'password' => 'required|string|min:8',
             ]);
 
             $user = User::create([
@@ -173,6 +174,51 @@ class AuthController extends Controller
         }
     }
 
+    public function changePassword(Request $request, $id)
+    {
+        // Lấy token từ header
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
+        // Tìm user dựa trên remember_token
+        $user = User::where('remember_token', $token)->first();
+
+        if (!$user) {
+            \Log::warning('Invalid token', ['token' => $token]);
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
+        // Kiểm tra user có quyền truy cập
+        if ($user->id != $id) {
+            \Log::warning('ChangePassword - Unauthorized access attempt', ['id' => $id, 'user_id' => $user->id]);
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        // Validation dữ liệu
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validation failed', 'errors' => $validator->errors()], 422);
+        }
+
+        // Kiểm tra mật khẩu hiện tại
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json(['message' => 'Current password is incorrect'], 422);
+        }
+
+        // Cập nhật mật khẩu mới
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return response()->json(['message' => 'Password changed successfully'], 200);
+    }
+
     // function login with google (CAUTION: This function is dangerous, do not change anything here)
     public function redirectToGoogle()
     {
@@ -236,8 +282,14 @@ class AuthController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'phone' => $user->value('phone'),
+                'token' => $user->remember_token,
+                'role' => $user->role,
+                'status' => $user->status,
                 'provider' => $user->provider,
                 'avatar' => $user->avatar,
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at,
             ];
 
             // Redirect về frontend với token và user trong query string
@@ -255,5 +307,7 @@ class AuthController extends Controller
             return redirect($redirectUrl);
         }
     }
+
+    
 
 }

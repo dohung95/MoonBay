@@ -42,8 +42,8 @@
 
 /* Khối nội dung */
 .container_account .card {
-  max-width: 900px; /* Tăng chiều rộng tối đa để phù hợp với layout 2 cột */
-  width: 100%; /* Chiều rộng đầy đủ */
+  width: 80%; /* Chiều rộng đầy đủ */
+  height: auto; /* Chính xác dụng tố khóa */
   z-index: 10; /* Đảm bảo nội dung nằm trên nền mờ */
 }
 

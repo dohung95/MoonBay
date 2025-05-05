@@ -50,8 +50,8 @@ export const AuthProvider = ({ children }) => {
         Cookies.set('user', JSON.stringify(user), { expires: 30 }); // 30 ngày
         Cookies.set('auth_token', authToken, { expires: 30, path: '/', sameSite: 'lax', secure: false });
 
-        console.log('User stored in cookie:', Cookies.get('user')); // Debug
-        console.log('Token stored in cookie:', Cookies.get('storedToken')); // Debug
+        // console.log('User stored in cookie:', Cookies.get('user')); // Debug
+        // console.log('Token stored in cookie:', Cookies.get('storedToken')); // Debug
         axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
     };
 
