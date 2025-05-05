@@ -67,6 +67,7 @@ const App = () => {
     const [isPopupRegister, setIsPopupRegister] = useState(false);
     const [isPopupForgotPassword, setIsPopupForgotPassword] = useState(false);
     const [isPopupBookNow, setIsPopupBookNow] = useState(false);
+    const [selectedRoomName, setSelectedRoomName] = useState('');
 
     // Mở popup đăng nhập
     const openLoginPopup = () => {
