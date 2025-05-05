@@ -89,3 +89,13 @@
   border: #e09d38 solid 2px;
   cursor: pointer;
 }
+.booking_footer_Hung{
+  color: black;
+  font-size: 2.7vw;
+  border-radius: 2px;
+}
+.moonbay_footer_Hung{
+  padding-bottom: 2%;
+  color: white;
+  font-size: 3.2vw;
+}

@@ -11,7 +11,7 @@ const Footer = () => {
     }
     return (
         <>
-            <div style={{ backgroundColor: '#04091e', color: '#6c6c6e', padding: '2% 0' }}>
+            <div style={{ backgroundColor: '#04091e', color: '#6c6c6e', padding: '2% 0 0 0' }}>
                 <div className='row' style={{ padding: '0 10%' }}>
                     <div className='col-md-6 row'>
                         <div className='col-md-2' style={{ padding: '1% 0 0 0' }}>
@@ -23,7 +23,9 @@ const Footer = () => {
                             />
                         </div>
                         <div className='col-md-10'>
-                            <h1 style={{ color: 'white' }}><b>MOONBAY HOTELS</b></h1>
+                            <div className='moonbay_footer_Hung'>
+                                <b>MOONBAY HOTELS</b>
+                            </div>
                             Operation: <i>Monday to Sunday</i><br />
                             Working hours: <i>7:00 AM - 10:00 PM</i><br /> <br />
                         </div>
@@ -37,7 +39,7 @@ const Footer = () => {
                                 </svg></span><span class="arrow slow"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-right-fill" viewBox="0 0 16 16">
                                     <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z" />
                                 </svg></span>&nbsp;
-                                <Link to="/booking#booknow" className='btn btn-warning' style={{ color: 'black', fontSize: '3vw', borderRadius: "2px" }}>
+                                <Link to="/booking#booknow" className='btn btn-warning booking_footer_Hung' >
                                     &nbsp;BOOKING NOW&nbsp;
                                 </Link>
                                 &nbsp;
@@ -56,7 +58,7 @@ const Footer = () => {
 
                 <div className='footer-setup'>
                     <div className='Contact_Hung'>
-                        <div style={{ padding: "5%" }}><a href="tel:+84986555666"><img src="/images/Hung/hotline.jpg" alt="" style={{height:'8vh',width:'8vh'}}/></a></div>
+                        <div style={{ padding: "5%" }}><a href="tel:+84986555666"><img src="/images/Hung/hotline.jpg" alt="" style={{ height: '8vh', width: '8vh' }} /></a></div>
                         <div style={{ padding: "5%" }}><a href="https://www.facebook.com/messages/t/686987754487740?locale=vi_VN" target="_blank"> <img src="/images/Hung/mess.png" alt="" /></a></div>
                         <div style={{ padding: "5%" }}><a href="https://zalo.me/0986555666" target="_blank"><img src="/images/Hung/zalo.png" alt="" /></a></div>
                         <div style={{ padding: "5%" }}><a href='https://youtube.com/@moonbayhotels?si=M7G5aIfnOg0kOMDV' target='_blank'><img src="/images/Hung/youtube.jpg" alt="" /></a></div>
@@ -171,7 +173,7 @@ const Footer = () => {
                                 <h3 style={{ color: "white" }}>About Agency</h3><br />
                             </div>
                             <div >
-                                Moonbay Hotel is committed to delivering a refined, comfortable, and nature-inspired stay, where every moment is complete and unforgettable.
+                                Moonbay Hotel is committed to delivering a refined, comfortable, and nature-inspired stay, where every moment is complete and unforgettable. <br /><br />
                             </div>
                         </div>
 

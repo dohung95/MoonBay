@@ -14,6 +14,7 @@ import Contact from './Components/Contact.jsx';
 import ServicePage from './Components/Services.jsx';
 
 import Footer from './Components/Footer.jsx';
+import Back_Top from './Components/Back_Top.jsx';
 
 import Booking from './Components/booking.jsx';
 import Login from './Components/login.jsx';
@@ -138,6 +139,7 @@ const App = () => {
                     <Route path="*" element={<Home />} />
                 </Routes>
                 <Footer />
+                <Back_Top />
             </Router>
         </AuthProvider>
         </PopupContext.Provider>
