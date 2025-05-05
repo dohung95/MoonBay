@@ -38,3 +38,4 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/ForgotPassword', [AuthController::class, 'ForgotPassword']);
 Route::post('/booking', [BookingController::class, 'booking']);
+

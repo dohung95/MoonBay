@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ReactDOM from 'react-dom/client';
-import '../css/App.css';
+import { useNavigate, useLocation } from 'react-router-dom';
+import Cookies from 'js-cookie';
+
 import Navbar from './Components/Navbar.jsx';
 
 import Home from './Components/Home.jsx';
@@ -12,6 +14,7 @@ import Contact from './Components/Contact.jsx';
 import ServicePage from './Components/Services.jsx';
 
 import Footer from './Components/Footer.jsx';
+import Back_Top from './Components/Back_Top.jsx';
 
 import Booking from './Components/booking.jsx';
 import Login from './Components/login.jsx';
@@ -22,9 +25,6 @@ import ForgotPassword from './Components/ForgotPassword.jsx';
 import PopupBookNow from './Components/PopupBookNow.jsx';
 
 import NotificationManager from './Components/NotificationManager.jsx'; 
-import Back_top from './Components/Back_top.jsx';
-
-
 
 
 // CAUTION: This function is dangerous, do not change anything here
@@ -64,12 +64,10 @@ const AuthHandler = () => {
 
 
 const App = () => {
-
     const [isPopupLogin, setIsPopupLogin] = useState(false);
     const [isPopupRegister, setIsPopupRegister] = useState(false);
     const [isPopupForgotPassword, setIsPopupForgotPassword] = useState(false);
     const [isPopupBookNow, setIsPopupBookNow] = useState(false);
-    const [selectedRoomName, setSelectedRoomName] = useState(''); // State để lưu roomName
 
     // Mở popup đăng nhập
     const openLoginPopup = () => {
@@ -98,25 +96,24 @@ const App = () => {
         setIsPopupRegister(false);
         setIsPopupForgotPassword(false);
         setIsPopupBookNow(false);
-        setSelectedRoomName(''); // Reset roomName khi đóng popup
     };
 
     const checkLogin = () => {
-        const user = document.cookie.split('; ').find(row => row.startsWith('user='));
+        const user = localStorage.getItem('user');
         if (!user) {
             setIsPopupLogin(true);
             return false;
         }
     }
 
-    const checkLogins = (roomName) => {
-        const user = document.cookie.split('; ').find(row => row.startsWith('user='));
+    const checkLogins = () => {
+        const user = localStorage.getItem('user');
         if (!user) {
             setIsPopupLogin(true);
-            return;
+            return false;
         }
+
         setIsPopupBookNow(true);
-        setSelectedRoomName(roomName); // Lưu roomName
     };
 
     return (
@@ -124,6 +121,7 @@ const App = () => {
         <AuthProvider>
             <Router>
                 <Navbar openLoginPopup={openLoginPopup} />
+                <AuthHandler /> {/* Xử lý đăng nhập tự động từ Google */}
                 <Login isPopupLogin={isPopupLogin} closePopup={closePopup} openRegisterPopup={openRegisterPopup} openForgotPassword={openForgotPassword} />
                 <Register isPopupRegister={isPopupRegister} closePopup={closePopup} openLoginPopup={openLoginPopup} />
                 <ForgotPassword closePopup={closePopup} openLoginPopup={openLoginPopup} isPopupForgotPassword={isPopupForgotPassword} />
@@ -143,7 +141,7 @@ const App = () => {
                     <Route path="*" element={<Home />} />
                 </Routes>
                 <Footer />
-                <Back_top />
+                <Back_Top />
             </Router>
         </AuthProvider>
         </PopupContext.Provider>

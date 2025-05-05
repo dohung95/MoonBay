@@ -11,8 +11,8 @@ const Home = () => {
                 <div className="content-center">
                     <div className="container">
                         <div className="title-brand">
-                            <h3>Away from monotonous life</h3>
-                            <h1 className="presentation-title">Relax Your Mind</h1>
+                            <p style={{fontSize:'2.5vw'}}><b>Away from monotonous life</b></p>
+                            <p className='presentation-title'>Relax Your Mind</p>
                             <div className="fog-low">
                                 <img src="./images/fog-low.png" alt="" />
                             </div>

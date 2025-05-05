@@ -1,14 +1,17 @@
-import React, { useState, useContext } from 'react'; // Thêm useContext
+import React, { useState, useContext, useEffect } from 'react'; // Thêm useContext
 import { Link } from 'react-router-dom'; // Thêm Link nếu dùng thẻ <a> với onClick
 import axios from 'axios'; // Thêm axios
 import '../../css/my_css/login.css';
 import { AuthContext } from './AuthContext.jsx'; // Thêm AuthContext
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Login = ({ isPopupLogin, closePopup, openRegisterPopup, openForgotPassword }) => {
     const [email, setEmail] = useState(''); // Thêm state email
     const [password, setPassword] = useState(''); // Thêm state password
     const [errors, setErrors] = useState({});
-    const { login } = useContext(AuthContext); // Lấy login từ AuthContext
+    const { login, setUser } = useContext(AuthContext); // Lấy login từ AuthContext
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const handleOverlayClick = (e) => {
         if (e.target.classList.contains("popup-overlay")) {
@@ -61,7 +64,7 @@ const Login = ({ isPopupLogin, closePopup, openRegisterPopup, openForgotPassword
             console.log("Login error:", error);
             setErrors({
                 ...newErrors,
-                general:  "Email or password is incorrect.",
+                general: "Email or password is incorrect.",
             });
         }
     };

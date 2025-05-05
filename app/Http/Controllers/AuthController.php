@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
-use App\Models\Booking;
 use Laravel\Socialite\Facades\Socialite;
+use App\Models\Booking;
 
 class AuthController extends Controller
 {
@@ -173,7 +173,6 @@ class AuthController extends Controller
         }
     }
 
-
     // function login with google (CAUTION: This function is dangerous, do not change anything here)
     public function redirectToGoogle()
     {
@@ -205,7 +204,6 @@ class AuthController extends Controller
 
     public function handleGoogleCallback(Request $request)
     {
-        
         try {
             Log::info('Google callback received', ['request' => $request->all()]);
             $googleUser = Socialite::driver('google')

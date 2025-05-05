@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->string('phone')->unique();
+            $table->string('phone')->unique()->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('role')->default('user');
@@ -23,13 +23,7 @@ return new class extends Migration
             $table->rememberToken();
             $table->string('provider')->nullable()->after('email');
             $table->timestamps();
-            $table->string('avatar')->nullable()->default('/images/Dat/avatar/default.png');
-        });
-
-        Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
+            $table->string('avatar')->default('/images/Dat/avatar/default.png');
         });
 
         Schema::create('sessions', function (Blueprint $table) {
