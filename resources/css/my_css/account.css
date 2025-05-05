@@ -26,25 +26,22 @@
 
 
 
+.card {
+  border: none !important;
+}
 
 /* Nền mờ tối */
 .container_account {
   display: flex;
   justify-content: center; /* Căn giữa theo chiều ngang */
   align-items: center; /* Căn giữa theo chiều dọc */
-  min-height: 100vh;
-  background-color: rgba(0, 0, 0, 0.7);
+  min-height: 80vh;
   padding: 20px;
   box-sizing: border-box;
 }
 
 /* Khối nội dung */
 .container_account .card {
-  background-color: #fff; /* Màu nền trắng */
-  border: 1px solid #ddd; /* Đường viền nhạt */
-  border-radius: 50px; /* Bo góc */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Hiệu ứng đổ bóng */
-  padding: 20px; /* Khoảng cách bên trong */
   max-width: 900px; /* Tăng chiều rộng tối đa để phù hợp với layout 2 cột */
   width: 100%; /* Chiều rộng đầy đủ */
   z-index: 10; /* Đảm bảo nội dung nằm trên nền mờ */
