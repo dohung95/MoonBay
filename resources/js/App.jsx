@@ -28,7 +28,6 @@ import NotificationManager from './Components/NotificationManager.jsx';
 
 
 // CAUTION: This function is dangerous, do not change anything here
-import { useNavigate, useLocation } from 'react-router-dom';
 export const PopupContext = React.createContext();
 const AuthHandler = () => {
     const { user, login } = useContext(AuthContext);
