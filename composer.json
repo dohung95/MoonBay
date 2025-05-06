@@ -11,6 +11,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.20",
         "laravel/tinker": "^2.8",
+        "nesbot/carbon": "^3.9",
         "symfony/console": "^7.0"
     },
     "require-dev": {

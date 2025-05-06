@@ -31,7 +31,7 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
         const day = String(date.getDate()).padStart(2, '0');
         const hours = String(date.getHours()).padStart(2, '0');
         const minutes = String(date.getMinutes()).padStart(2, '0');
-        return `${day}-${month}-${year}T${hours}:${minutes}`;
+        return `${day}-${month}-${year} ${hours}:${minutes}`;
     };
 
     // Giá trị min cho checkin (ngày kế tiếp)
@@ -56,7 +56,7 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
 
     const handleBooking = async (e) => {
         e.preventDefault();
-
+        
         if (!user.id) {
             checkLogin();
             return;
@@ -105,11 +105,11 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
                 window.showNotification("Booking created successfully!", "success");
             }
         } catch (error) {
-
             console.error('Error creating booking:', error.response || error);
+            window.showNotification("Failed to create booking", "error");
             setTimeout(() => {
-                window.showNotification("Failed to create booking", "error");
-            }, 0);
+                window.showNotification("Pls add the phone number if you don't have", "error");
+            }, 4000);
         }
     };
 

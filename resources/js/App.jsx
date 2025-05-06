@@ -19,7 +19,7 @@ import Back_Top from './Components/Back_Top.jsx';
 import Booking from './Components/booking.jsx';
 import Login from './Components/login.jsx';
 import Register from './Components/Register.jsx';
-import { AuthProvider, AuthContext } from './Components/AuthContext.jsx';
+import { AuthContext, AuthProvider } from './Components/AuthContext.jsx';
 import Account from './Components/account.jsx';
 import ForgotPassword from './Components/ForgotPassword.jsx';
 import PopupBookNow from './Components/PopupBookNow.jsx';
@@ -27,12 +27,13 @@ import PopupBookNow from './Components/PopupBookNow.jsx';
 import NotificationManager from './Components/NotificationManager.jsx'; 
 
 
+// CAUTION: This function is dangerous, do not change anything here
 export const PopupContext = React.createContext();
-// Component con để xử lý đăng nhập tự động từ Google
 const AuthHandler = () => {
     const { user, login } = useContext(AuthContext);
     const { closePopup } = useContext(PopupContext) || {};
     const location = useLocation();
+    const navigate = useNavigate();
     const hasProcessed = useRef(false);
 
     useEffect(() => {
@@ -46,20 +47,19 @@ const AuthHandler = () => {
             hasProcessed.current = true;
             const parsedUserData = JSON.parse(decodeURIComponent(userData));
             const authUser = { ...parsedUserData, token };
-            login(authUser);
-            Cookies.set('auth_token', token, { expires: 7, path: '/' });
-            Cookies.set('user_data', JSON.stringify(parsedUserData), { expires: 7, path: '/' });
-            if (closePopup) closePopup();
-            window.location.href = '/'; // Chuyển hướng về trang chủ
+            login(authUser, token);
+            window.location.href = '/';
         } else if (error) {
-           console.log(error);
-            window.location.replace('/', { replace: true });
+            console.log('Error from backend:', error);
+            navigate('/', { replace: true });
             if (closePopup) closePopup();
         }
-    }, [location.search, login, user]);
+    }, [location.search, login, user, navigate, closePopup]);
 
     return null;
 };
+// --------------------------------------------------------------------------------------------
+
 
 
 const App = () => {
@@ -67,6 +67,7 @@ const App = () => {
     const [isPopupRegister, setIsPopupRegister] = useState(false);
     const [isPopupForgotPassword, setIsPopupForgotPassword] = useState(false);
     const [isPopupBookNow, setIsPopupBookNow] = useState(false);
+    const [selectedRoomName, setSelectedRoomName] = useState('');
 
     // Mở popup đăng nhập
     const openLoginPopup = () => {
@@ -98,21 +99,21 @@ const App = () => {
     };
 
     const checkLogin = () => {
-        const user = localStorage.getItem('user');
+        const user = Cookies.get('user');
         if (!user) {
             setIsPopupLogin(true);
             return false;
         }
     }
 
-    const checkLogins = () => {
-        const user = localStorage.getItem('user');
-        if (!user) {
+    const checkLogins = (roomName) => {
+        if (!checkLogin) {
             setIsPopupLogin(true);
             return false;
         }
 
         setIsPopupBookNow(true);
+        setSelectedRoomName(roomName);
     };
 
     return (
@@ -124,7 +125,8 @@ const App = () => {
                 <Login isPopupLogin={isPopupLogin} closePopup={closePopup} openRegisterPopup={openRegisterPopup} openForgotPassword={openForgotPassword} />
                 <Register isPopupRegister={isPopupRegister} closePopup={closePopup} openLoginPopup={openLoginPopup} />
                 <ForgotPassword closePopup={closePopup} openLoginPopup={openLoginPopup} isPopupForgotPassword={isPopupForgotPassword} />
-                <PopupBookNow isPopupBookNow={isPopupBookNow} closePopup={closePopup} />
+                <PopupBookNow isPopupBookNow={isPopupBookNow} closePopup={closePopup} selectedRoomName={selectedRoomName}/>
+                <AuthHandler />
                 <NotificationManager />
                 <Routes>
                     <Route path="/" element={<Home />} />

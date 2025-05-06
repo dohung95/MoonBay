@@ -60,7 +60,6 @@ const Login = ({ isPopupLogin, closePopup, openRegisterPopup, openForgotPassword
                 throw new Error("Unexpected response status: " + response.message);
             }
         } catch (error) {
-            console.error("Login error:");
             console.log("Login error:", error);
             setErrors({
                 ...newErrors,
@@ -125,12 +124,7 @@ const Login = ({ isPopupLogin, closePopup, openRegisterPopup, openForgotPassword
                         <hr />
 
                         <div className="social-login">
-                            <button
-                                className="google-login-btn btn btn-outline-primary w-100"
-                                onClick={handleGoogleLogin}
-                            >
-                                Sign in with Google
-                            </button>
+                            <button onClick={handleGoogleLogin} className="google-login-btn">Sign in with Google</button>
                         </div>
                     </div>
                 </div>

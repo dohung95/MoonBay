@@ -21,16 +21,10 @@ return new class extends Migration
             $table->string('role')->default('user');
             $table->string('status')->default('active');
             $table->rememberToken();
-            $table->string('google_id')->nullable();
+            $table->string('provider')->nullable()->after('email');
             $table->timestamps();
             $table->string('avatar')->default('/images/Dat/avatar/default.png');
         });
-
-        // Schema::create('password_reset_tokens', function (Blueprint $table) {
-        //     $table->string('email')->primary();
-        //     $table->string('token');
-        //     $table->timestamp('created_at')->nullable();
-        // });
 
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
@@ -53,5 +47,6 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn('avatar'); 
         });
+        $table->dropColumn('provider');
     }
 };
