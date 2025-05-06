@@ -6,7 +6,7 @@ use App\Http\Controllers\RoomController;
 use App\Http\Controllers\HotelController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingController;
-
+use App\Http\Controllers\ContactController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,3 +40,4 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/ForgotPassword', [AuthController::class, 'ForgotPassword']);
 Route::post('/booking', [BookingController::class, 'booking']);
 
+Route::post('/contact', [App\Http\Controllers\ContactController::class, 'send']);
