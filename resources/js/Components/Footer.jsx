@@ -17,8 +17,8 @@ const Footer = () => {
                         <div className='col-md-2' style={{ padding: '1% 0 0 0' }}>
                             <img
                                 src="/images/logo/moonbaylogo.png"
-                                width="100vw"
-                                height="100vw"
+                                width="80vw"
+                                height="80vw"
                                 className="d-inline-block align-middle rounded-circle"
                             />
                         </div>
@@ -31,25 +31,7 @@ const Footer = () => {
                         </div>
                     </div>
                     <div className='col-md-6'>
-                        <div align='center'>
-                            <div style={{ padding: '3% 0 0 0 ' }}>
-                                <img src="" alt="" />
-                                <span class="arrow fast"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-caret-right-fill" viewBox="0 0 16 16">
-                                    <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z" />
-                                </svg></span><span class="arrow slow"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-right-fill" viewBox="0 0 16 16">
-                                    <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z" />
-                                </svg></span>&nbsp;
-                                <Link to="/booking#booknow" className='btn btn-warning booking_footer_Hung' >
-                                    &nbsp;BOOKING NOW&nbsp;
-                                </Link>
-                                &nbsp;
-                                <span class="arrow slow"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left-fill" viewBox="0 0 16 16">
-                                    <path d="m3.86 8.753 5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z" />
-                                </svg></span><span class="arrow fast"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-caret-left-fill" viewBox="0 0 16 16">
-                                    <path d="m3.86 8.753 5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z" />
-                                </svg></span>
-                            </div>
-                        </div>
+                        
                         <br />
                     </div>
 
@@ -58,16 +40,16 @@ const Footer = () => {
 
                 <div className='footer-setup'>
                     <div className='Contact_Hung'>
-                        <div style={{ padding: "5%" }}><a href="tel:+84986555666"><img src="/images/Hung/hotline.jpg" alt="" style={{ height: '8vh', width: '8vh' }} /></a></div>
+                        <div style={{ padding: "5%" }}><a href="tel:+84328866459"><img src="/images/Hung/hotline.jpg" alt="" style={{ height: '8vh', width: '8vh' }} /></a></div>
                         <div style={{ padding: "5%" }}><a href="https://www.facebook.com/messages/t/686987754487740?locale=vi_VN" target="_blank"> <img src="/images/Hung/mess.png" alt="" /></a></div>
-                        <div style={{ padding: "5%" }}><a href="https://zalo.me/0986555666" target="_blank"><img src="/images/Hung/zalo.png" alt="" /></a></div>
+                        <div style={{ padding: "5%" }}><a href="https://zalo.me/0328866459" target="_blank"><img src="/images/Hung/zalo.png" alt="" /></a></div>
                         <div style={{ padding: "5%" }}><a href='https://youtube.com/@moonbayhotels?si=M7G5aIfnOg0kOMDV' target='_blank'><img src="/images/Hung/youtube.jpg" alt="" /></a></div>
                     </div>
                     <div className='row' style={{ padding: '0 10%' }}>
                         <div className='col-md-3 Our_information_Hung'>
                             <h3 style={{ color: "white" }}>Our information</h3><br />
                             <b> Address:</b> <a href="https://www.google.com/maps/d/embed?mid=1FTMogPpDF4RFkkE6-idbOgnK0l6Xq5Y&ehbc=2E312F" target='blank'>Nam Du Island, Kien Giang Province, Vietnam. </a><br />
-                            <b>Phone:</b> <a href="tel:+84986555666">+84 (0) 986 555 666</a><br />
+                            <b>Phone:</b> <a href="tel:+84328866459">+84 (0) 986 555 666</a><br />
                             <b>Email:</b> <a href="mailto:info@moonbay.vn?subject=I%20need%20help&body=I%20need%20help%20with...">Info@moonbay.vn</a><br /><br />
                         </div>
 

@@ -1,11 +1,9 @@
-
 import React, { useState } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Sitemapmini from './sitemapmini';
 import '../../css/Contact.css';
 import 'linearicons/dist/web-font/style.css';
-
 
 const Contact = () => {
   const sitemap = [
@@ -24,37 +22,50 @@ const Contact = () => {
   const [formError, setFormError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
   const contactSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
-  
+    setFormError(false);
+    
     try {
-      const res = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: formData,
-      });
-  
-      if (!res.ok) {
-        const error = await res.text();
-        setFormError(true);
-        setErrorMessage('Lỗi gửi: ' + error);
-        return;
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+      const headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+      
+      if (csrfToken) {
+        headers['X-CSRF-TOKEN'] = csrfToken;
       }
-  
-      const result = await res.json();
-      if (result.success) {
+      
+      const response = await axios.post('/api/contact', formData, { headers });
+      
+      if (response.data.success) {
         setFormSubmitted(true);
-        e.target.reset();
+        setFormData({
+          name: '',
+          email: '',
+          subject: '',
+          message: ''
+        });
+      } else {
+        setFormError(true);
+        setErrorMessage(response.data.message || 'Failed to send message. Please try again.');
       }
-    } catch (err) {
+    } catch (error) {
       setFormError(true);
-      setErrorMessage('Lỗi kết nối máy chủ: ' + err.message);
+      setErrorMessage('An error occurred while sending your message. Please try again later.');
+      console.error('Error sending contact form:', error);
     }
   };
-  
+
   return (
     <>
       <div className="banner">
@@ -133,6 +144,8 @@ const Contact = () => {
                         name="name" 
                         placeholder="Enter your name" 
                         required 
+                        value={formData.name}
+                        onChange={handleChange}
                       />
                     </div>
                     
@@ -144,6 +157,8 @@ const Contact = () => {
                         name="email" 
                         placeholder="Enter your email address" 
                         required 
+                        value={formData.email}
+                        onChange={handleChange}
                       />
                     </div>
                   </div>
@@ -156,6 +171,8 @@ const Contact = () => {
                       name="subject" 
                       placeholder="Enter the subject of your message" 
                       required 
+                      value={formData.subject}
+                      onChange={handleChange}
                     />
                   </div>
                   
@@ -167,6 +184,8 @@ const Contact = () => {
                       rows="5" 
                       placeholder="Enter the content of your message" 
                       required
+                      value={formData.message}
+                      onChange={handleChange}
                     ></textarea>
                   </div>
                   
