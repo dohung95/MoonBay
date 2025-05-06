@@ -26,7 +26,6 @@ import PopupBookNow from './Components/PopupBookNow.jsx';
 
 import NotificationManager from './Components/NotificationManager.jsx'; 
 
-//frefefe
 // CAUTION: This function is dangerous, do not change anything here
 export const PopupContext = React.createContext();
 const AuthHandler = () => {
