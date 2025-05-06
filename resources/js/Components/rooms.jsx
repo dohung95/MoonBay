@@ -6,7 +6,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import Sitemapmini from './sitemapmini';
 import { Link } from 'react-router-dom';
 
-const Rooms = () => {
+const Rooms = ({ checkLogins }) => {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const roomRefs = useRef({});
@@ -34,8 +34,8 @@ const Rooms = () => {
     <>
       <Banner title="Rooms & Suites" />
       <section className="container">
-      <Sitemapmini items={sitemap} />
-      <div className="room-nav-horizontal mb-5">
+        <Sitemapmini items={sitemap} />
+        <div className="room-nav-horizontal mb-5">
           {loading ? (
             <span>Loading...</span>
           ) : (
@@ -68,9 +68,8 @@ const Rooms = () => {
               <div
                 key={room.id}
                 ref={(el) => (roomRefs.current[room.id] = el)}
-                className={`room-item d-flex align-items-center mb-5 ${
-                  index % 2 === 0 ? '' : 'flex-row-reverse'
-                }`}
+                className={`room-item d-flex align-items-center mb-5 ${index % 2 === 0 ? '' : 'flex-row-reverse'
+                  }`}
               >
                 <div className="room-image">
                   <img src={room.image} alt={room.name} />
@@ -81,9 +80,15 @@ const Rooms = () => {
                     <i className="bi bi-people-fill me-1"></i> {room.capacity} guests
                   </p>
                   <p>{room.description}</p>
-                  <Link to="/booking#booknow" className="btn btn-primary mt-3">
+                  {/* <Link to="/booking#booknow" className="btn btn-primary mt-3">
                     Book Now
-                  </Link>
+                  </Link> */}
+                  <button
+                    onClick={() => checkLogins(room.name)}
+                    className="btn btn-primary mt-3 rounded hover:bg-blue-700 transition"
+                  >
+                    Book Now
+                  </button>
                 </div>
               </div>
             ))

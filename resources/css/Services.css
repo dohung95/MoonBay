@@ -427,3 +427,181 @@ h6 {
   line-height: 1.6;
   margin-bottom: 0;
 }
+
+/* Service Navigation */
+.service-nav-horizontal {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  padding: 10px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.service-nav-horizontal .nav-item {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: #333;
+  cursor: pointer;
+  padding: 5px 10px;
+  transition: color 0.3s ease;
+}
+
+.service-nav-horizontal .nav-item:hover {
+  color: #007bff;
+}
+
+/* Service List */
+.service-list {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.service-item {
+  transition: transform 0.3s ease;
+}
+
+.service-item:hover {
+  transform: translateY(-5px);
+}
+
+.service-image {
+  flex: 0 0 50%;
+  padding: 10px;
+}
+
+.service-image img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.service-info {
+  flex: 0 0 50%;
+  padding: 20px;
+}
+
+.service-info h5 {
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #333;
+  text-transform: uppercase;
+}
+
+.service-info p {
+  color: #666;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.service-info .text-muted {
+  font-size: 0.9rem;
+  color: #888;
+}
+
+/* Service Popup */
+.service-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.service-popup-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.service-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.service-popup-header h2 {
+  margin: 0;
+  color: #333;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+}
+
+.service-popup-body {
+  display: flex;
+  gap: 20px;
+}
+
+.service-popup-image {
+  flex: 0 0 40%;
+}
+
+.service-popup-image img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.service-popup-description {
+  flex: 0 0 60%;
+}
+
+.service-details-extra,
+.service-pricing,
+.service-hours {
+  margin-top: 20px;
+}
+
+.service-pricing ul {
+  list-style: none;
+  padding: 0;
+}
+
+.service-pricing li {
+  margin-bottom: 5px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .service-item {
+    flex-direction: column !important;
+  }
+  
+  .service-image,
+  .service-info {
+    flex: 0 0 100%;
+  }
+  
+  .service-image img {
+    height: 250px;
+  }
+
+  .service-popup-body {
+    flex-direction: column;
+  }
+
+  .service-popup-image,
+  .service-popup-description {
+    flex: 0 0 100%;
+  }
+}

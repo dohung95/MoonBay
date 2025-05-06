@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Mail;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,3 +17,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/{any}', function () {
     return view('app');
 })->where('any', '.*');
+
+
+Route::get('/test-mail', function() {
+    Mail::raw('Test email from Laravel', function($message) {
+        $message->to('ntn24498@gmail.com')->subject('Test Email');
+    });
+    return 'Email đã được gửi!';
+});

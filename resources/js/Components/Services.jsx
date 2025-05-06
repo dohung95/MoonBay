@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../css/Services.css';
 import Sitemapmini from './sitemapmini';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import Banner from './banner';
 
 // Component Popup cho dịch vụ
 const ServicePopup = ({ service, onClose }) => {
@@ -49,17 +50,22 @@ const ServicePopup = ({ service, onClose }) => {
 };
 
 const Services = () => {
-  // State để theo dõi service đang được chọn để hiển thị trong popup
   const [selectedService, setSelectedService] = useState(null);
+  const serviceRefs = useRef({});
   
-  // Hàm để mở popup với service được chọn
   const openServicePopup = (service) => {
     setSelectedService(service);
   };
   
-  // Hàm để đóng popup
   const closeServicePopup = () => {
     setSelectedService(null);
+  };
+
+  const scrollToService = (serviceId) => {
+    const serviceElement = serviceRefs.current[serviceId];
+    if (serviceElement) {
+      serviceElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   const sitemap = [
@@ -69,77 +75,52 @@ const Services = () => {
   
   return (
     <>
-      <div className="banner">
-        <img src="./images/banner/about_banner.jpg" alt="Banner" className='banner-img' />
-        <div className='banner-text anima-text'>
-          <h1>Our Services for you</h1>
-        </div>
-      </div>
-      <div className="container">
+      <Banner title="Our Services" />
+      <section className="container">
         <Sitemapmini items={sitemap} />
-        <div className="services_area">
-            <div className="container">
-                <div className="d-flex flex-column justify-content-center align-items-center mb-5">
-                  <h1 className="">Our Services</h1>
-                  <p>Immerse Yourself in Relax</p>
-                </div>
-                
-                {/* Phần giới thiệu dịch vụ trong 3 dòng */}
-                <div className="service-intro-container mb-5">
-                  <div className="row">
-                    <div className="col-md-4">
-                      <div className="service-intro-box">
-                        <div className="service-intro-icon">
-                          <i className="fas fa-spa"></i>
-                        </div>
-                        <h3>Wellness & Relaxation</h3>
-                        <p>Discover our premium spa treatments and fitness facilities designed to rejuvenate your body and mind.</p>
-                      </div>
-                    </div>
-                    <div className="col-md-4">
-                      <div className="service-intro-box">
-                        <div className="service-intro-icon">
-                          <i className="fas fa-utensils"></i>
-                        </div>
-                        <h3>Dining & Entertainment</h3>
-                        <p>Indulge in exquisite cuisines at our buffet and experience thrilling nightlife at our bar and casino.</p>
-                      </div>
-                    </div>
-                    <div className="col-md-4">
-                      <div className="service-intro-box">
-                        <div className="service-intro-icon">
-                          <i className="fas fa-concierge-bell"></i>
-                        </div>
-                        <h3>Convenience & Comfort</h3>
-                        <p>Enjoy our premium shuttle services and world-class amenities for a truly unforgettable stay.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-            </div>  
-          <div className="row p-3">
-            {services.map((service, index) => (
-              <div key={index} className="services_item col-lg-6">
-                <div className="blog_post bg-white shadow-lg rounded-3 overflow-hidden" >
-                  <img src={service.image} alt={service.title} className="w-full h-64 object-cover" />
-                  <div className="service_details p-4">
-                    <h2 className="text-xl font-bold mb-2">{service.title}</h2>
-                    <p className="text-gray-600 mb-4 description-long">{service.description}</p>
-                    <a href="#" className="view_btn button_hover" onClick={(e) => {
-                      e.preventDefault();
-                      openServicePopup(service);
-                    }}>
-                      View More
-                    </a>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="service-nav-horizontal mb-5">
+          {services.map((service, index) => (
+            <button
+              key={index}
+              className="nav-item"
+              onClick={() => scrollToService(index)}
+            >
+              <b>{service.title}</b>
+            </button>
+          ))}
         </div>
-      </div>
-      
-      {/* Hiển thị Popup khi có dịch vụ được chọn */}
+
+        <h2 className="text-center mb-5">Services</h2>
+        <div className="service-list">
+          {services.map((service, index) => (
+            <div
+              key={index}
+              ref={(el) => (serviceRefs.current[index] = el)}
+              className={`service-item d-flex align-items-center mb-5 ${
+                index % 2 === 0 ? '' : 'flex-row-reverse'
+              }`}
+            >
+              <div className="service-image">
+                <img src={service.image} alt={service.title} />
+              </div>
+              <div className="service-info p-4">
+                <h5 className="mb-3">{service.title}</h5>
+                <p className="text-muted mb-3">
+                  <i className="fas fa-clock me-1"></i> {service.workingHours}
+                </p>
+                <p>{service.description}</p>
+                <button 
+                  className="btn btn-primary mt-3"
+                  onClick={() => openServicePopup(service)}
+                >
+                  View Details
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {selectedService && (
         <ServicePopup service={selectedService} onClose={closeServicePopup} />
       )}
@@ -166,7 +147,7 @@ const services = [
   {
     title: "Swimming Pool",
     image: "./images/Long/Services/Swimming Pool.jpg",
-    description: "Discover a one-of-a-kind experience at the city’s largest rooftop infinity pool – where crystal-blue waters meet breathtaking skyline views in the heart of the city.",
+    description: "Discover a one-of-a-kind experience at the city's largest rooftop infinity pool – where crystal-blue waters meet breathtaking skyline views in the heart of the city.",
     detailedDescription:
       "Our infinity pool offers an unparalleled swimming experience with panoramic views of the city skyline. The pool is temperature-controlled for your comfort year-round and features underwater music, comfortable loungers, and poolside service.",
     pricing: [
