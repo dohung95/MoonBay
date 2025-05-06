@@ -21,8 +21,8 @@ return new class extends Migration
             $table->integer('number_of_rooms'); // Số lượng phòng
             $table->integer('children')->default(0); // Số trẻ em
             $table->integer('member'); // Số người lớn
-            $table->date('checkin_date'); // Ngày check-in
-            $table->date('checkout_date'); // Ngày check-out
+            $table->datetime('checkin_date'); // Ngày check-in
+            $table->datetime('checkout_date'); // Ngày check-out
             $table->timestamps(); // Thời gian tạo và cập nhật
 
             // Khóa ngoại liên kết với bảng users

@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
+use Laravel\Socialite\Facades\Socialite;
+use App\Models\Booking;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
@@ -17,7 +20,7 @@ class AuthController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email',
                 'phone' => 'required|numeric|digits_between:10,15|unique:users,phone',
-                'password' => 'required|string|min:6',
+                'password' => 'required|string|min:8',
             ]);
 
             $user = User::create([
@@ -75,7 +78,6 @@ class AuthController extends Controller
                 // Nếu không có token, tạo mới và lưu lại
                 $user->remember_token = \Illuminate\Support\Str::random(60);
                 $user->save();
-                Log::info('New token generated for user', ['user_id' => $user->id]);
             }
 
             return response()->json([
@@ -123,7 +125,6 @@ class AuthController extends Controller
     {
 
         $user = User::findOrFail($id);
-        $user->update($request->all());
 
         try {
             // Lấy token từ header Authorization
@@ -149,7 +150,15 @@ class AuthController extends Controller
                 'phone' => 'nullable|string|max:20',
             ]);
 
+            // Cập nhật thông tin người dùng trong bảng users
             $user->update([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'],
+            ]);
+
+            // Cập nhật thông tin người dùng trong bảng booking_rooms
+            Booking::where('user_id', $id)->update([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
@@ -164,5 +173,141 @@ class AuthController extends Controller
             return response()->json(['message' => 'Failed to update user: ' . $e->getMessage()], 500);
         }
     }
+
+    public function changePassword(Request $request, $id)
+    {
+        // Lấy token từ header
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
+        // Tìm user dựa trên remember_token
+        $user = User::where('remember_token', $token)->first();
+
+        if (!$user) {
+            \Log::warning('Invalid token', ['token' => $token]);
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
+        // Kiểm tra user có quyền truy cập
+        if ($user->id != $id) {
+            \Log::warning('ChangePassword - Unauthorized access attempt', ['id' => $id, 'user_id' => $user->id]);
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        // Validation dữ liệu
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validation failed', 'errors' => $validator->errors()], 422);
+        }
+
+        // Kiểm tra mật khẩu hiện tại
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json(['message' => 'Current password is incorrect'], 422);
+        }
+
+        // Cập nhật mật khẩu mới
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return response()->json(['message' => 'Password changed successfully'], 200);
+    }
+
+    // function login with google (CAUTION: This function is dangerous, do not change anything here)
+    public function redirectToGoogle()
+    {
+        try {
+            Log::info('Redirecting to Google for login', [
+                'client_id' => config('services.google.client_id'),
+                'redirect_uri' => config('services.google.redirect'),
+            ]);
+
+            $url = Socialite::driver('google')
+                ->setScopes([
+                    'https://www.googleapis.com/auth/userinfo.email',
+                    'https://www.googleapis.com/auth/userinfo.profile',
+                ])
+                ->setHttpClient(new \GuzzleHttp\Client(['verify' => false]))
+                ->stateless()
+                ->redirect()
+                ->getTargetUrl();
+
+            Log::info('Google redirect URL generated', ['url' => $url]);
+            return response()->json(['url' => $url], 200);
+        } catch (\Exception $e) {
+            Log::error('Google Redirect Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['message' => 'Failed to redirect to Google: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function handleGoogleCallback(Request $request)
+    {
+        try {
+            Log::info('Google callback received', ['request' => $request->all()]);
+            $googleUser = Socialite::driver('google')
+                ->setHttpClient(new \GuzzleHttp\Client(['verify' => false]))
+                ->stateless()
+                ->user();
+
+            $user = User::where('email', $googleUser->email)->first();
+
+            if (!$user) {
+                $user = User::create([
+                    'name' => $googleUser->name,
+                    'email' => $googleUser->email,
+                    'password' => Hash::make(uniqid()),
+                    'provider' => 'google',
+                    'avatar' => $googleUser->avatar,
+                ]);
+            } else {
+                $user->update([
+                    'avatar' => $googleUser->avatar,
+                ]);
+            }
+
+            if (!$user->remember_token) {
+                $user->remember_token = \Illuminate\Support\Str::random(60);
+                $user->save();
+            }
+
+            $userData = [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->value('phone'),
+                'token' => $user->remember_token,
+                'role' => $user->role,
+                'status' => $user->status,
+                'provider' => $user->provider,
+                'avatar' => $user->avatar,
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at,
+            ];
+
+            // Redirect về frontend với token và user trong query string
+            $redirectUrl = 'http://localhost:8000/auth/callback?' . http_build_query([
+                'token' => $user->remember_token,
+                'user' => json_encode($userData),
+            ]);
+
+            return redirect($redirectUrl);
+        } catch (\Exception $e) {
+            // Redirect về frontend với lỗi
+            $redirectUrl = 'http://localhost:8000/auth/callback?' . http_build_query([
+                'error' => 'Google login failed: ' . $e->getMessage(),
+            ]);
+            return redirect($redirectUrl);
+        }
+    }
+
+    
 
 }

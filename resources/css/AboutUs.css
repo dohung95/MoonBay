@@ -30,3 +30,11 @@
   .facilities_area{
     background: url("./images/Hung/facilites_bg.jpg") no-repeat scroll center 0/cover;
   }
+  .ServiceStyle_Hung{
+    background: url("./images/Hung/Service_style.jpg") no-repeat scroll center 0/cover;
+    color: #f8f9fa;
+  }
+  .ServiceStyle_Hung1{
+    background-color: rgba(34, 35, 36, 0.316);
+    padding: 10% 20%;
+  }

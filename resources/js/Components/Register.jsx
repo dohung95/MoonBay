@@ -75,7 +75,7 @@ export default function Register({ isPopupRegister, closePopup, openLoginPopup }
             {isPopupRegister && (
                 <div className="popup-overlay" onClick={(e) => e.target.classList.contains("popup-overlay") && closePopup()}>
                     <div className="popup-content">
-                        <button className="close-popup-btn" onClick={closePopup}>&times;</button>
+                        <button className="close-popup-btn" onClick={closePopup} style={{ color: 'black' }} >&times;</button>
                         <h2>Register</h2>
                         <form onSubmit={handleSubmit}>
                             {[

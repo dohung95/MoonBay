@@ -7,8 +7,7 @@ import "./AuthContext.jsx"; // Giả sử bạn đã định nghĩa $user trong 
 import Banner from "./banner.jsx";
 import { useLocation } from "react-router-dom";
 
-
-const Booking = ({ checkLogin, checkLogins, isPopupBookNow, closePopup }) => {
+const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
     const { user } = useContext(AuthContext);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -32,7 +31,7 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow, closePopup }) => {
         const day = String(date.getDate()).padStart(2, '0');
         const hours = String(date.getHours()).padStart(2, '0');
         const minutes = String(date.getMinutes()).padStart(2, '0');
-        return `${day}-${month}-${year}T${hours}:${minutes}`;
+        return `${day}-${month}-${year} ${hours}:${minutes}`;
     };
 
     // Giá trị min cho checkin (ngày kế tiếp)
@@ -57,8 +56,8 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow, closePopup }) => {
 
     const handleBooking = async (e) => {
         e.preventDefault();
-
-        if (!user || !user.id) {
+        
+        if (!user.id) {
             checkLogin();
             return;
         }
@@ -106,11 +105,11 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow, closePopup }) => {
                 window.showNotification("Booking created successfully!", "success");
             }
         } catch (error) {
-
             console.error('Error creating booking:', error.response || error);
+            window.showNotification("Failed to create booking", "error");
             setTimeout(() => {
-                window.showNotification("Failed to create booking", "error");
-            }, 0);
+                window.showNotification("Pls add the phone number if you don't have", "error");
+            }, 4000);
         }
     };
 
@@ -150,7 +149,7 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow, closePopup }) => {
                             <div className="row g-3">
                                 <div className="col-md-6">
                                     <label htmlFor="checkin" className="form-label">Check-in:</label>
-                                    <input type="datetime-local" id="checkin" className="form-control" value={formData.checkin} onChange={handleChange} min={minCheckin} />
+                                    <input type="datetime-local" id="checkin" className="form-control" onChange={handleChange} min={minCheckin} />
                                 </div>
                                 <div className="col-md-6">
                                     <label htmlFor="checkout" className="form-label">Check-out:</label>
@@ -158,7 +157,6 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow, closePopup }) => {
                                         type="datetime-local"
                                         id="checkout"
                                         className="form-control"
-                                        value={formData.checkout}
                                         onChange={handleChange}
                                         min={
                                             formData.checkin
@@ -196,14 +194,14 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow, closePopup }) => {
                             {/* Enter children's ages */}
                             <div className="row g-3 mt-3">
                                 <div className="col-md-6">
-                                    <label htmlFor="children" className="form-label">Children(0-11):</label>
+                                    <label htmlFor="children" className="form-label">Children Ages(0-11):</label>
                                     <input
                                         type="number"
                                         id="children"
                                         className="form-control"
                                         min="0"
                                         max="11"
-                                        value={formData.children}
+                                        // value={formData.children}
                                         onChange={handleChange}
                                         placeholder="0"
                                     />
@@ -215,7 +213,7 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow, closePopup }) => {
                                         id="member"
                                         className="form-control"
                                         min="1"
-                                        value={formData.member}
+                                        // value={formData.member}
                                         onChange={handleChange}
                                         placeholder="1"
                                     />
@@ -229,7 +227,7 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow, closePopup }) => {
                 </div>
             </div >
             <div >
-                <BookNow checkLogins={checkLogins} isPopupBookNow={isPopupBookNow} />  {/* closePopup={closePopup} */}
+                <BookNow checkLogins={checkLogins}  />  {/* closePopup={closePopup} isPopupBookNow={isPopupBookNow}*/}
             </div>
         </>
     );
