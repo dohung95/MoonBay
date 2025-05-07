@@ -23,12 +23,12 @@ export const AuthProvider = ({ children }) => {
 
                 // Reset thời gian sống của cookie (gia hạn thêm 30 ngày)
                 Cookies.set('user', storedUser, { expires: 30 }); // 30 ngày
-                Cookies.set('token', storedToken, { expires: 30 }); // 30 ngày
+                Cookies.set('auth_token', storedToken, { expires: 30 }); // 30 ngày
             } catch (error) {
                 console.error("Error parsing stored user:", error);
                 // Nếu có lỗi, xóa cookie và reset state
                 Cookies.remove('user');
-                Cookies.remove('token');
+                Cookies.remove('auth_token');
                 setUser(null);
                 setToken('');
                 delete axios.defaults.headers.common['Authorization'];
@@ -50,8 +50,6 @@ export const AuthProvider = ({ children }) => {
         Cookies.set('user', JSON.stringify(user), { expires: 30 }); // 30 ngày
         Cookies.set('auth_token', authToken, { expires: 30, path: '/', sameSite: 'lax', secure: false });
 
-        // console.log('User stored in cookie:', Cookies.get('user')); // Debug
-        // console.log('Token stored in cookie:', Cookies.get('storedToken')); // Debug
         axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
     };
 
@@ -78,8 +76,16 @@ export const AuthProvider = ({ children }) => {
         Cookies.set('user', JSON.stringify(user), { expires: 30 }); // 30 ngày
     };
 
+    const isAdmin = () => {
+        return user && user.role === 'admin';
+    };
+
+    const isStaff = () => {
+        return user && user.role === 'staff';
+    };
+
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, updateUser, loading }}>
+        <AuthContext.Provider value={{ user, token, login, logout, updateUser, isAdmin, isStaff, loading }}>
             {children}
         </AuthContext.Provider>
     );
