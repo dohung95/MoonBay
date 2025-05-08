@@ -1,6 +1,6 @@
 // Components/Admin/AdminDashboard.jsx
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 import '../../../css/AdminDashboard.css'; // Đường dẫn đến file CSS của bạn
 
 const AdminDashboard = () => {
@@ -13,22 +13,22 @@ const AdminDashboard = () => {
                 </div>
                 <div style={{ color: 'white', padding: '0 3%' }}>
                     <div style={{ padding: '2% 0' }}>
-                        <a href="/"> Tính năng 1</a>
+                        <Link to="/admin/tinh_nang1" style={{ color: 'white' }}>Tính năng 1</Link>
                     </div>
                     <div style={{ padding: '2% 0' }}>
-                        <a href="/"> Tính năng 2</a>
+                        <Link to="/admin/tinh_nang2" style={{ color: 'white' }}>Tính năng 2</Link>
                     </div>
                     <div style={{ padding: '2% 0' }}>
-                        <a href="/"> Tính năng 3</a>
+                        <Link to="/admin/tinh_nang3" style={{ color: 'white' }}>Tính năng 3</Link>
                     </div>
                     <div style={{ padding: '2% 0' }}>
-                        <a href="/"> Tính năng 4</a>
+                        <Link to="/admin/tinh_nang4" style={{ color: 'white' }}>Tính năng 4</Link>
                     </div>
                     <div style={{ padding: '2% 0' }}>
-                        <a href="/"> Tính năng 5</a>
+                        <Link to="/admin/tinh_nang5" style={{ color: 'white' }}>Tính năng 5</Link>
                     </div>
                     <div style={{ padding: '2% 0' }}>
-                        <a href="/"> Tính năng 6</a>
+                        <Link to="/admin/tinh_nang6" style={{ color: 'white' }}>Tính năng 6</Link>
                     </div>
                 </div>
 
@@ -52,7 +52,7 @@ const AdminDashboard = () => {
 
                 <div className='container' style={{ padding: '2% 0' }}>
                     <div style={{ border: 'black solid 1px', width: '100%', height: '70vh' }}>
-                        <h1>Các bảng sẽ hiển thị ở đây</h1>
+                        <Outlet />
                     </div>
                 </div>
 
