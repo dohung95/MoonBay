@@ -22,7 +22,6 @@ import NotificationManager from './Components/NotificationManager.jsx';
 import ProtectedAdminRoute from './Components/ProtectedAdminRoute.jsx';
 import ProtectedStaffRoute from './Components/ProtectedStaffRoute.jsx';
 import AdminDashboard from './Components/Admin/AdminDashboard.jsx';
-import AdminUsers from './Components/Admin/AdminUsers.jsx';
 import StaffDashboard from './Components/Staff/StaffDashboard.jsx';
 
 // PopupContext để quản lý trạng thái popup
@@ -357,7 +356,6 @@ const App = () => {
                             element={
                                 <ProtectedAdminRoute>
                                     <AdminLayout>
-                                        <AdminUsers />
                                     </AdminLayout>
                                 </ProtectedAdminRoute>
                             }
