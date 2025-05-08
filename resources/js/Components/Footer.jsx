@@ -1,14 +1,38 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import '../../css/footer.css';
+import React, { useState } from 'react';
+import axios from 'axios';
 
 const Footer = () => {
+
     const top = () => {
         window.scroll({
             top: 0,
             behavior: 'smooth'
         })
     }
+
+    const [email, setEmail] = useState('');
+    const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setMessage('');
+        setError('');
+
+        try {
+            const response = await axios.post('http://localhost:8000/api/follow-email', { email });
+            setMessage(response.data.message);
+            setEmail('');
+        } catch (err) {
+            if (err.response && err.response.data) {
+                setError(err.response.data.message);
+            } else {
+                setError('Có lỗi xảy ra.');
+            }
+        }
+    };
     return (
         <>
             <div style={{ backgroundColor: '#04091e', color: '#6c6c6e', padding: '2% 0 0 0' }}>
@@ -31,7 +55,7 @@ const Footer = () => {
                         </div>
                     </div>
                     <div className='col-md-6'>
-                        
+
                         <br />
                     </div>
 
@@ -52,7 +76,6 @@ const Footer = () => {
                             <b>Phone:</b> <a href="tel:+84328866459">+84 (0) 986 555 666</a><br />
                             <b>Email:</b> <a href="mailto:info@moonbay.vn?subject=I%20need%20help&body=I%20need%20help%20with...">Info@moonbay.vn</a><br /><br />
                         </div>
-
 
                         <div className='col-md-3'>
                             <div align="left">
@@ -134,18 +157,23 @@ const Footer = () => {
                                 For travel companies or customers interested in our information and services.
                             </div>
                             <div style={{ padding: '4% 0 0 0' }}>
-                                <form action="">
+                                <form onSubmit={handleSubmit}>
                                     <div className='row'>
                                         <div className='col-md-9'>
-                                            <input type="email" placeholder='Your Email' />
+                                            <input
+                                                type="email"
+                                                placeholder='Your Email'
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                                required
+                                            />
                                         </div>
                                         <div className='col-md-3' style={{ padding: '3% 0 0 0' }}>
-                                            <div>
-                                                <button className='btn button_send-hung' type="submit" >Send</button>
-                                            </div>
-                                            <br />
+                                            <button className='btn button_send-hung' type="submit">Send</button>
                                         </div>
                                     </div>
+                                    {message && <div style={{ color: 'green', marginTop: '10px' }}>{message}</div>}
+                                    {error && <div style={{ color: 'red', marginTop: '10px' }}>{error}</div>}
                                 </form>
                             </div>
                         </div>

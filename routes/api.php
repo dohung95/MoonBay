@@ -7,6 +7,7 @@ use App\Http\Controllers\HotelController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\FollowEmailController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,3 +42,5 @@ Route::post('/ForgotPassword', [AuthController::class, 'ForgotPassword']);
 Route::post('/booking', [BookingController::class, 'booking']);
 
 Route::post('/contact', [App\Http\Controllers\ContactController::class, 'send']);
+
+Route::post('/follow-email', [FollowEmailController::class, 'store']);
