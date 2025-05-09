@@ -1,61 +1,79 @@
-// Components/Admin/AdminDashboard.jsx
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, Outlet } from 'react-router-dom';
-import '../../../css/AdminDashboard.css'; // Đường dẫn đến file CSS của bạn
+import '../../../css/AdminDashboard.css';
 
 const AdminDashboard = () => {
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+
     return (
         <div className="admin-dashboard row" style={{ "--bs-gutter-x": 0 }}>
-            <div className='col-md-2' style={{ backgroundColor: '#33393e', height: '100vh', paddingTop: '2%' }}>
+            {/* Sidebar desktop */}
+            <div className='col-md-2 d-none d-md-block sidebar' style={{ backgroundColor: '#33393e', height: '100vh', paddingTop: '2%' }}>
                 <div>
-                    <img src="./images/logo/moonbaylogo.png" alt="" style={{ width: 'auto', height: '65px', borderRadius: '50%', padding: '0 3%' }} /> <b style={{ color: 'white' }}>MANAGER</b>
+                    <img src="./images/logo/moonbaylogo.png" alt="" style={{ width: 'auto', height: '65px', borderRadius: '50%', padding: '0 3%' }} />
+                    <b style={{ color: 'white' }}>MANAGER</b>
                     <hr style={{ color: '#7d89a1' }} />
                 </div>
                 <div style={{ color: 'white', padding: '0 3%' }}>
-                    <div style={{ padding: '2% 0' }}>
-                        <Link to="/admin/tinh_nang1" style={{ color: 'white' }}>Tính năng 1</Link>
-                    </div>
-                    <div style={{ padding: '2% 0' }}>
-                        <Link to="/admin/tinh_nang2" style={{ color: 'white' }}>Tính năng 2</Link>
-                    </div>
-                    <div style={{ padding: '2% 0' }}>
-                        <Link to="/admin/tinh_nang3" style={{ color: 'white' }}>Tính năng 3</Link>
-                    </div>
-                    <div style={{ padding: '2% 0' }}>
-                        <Link to="/admin/tinh_nang4" style={{ color: 'white' }}>Tính năng 4</Link>
-                    </div>
-                    <div style={{ padding: '2% 0' }}>
-                        <Link to="/admin/tinh_nang5" style={{ color: 'white' }}>Tính năng 5</Link>
-                    </div>
-                    <div style={{ padding: '2% 0' }}>
-                        <Link to="/admin/tinh_nang6" style={{ color: 'white' }}>Tính năng 6</Link>
+                    {['tinh_nang1', 'tinh_nang2', 'tinh_nang3', 'tinh_nang4', 'tinh_nang5', 'tinh_nang6'].map((fn, i) => (
+                        <div style={{ padding: '2% 0' }} key={i}>
+                            <Link to={`/admin/${fn}`} style={{ color: 'white' }}>Tính năng {i + 1}</Link>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Sidebar - mobile overlay */}
+            {sidebarOpen && (
+                <div className="mobile-sidebar-overlay">
+                    <div className="mobile-sidebar-content">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ color: 'white', fontWeight: 'bold' }}>MENU</div>
+                            <button onClick={() => setSidebarOpen(false)} className="btn btn-light">✕</button>
+                        </div>
+                        <hr style={{ color: '#7d89a1' }} />
+                        <div style={{ color: 'white' }}>
+                            {['tinh_nang1', 'tinh_nang2', 'tinh_nang3', 'tinh_nang4', 'tinh_nang5', 'tinh_nang6'].map((fn, i) => (
+                                <div style={{ padding: '2% 0' }} key={i}>
+                                    <Link to={`/admin/${fn}`} style={{ color: 'white' }} onClick={() => setSidebarOpen(false)}>
+                                        Tính năng {i + 1}
+                                    </Link>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
+            )}
 
-            </div>
-            <div className='col-md-10' style={{ paddingTop: '1%' }}>
-                <div className='row' style={{ "--bs-gutter-x": 0 }}>
-                    <div className='col-md-3' align='center'>
+            {/* Main content */}
+            <div className='col-md-10 col-12' style={{ paddingTop: '1%' }}>
+                {/* Header */}
+                <div className='row align-items-center px-3' style={{ "--bs-gutter-x": 0 }}>
+                    {/* Hamburger menu mobile */}
+                    <div className='col-2 d-md-none'>
+                        <button onClick={() => setSidebarOpen(true)} className="btn btn-outline-dark">☰</button>
+                    </div>
+
+                    <div className='col-md-3 col-6' align='center'>
                         <Link to="/" style={{ textDecoration: 'none' }}><b>Home page</b></Link>
                     </div>
-                    <div className='col-md-6'>
-                        <input type="text" placeholder='Search' />
+                    <div className='col-md-6 d-none d-md-block'>
+                        <input type="text" placeholder='Search' className='form-control' />
                     </div>
-                    <div className='col-md-3' align='center' >
-                        <img src="./images/Hung/admin.jpg" alt="" style={{ width: '50px', height: 'auto', border: 'black solid 2px', borderRadius: '50%' }} /><b> Admin</b>
+                    <div className='col-md-3 col-4' align='center'>
+                        <img src="./images/Hung/admin.jpg" alt="" style={{ width: '50px', height: 'auto', border: 'black solid 2px', borderRadius: '50%' }} />
+                        <b> Admin</b>
                     </div>
                 </div>
 
-                <div style={{ backgroundColor: '#f1f6f9', width: '100%', height: '15vh', padding: '2% 0%' }}>
+                <div style={{ backgroundColor: '#f1f6f9', width: '100%', height: '15vh', padding: '2% 0%' }}></div>
 
-                </div>
-
+                {/* main content */}
                 <div className='container' style={{ padding: '2% 0' }}>
                     <div style={{ border: 'black solid 1px', width: '100%', height: '70vh' }}>
                         <Outlet />
                     </div>
                 </div>
-
             </div>
         </div>
     );
