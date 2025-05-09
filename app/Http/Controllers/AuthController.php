@@ -282,7 +282,7 @@ class AuthController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'phone' => $user->value('phone'),
+                'phone' => $user->phone,
                 'token' => $user->remember_token,
                 'role' => $user->role,
                 'status' => $user->status,
