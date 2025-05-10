@@ -1,23 +1,43 @@
-.admin-dashboard {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
+.sidebar {
+    min-height: 100vh;
 }
 
-.admin-nav {
+
+.mobile-sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 999;
     display: flex;
-    gap: 20px;
-    margin-bottom: 20px;
+    justify-content: flex-start;
 }
 
-.admin-nav a {
+.mobile-sidebar-content {
+    width: 70%;
+    max-width: 250px;
+    background-color: #33393e;
+    color: white;
+    padding: 1rem;
+    height: 100%;
+}
+/* File CSS hoặc trong thẻ <style> */
+.sidebar-link_Hung {
+    color: white;
     text-decoration: none;
-    color: #007bff;
-    font-weight: bold;
+    display: block; /* Để liên kết chiếm toàn bộ chiều rộng */
+    padding: 5px 10px; /* Khoảng cách bên trong */
+    border-radius: 5px; /* Bo góc */
+}
+.sidebar-link_Hung:hover {
+    color: #18bfe9b7; /* Màu chữ khi hover */
+    font-weight: bold; /* Chữ đậm khi hover */
 }
 
-.admin-content {
-    background: #f9f9f9;
-    padding: 20px;
-    border-radius: 8px;
+.sidebar-link_Hung.active {
+    background-color: #4a5568; /* Màu nền khi active */
+    color: #fefefe; /* Màu chữ khi active */
+    font-weight: bold; /* Chữ đậm khi active */
 }

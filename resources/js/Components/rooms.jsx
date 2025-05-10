@@ -79,10 +79,14 @@ const Rooms = ({ checkLogins }) => {
                   <p className="text-muted mb-3">
                     <i className="bi bi-people-fill me-1"></i> {room.capacity} guests
                   </p>
+                  <p className="text-muted mb-3">
+                    <i className="bi bi-cash-coin me-1 text-success"></i>
+                    <strong>
+                      {(room.price * 1000).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                    </strong> / night
+                  </p>
                   <p>{room.description}</p>
-                  {/* <Link to="/booking#booknow" className="btn btn-primary mt-3">
-                    Book Now
-                  </Link> */}
+
                   <button
                     onClick={() => checkLogins(room.name)}
                     className="btn btn-primary mt-3 rounded hover:bg-blue-700 transition"

@@ -66,7 +66,7 @@ class BookingController extends Controller
         $user = User::where('remember_token', $token)->first();
 
         if (!$user) {
-            \Log::warning('Invalid token', ['token' => $token]);
+            Log::warning('Invalid token', ['token' => $token]);
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
 

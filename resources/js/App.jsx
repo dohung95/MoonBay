@@ -22,9 +22,16 @@ import NotificationManager from './Components/NotificationManager.jsx';
 import ProtectedAdminRoute from './Components/ProtectedAdminRoute.jsx';
 import ProtectedStaffRoute from './Components/ProtectedStaffRoute.jsx';
 import AdminDashboard from './Components/Admin/AdminDashboard.jsx';
-import AdminUsers from './Components/Admin/AdminUsers.jsx';
 import StaffDashboard from './Components/Staff/StaffDashboard.jsx';
 
+import UserManagement from './Components/Admin/UserManagement.jsx';
+import RoomListManagement from './Components/Admin/RoomListManagement.jsx';
+import EmployeeListManagement from './Components/Admin/EmployeeListManagement.jsx';
+import TinhNang4 from './Components/Admin/TinhNang4.jsx';
+import TinhNang5 from './Components/Admin/TinhNang5.jsx';
+import TinhNang6 from './Components/Admin/Tinhnang6.jsx';
+
+import 'bootstrap/dist/css/bootstrap.min.css';
 // PopupContext để quản lý trạng thái popup
 export const PopupContext = React.createContext();
 
@@ -351,13 +358,19 @@ const App = () => {
                                     </AdminLayout>
                                 </ProtectedAdminRoute>
                             }
-                        />
+                        >
+                        <Route path="UserManagement" element={<UserManagement />} />
+                        <Route path="RoomListManagement" element={<RoomListManagement />} />
+                        <Route path="EmployeeListManagement" element={<EmployeeListManagement />} />
+                        <Route path="tinh_nang4" element={<TinhNang4 />} />
+                        <Route path="tinh_nang5" element={<TinhNang5 />} />
+                        <Route path="tinh_nang6" element={<TinhNang6 />} />
+                        </Route>
                         <Route
                             path="/admin/users"
                             element={
                                 <ProtectedAdminRoute>
                                     <AdminLayout>
-                                        <AdminUsers />
                                     </AdminLayout>
                                 </ProtectedAdminRoute>
                             }
