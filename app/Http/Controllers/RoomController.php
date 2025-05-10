@@ -16,6 +16,19 @@ class RoomController extends Controller
         return response()->json($roomTypes);
     }
 
+    public function show()
+    {
+        $roomTypes = RoomType::all()->map(function ($roomType) {
+            return [
+                'id' => $roomType->id,
+                'name' => $roomType->name,
+                'price' => $roomType->price,
+            ];
+        });
+
+        return response()->json(['room_types' => $roomTypes], 200);
+    }
+
     public function update(Request $request, $id)
 {
     $validatedData = $request->validate([
@@ -30,6 +43,5 @@ class RoomController extends Controller
 
     return response()->json(['message' => 'Cập nhật thành công']);
 }
-
 
 }

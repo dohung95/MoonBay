@@ -32,9 +32,9 @@ const Home = () => {
                 <section className="accomodation-area py-5">
                     <div >
                         <div className="section-title text-center mb-5">
-                            <h2 className="text">Hotel Accommodation</h2>
+                            <h2 className="text">Attractive offers</h2>
                             <p>
-                                We all live in an age that belongs to the young at heart. Life that is becoming extremely fast,
+                               Great deals when you choose us as your vacation destination for you or your family.
                             </p>
                         </div>
                         <div className="row justify-content-center g-0 hung">
@@ -73,9 +73,9 @@ const Home = () => {
                 <section className="latest_blog_area section_gap py-5">
                     <div >
                         <div className="section_title text-center mb-4">
-                            <h2 className="title_color">Latest Posts from Blog</h2>
+                            <h2 className="title_color">Latest customer reviews</h2>
                             <p>
-                                The French Revolution constituted for the conscience of the dominant aristocratic class a fall from
+                                Great and interesting experiences that customers have shared with us.
                             </p>
                         </div>
                         <div className="row justify-content-center g-0 hung">

@@ -10,7 +10,6 @@ const Login = ({ isPopupLogin, closePopup, openRegisterPopup, openForgotPassword
     const [password, setPassword] = useState(''); // Thêm state password
     const [errors, setErrors] = useState({});
     const { login, setUser } = useContext(AuthContext); // Lấy login từ AuthContext
-    const location = useLocation();
     const navigate = useNavigate();
 
     const handleOverlayClick = (e) => {

@@ -20,6 +20,8 @@ class Booking extends Model
         'number_of_rooms',
         'children',
         'member',
+        'price',
+        'total_price',
         'checkin_date',
         'checkout_date'
     ];
