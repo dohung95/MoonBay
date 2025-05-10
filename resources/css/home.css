@@ -125,13 +125,13 @@ select {
   border: 1px solid #ccc;
 }
 
-button {
+/* button {
   padding: 10px 20px;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-}
+} */
 
 .accomodation-area {
   background-color: #f9f9f9;
