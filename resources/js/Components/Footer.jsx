@@ -36,7 +36,7 @@ const Footer = () => {
     return (
         <>
             <div style={{ backgroundColor: '#04091e', color: '#6c6c6e', padding: '2% 0 0 0' }}>
-                <div className='row' style={{ padding: '0 10%' }}>
+                <div className='row' style={{ padding: '0 10%',"--bs-gutter-x": 0 }}>
                     <div className='col-md-6 row'>
                         <div className='col-md-2' style={{ padding: '1% 0 0 0' }}>
                             <img
