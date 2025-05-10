@@ -15,4 +15,17 @@ class RoomController extends Controller
         // Trả về dữ liệu dưới dạng JSON
         return response()->json($roomTypes);
     }
+
+    public function show()
+    {
+        $roomTypes = RoomType::all()->map(function ($roomType) {
+            return [
+                'id' => $roomType->id,
+                'name' => $roomType->name,
+                'price' => $roomType->price,
+            ];
+        });
+
+        return response()->json(['room_types' => $roomTypes], 200);
+    }
 }

@@ -23,6 +23,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 Route::get('/room_types', [RoomController::class, 'index']);
+Route::get('/room-types', [RoomController::class, 'show']);
 Route::get('/tbhotel', [HotelController::class, 'index']);
 
 // dangerous
