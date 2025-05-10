@@ -8,11 +8,11 @@ import Sitemapmini from './sitemapmini';
 
 const images = [
     "/images/Hung/manager.jpg",
-    "/images/Hung/staff_1.jpg",
     "/images/Hung/staff_2.jpg",
-    "/images/Hung/staff_3.jpg",
-    "/images/Hung/staff_4.jpg",
-    "/images/Hung/staff_5.jpg"
+    "/images/Hung/staff2.jpg",
+    "/images/Hung/staff3.jpg",
+    "/images/Hung/staff4.jpg",
+    "/images/Hung/staff5.jpg"
 ];
 
 
@@ -191,7 +191,7 @@ const AboutUs = () => {
                     <div className="carousel-inner">
                         {images.map((image, index) => (
                             <div className={`carousel-item ${index === activeIndex ? 'active' : ''}`} key={index}>
-                                <img className="d-block w-100" src={image} alt={`Slide ${index + 1}`} style={{ width: '300px', height: '500px' }} />
+                                <img className="d-block w-100" src={image} alt={`Slide ${index + 1}`} style={{ height: '600px' }} />
                             </div>
                         ))}
                     </div>
@@ -199,12 +199,13 @@ const AboutUs = () => {
                 </div>
             </div>
 
-            <div style={{ padding: '2% 0' }}>
+            <div style={{ padding: '2% 0', backgroundColor: '#fff8e0' }} className="container">
                 <div align='center'>
                     <h1>Service style</h1>
+                    <br />
                 </div>
-                <div className="ServiceStyle_Hung container">
-                    <div className="ServiceStyle_Hung1 ">
+                <div className=" container row ">
+                    <div className="col-md-4">
                         <div>
                             🤝 <b>Serving with Heart</b> <br />
                             Every guest is treated with genuine warmth and heartfelt hospitality.
@@ -213,6 +214,13 @@ const AboutUs = () => {
                             🌿 <b>Respect for Privacy</b> <br />
                             Your peace and personal space are always our priority.
                         </div>
+                        <br />
+                    </div>
+                    <div className="col-md-4 " style={{ padding: '0 0 2% 0' }}>
+                        <img src="/images/Hung/service_hung.jpg" alt="" style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+                    </div>
+
+                    <div className="col-md-4">
                         <div>
                             🕊️ <b>Elegance in Every Detail</b> <br />
                             We perfect the small things, so you can enjoy the big moments.
@@ -226,11 +234,14 @@ const AboutUs = () => {
             </div>
 
             <div style={{ padding: '2% 0' }}>
-                <div align='center'>
+                <div align='center' style={{ padding: '2% 0' }}>
                     <h1>Commitment to customers & community</h1>
                 </div>
-                <div className="ServiceStyle_Hung container">
-                    <div className="ServiceStyle_Hung1 ">
+                <div className="container row">
+                    <div className="col-md-6">
+                        <img src="/images/Hung/community_hung.jpg" alt="" style={{ objectFit: 'cover', width: '100%', height: '100%' }}/>
+                    </div>
+                    <div className="ServiceStyle_Hung1 col-md-6 ">
                         <div>
                             🏨 <b>Unforgettable Experiences</b> <br />
                             We are dedicated to creating memorable and personalized stays for every guest.
