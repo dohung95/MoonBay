@@ -44,3 +44,6 @@ Route::post('/booking', [BookingController::class, 'booking']);
 Route::post('/contact', [App\Http\Controllers\ContactController::class, 'send']);
 
 Route::post('/follow-email', [FollowEmailController::class, 'store']);
+
+// fix infor rooms of admin
+Route::put('/room_types/{id}', [RoomController::class, 'update']);

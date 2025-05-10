@@ -29,7 +29,7 @@ import TinhNang2 from './Components/Admin/TinhNang2.jsx';
 import TinhNang3 from './Components/Admin/TinhNang3.jsx';
 import TinhNang4 from './Components/Admin/TinhNang4.jsx';
 import TinhNang5 from './Components/Admin/TinhNang5.jsx';
-import TinhNang6 from './Components/Admin/TinhNang6.jsx';
+import TinhNang6 from './Components/Admin/Tinhnang6.jsx';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 // PopupContext để quản lý trạng thái popup

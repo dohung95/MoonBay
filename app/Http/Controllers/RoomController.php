@@ -15,4 +15,21 @@ class RoomController extends Controller
         // Trả về dữ liệu dưới dạng JSON
         return response()->json($roomTypes);
     }
+
+    public function update(Request $request, $id)
+{
+    $validatedData = $request->validate([
+        'name' => 'required|string|max:255',
+        'capacity' => 'required|integer',
+        'price' => 'required|numeric',
+        'description' => 'nullable|string',
+    ]);
+
+    $room = RoomType::findOrFail($id);
+    $room->update($validatedData);
+
+    return response()->json(['message' => 'Cập nhật thành công']);
+}
+
+
 }
