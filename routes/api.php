@@ -8,6 +8,9 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FollowEmailController;
+use App\Http\Controllers\UserController;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -47,3 +50,8 @@ Route::post('/follow-email', [FollowEmailController::class, 'store']);
 
 // fix infor rooms of admin
 Route::put('/room_types/{id}', [RoomController::class, 'update']);
+
+
+Route::get('/users_manager', [UserController::class, 'index']);
+
+Route::delete('/users_manager/{id}', [UserController::class, 'destroy']);
