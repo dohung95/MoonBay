@@ -21,6 +21,8 @@ class BookingController extends Controller
                 'number_of_rooms' => 'required|integer|min:1',
                 'children' => 'required|integer|min:0',
                 'member' => 'required|integer|min:1',
+                'price' => 'required|numeric',
+                'total_price' => 'required|numeric',
                 'checkin_date' => 'required|date',
                 'checkout_date' => 'required|date',
             ]);
