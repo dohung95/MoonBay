@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import '../../../css/UserManagement.css';
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
@@ -125,19 +126,19 @@ const UserManagement = () => {
                     </table>
 
                     {/* Phân trang */}
-                    <div className="mt-4 flex justify-center items-center space-x-4">
+                    <div className="mt-4 flex justify-center items-center space-x-4 next_hung">
                         <button
                             onClick={handlePreviousPage}
                             disabled={currentPage === 1}
                             className={`px-4 py-2 rounded ${currentPage === 1
                                 ? 'bg-gray-300 text-black'
                                 : 'bg-blue-500 text-black'
-                            }`}
+                            }`} style={{border:'none'}}
                         >
                             <b>«</b>
                         </button>
                         <span>
-                            {currentPage} / {lastPage}
+                            &nbsp;{currentPage} / {lastPage}&nbsp;
                         </span>
                         <button
                             onClick={handleNextPage}
@@ -145,7 +146,7 @@ const UserManagement = () => {
                             className={`px-4 py-2 rounded ${currentPage === lastPage
                                 ? 'bg-gray-300 text-black'
                                 : 'bg-blue-500 text-black'
-                            }`}
+                            }`} style={{border:'none'}}
                         >
                             <b>»</b>
                         </button>

@@ -1,0 +1,7 @@
+.next_hung button{
+    border: none;
+}
+.next_hung button:hover{
+    background-color: #4ad6f9b7;
+    color: white;
+}
