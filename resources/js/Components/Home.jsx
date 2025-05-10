@@ -6,7 +6,7 @@ import BookingForm from './BookingForm';
 const Home = () => {
     return (
         <>
-            <div className="page-header section-dark" style={{ backgroundImage: "url('./images/demo.jpg')" }}>
+            <div className="page-header section-dark" style={{ backgroundImage: "url('/images/demo.jpg')" }}>
                 <div className="filter"></div>
                 <div className="content-center">
                     <div className="container">
@@ -14,10 +14,10 @@ const Home = () => {
                             <p style={{fontSize:'2.5vw'}}><b>Away from monotonous life</b></p>
                             <p className='presentation-title'>Relax Your Mind</p>
                             <div className="fog-low">
-                                <img src="./images/fog-low.png" alt="" />
+                                <img src="/images/fog-low.png" alt="" />
                             </div>
                             <div className="fog-low right">
-                                <img src="./images/fog-low.png" alt="" />
+                                <img src="/images/fog-low.png" alt="" />
                             </div>
                         </div>
                         <div style={{ marginTop: '7%' }} className='custom-container'>
@@ -25,7 +25,7 @@ const Home = () => {
                         </div>
                     </div>
                 </div>
-                <div className="moving-clouds" style={{ backgroundImage: "url('./images/clouds.png')" }}></div>
+                <div className="moving-clouds" style={{ backgroundImage: "url('/images/clouds.png')" }}></div>
             </div>
 
             <div>
@@ -113,43 +113,43 @@ const Home = () => {
 }
 const rooms = [
     {
-        image: './images/Hung/room1.jpg',
+        image: '/images/Hung/room1.jpg',
         title: 'Double Deluxe',
         price: 250
     },
     {
-        image: './images/Hung/room2.jpg',
+        image: '/images/Hung/room2.jpg',
         title: 'Single Deluxe',
         price: 200
     },
     {
-        image: './images/Hung/room3.jpg',
+        image: '/images/Hung/room3.jpg',
         title: 'Honeymoon Suit',
         price: 750
     },
     {
-        image: './images/Hung/room4.jpg',
+        image: '/images/Hung/room4.jpg',
         title: 'Economy Double',
         price: 200
     }
 ];
 const blogs = [
     {
-        image: "./images/Hung/blog-1.jpg",
+        image: "/images/Hung/blog-1.jpg",
         tags: ["Travel", "Life Style"],
         title: "Low Cost Advertising",
         description: "Acres of Diamonds… you’ve read the famous story, or at least had it related to you. A farmer.",
         date: "31st January, 2018",
     },
     {
-        image: "./images/Hung/blog-2.jpg",
+        image: "/images/Hung/blog-2.jpg",
         tags: ["Travel", "Life Style"],
         title: "Creative Outdoor Ads",
         description: "Self-doubt and fear interfere with our ability to achieve or set goals. Self-doubt and fear are",
         date: "31st January, 2018",
     },
     {
-        image: "./images/Hung/blog-3.jpg",
+        image: "/images/Hung/blog-3.jpg",
         tags: ["Travel", "Life Style"],
         title: "It S Classified How To Utilize Free",
         description: "Why do you want to motivate yourself? Actually, just answering that question fully can",

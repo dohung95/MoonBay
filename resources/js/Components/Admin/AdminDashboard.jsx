@@ -79,7 +79,7 @@ const AdminDashboard = () => {
                         <input type="text" placeholder='Search' className='form-control' />
                     </div>
                     <div className='col-md-3 col-4' align='center'>
-                        <img src="./images/Hung/admin.jpg" alt="" style={{ width: '50px', height: 'auto', border: 'black solid 2px', borderRadius: '50%' }} />
+                        <img src="/images/Hung/admin.jpg" alt="" style={{ width: '50px', height: 'auto', border: 'black solid 2px', borderRadius: '50%' }} />
                         <b> Admin</b>
                     </div>
                 </div>
@@ -95,7 +95,7 @@ const AdminDashboard = () => {
                                     <h1>Welcome to Moonbay hotel management system!</h1>
                                 </div>
                                 <div align="center">
-                                    <img src="./images/Hung/manager_BG.jpg" alt="" style={{width:'800px', height:'400px'}}/>
+                                    <img src="/images/Hung/manager_BG.jpg" alt="" style={{width:'800px', height:'400px'}}/>
                                 </div>
                             </div>
                         )}

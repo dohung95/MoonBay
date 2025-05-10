@@ -7,12 +7,12 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import Sitemapmini from './sitemapmini';
 
 const images = [
-    "./images/Hung/manager.jpg",
-    "./images/Hung/staff_1.jpg",
-    "./images/Hung/staff_2.jpg",
-    "./images/Hung/staff_3.jpg",
-    "./images/Hung/staff_4.jpg",
-    "./images/Hung/staff_5.jpg"
+    "/images/Hung/manager.jpg",
+    "/images/Hung/staff_1.jpg",
+    "/images/Hung/staff_2.jpg",
+    "/images/Hung/staff_3.jpg",
+    "/images/Hung/staff_4.jpg",
+    "/images/Hung/staff_5.jpg"
 ];
 
 
@@ -55,7 +55,7 @@ const AboutUs = () => {
     return (
         <>
             <div className="banner">
-                <img src="./images/banner/about_banner.jpg" alt="Banner" className='banner-img' />
+                <img src="/images/banner/about_banner.jpg" alt="Banner" className='banner-img' />
                 <div className='banner-text anima-text'>
                     <h1>The Story Behind Moon Bay</h1>
                 </div>
@@ -75,7 +75,7 @@ const AboutUs = () => {
                         </div>
                         <div className="col-md-5 text-center">
                             <img
-                                src="./images/Hung/photo1.jpg"
+                                src="/images/Hung/photo1.jpg"
                                 alt="Moon Bay Hotel"
                                 className="img-fluid rounded shadow"
                             />
@@ -94,7 +94,7 @@ const AboutUs = () => {
 
                         <div className="col-md-5 text-center">
                             <img
-                                src="./images/Hung/OurMission.jpg"
+                                src="/images/Hung/OurMission.jpg"
                                 alt="Moon Bay Hotel"
                                 className="img-fluid rounded shadow"
                             />
@@ -128,7 +128,7 @@ const AboutUs = () => {
                         </div>
                         <div className="col-md-5 text-center">
                             <img
-                                src="./images/Hung/Vision.jpg"
+                                src="/images/Hung/Vision.jpg"
                                 alt="Moon Bay Hotel"
                                 className="img-fluid rounded shadow"
                             />
@@ -147,7 +147,7 @@ const AboutUs = () => {
 
                         <div className="col-md-5 text-center">
                             <img
-                                src="./images/Hung/CoreValues.jpg"
+                                src="/images/Hung/CoreValues.jpg"
                                 alt="Moon Bay Hotel"
                                 className="img-fluid rounded shadow"
                             />
@@ -259,25 +259,25 @@ const AboutUs = () => {
                 </div>
                 <div className="row ">
                     <div className='col-md-3' style={{ textAlign: 'center', padding: '0 2%' }} >
-                        <img src="./images/Hung/Hung.jpg" alt="" style={{ padding: '0 0 4% 0' }} />
+                        <img src="/images/Hung/Hung.jpg" alt="" style={{ padding: '0 0 4% 0' }} />
                         <p><b>Full name: Do Thanh Hung</b></p>
                         <p><b>Position: Project Lead</b></p>
                         <p><b>Slogan: Dare to dream big, commit to learning!</b></p>
                     </div>
                     <div className='col-md-3' style={{ textAlign: 'center', padding: '0 2%' }}>
-                        <img src="./images/Hung/Huy.jpg" alt="" style={{ padding: '0 0 4% 0' }} />
+                        <img src="/images/Hung/Huy.jpg" alt="" style={{ padding: '0 0 4% 0' }} />
                         <p><b>Full name: Phu Vinh Huy</b></p>
                         <p><b>Position: Fullstack Developer</b></p>
                         <p><b>Slogan: Make it work, make it right, make it fast.</b></p>
                     </div>
                     <div className='col-md-3' style={{ textAlign: 'center', padding: '0 2%' }}>
-                        <img src="./images/Hung/Dat.png" alt="" style={{ padding: '0 0 4% 0' }} />
+                        <img src="/images/Hung/Dat.png" alt="" style={{ padding: '0 0 4% 0' }} />
                         <p><b>Full name: Le Quoc Dat</b></p>
                         <p><b>Position: Developer/Tester</b></p>
                         <p><b>Slogan: Program anything you want.</b></p>
                     </div>
                     <div className='col-md-3' style={{ textAlign: 'center', padding: '0 2%' }}>
-                        <img src="./images/Hung/Long.jpg" alt="" style={{ padding: '0 0 4% 0' }} />
+                        <img src="/images/Hung/Long.jpg" alt="" style={{ padding: '0 0 4% 0' }} />
                         <p><b>Full name: Ngo Truong Long</b></p>
                         <p><b>Position: Developer/Tester</b></p>
                         <p><b>Slogan: Bugs are friends, not enemies— debug today to succeed tomorrow.</b></p>
