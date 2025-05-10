@@ -24,9 +24,9 @@ import ProtectedStaffRoute from './Components/ProtectedStaffRoute.jsx';
 import AdminDashboard from './Components/Admin/AdminDashboard.jsx';
 import StaffDashboard from './Components/Staff/StaffDashboard.jsx';
 
-import TinhNang1 from './Components/Admin/TinhNang1.jsx';
-import TinhNang2 from './Components/Admin/TinhNang2.jsx';
-import TinhNang3 from './Components/Admin/TinhNang3.jsx';
+import UserManagement from './Components/Admin/UserManagement.jsx';
+import RoomListManagement from './Components/Admin/RoomListManagement.jsx';
+import EmployeeListManagement from './Components/Admin/EmployeeListManagement.jsx';
 import TinhNang4 from './Components/Admin/TinhNang4.jsx';
 import TinhNang5 from './Components/Admin/TinhNang5.jsx';
 import TinhNang6 from './Components/Admin/TinhNang6.jsx';
@@ -359,9 +359,9 @@ const App = () => {
                                 </ProtectedAdminRoute>
                             }
                         >
-                        <Route path="tinh_nang1" element={<TinhNang1 />} />
-                        <Route path="tinh_nang2" element={<TinhNang2 />} />
-                        <Route path="tinh_nang3" element={<TinhNang3 />} />
+                        <Route path="UserManagement" element={<UserManagement />} />
+                        <Route path="RoomListManagement" element={<RoomListManagement />} />
+                        <Route path="EmployeeListManagement" element={<EmployeeListManagement />} />
                         <Route path="tinh_nang4" element={<TinhNang4 />} />
                         <Route path="tinh_nang5" element={<TinhNang5 />} />
                         <Route path="tinh_nang6" element={<TinhNang6 />} />

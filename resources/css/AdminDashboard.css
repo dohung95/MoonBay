@@ -24,3 +24,21 @@
     padding: 1rem;
     height: 100%;
 }
+/* File CSS hoặc trong thẻ <style> */
+.sidebar-link_Hung {
+    color: white;
+    text-decoration: none;
+    display: block; /* Để liên kết chiếm toàn bộ chiều rộng */
+    padding: 5px 10px; /* Khoảng cách bên trong */
+    border-radius: 5px; /* Bo góc */
+}
+.sidebar-link_Hung:hover {
+    color: #18bfe9b7; /* Màu chữ khi hover */
+    font-weight: bold; /* Chữ đậm khi hover */
+}
+
+.sidebar-link_Hung.active {
+    background-color: #4a5568; /* Màu nền khi active */
+    color: #fefefe; /* Màu chữ khi active */
+    font-weight: bold; /* Chữ đậm khi active */
+}
