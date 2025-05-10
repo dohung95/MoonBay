@@ -104,7 +104,7 @@ const UserManagement = () => {
                                         <td className="border-2 px-4 py-2">
                                             {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
                                         </td>
-                                        <td className="border-2 px-4 py-2">
+                                        <td className="border-2 px-4 py-2 next_hung" >
                                             <button
                                                 onClick={() => handleDelete(user.id)}
                                                 className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
