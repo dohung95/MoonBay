@@ -15,7 +15,7 @@ const AdminDashboard = () => {
     return (
         <div className="admin-dashboard row" style={{ "--bs-gutter-x": 0 }}>
             {/* Sidebar desktop */}
-            <div className='col-md-2 d-none d-md-block sidebar' style={{ backgroundColor: '#33393e', height: '105vh', paddingTop: '2%' }}>
+            <div className='col-md-2 d-none d-md-block sidebar' style={{ backgroundColor: '#33393e', height: '130vh', paddingTop: '2%' }}>
                 <div>
                     <img src="./images/logo/moonbaylogo.png" alt="" style={{ width: 'auto', height: '65px', borderRadius: '50%', padding: '0 3%' }} />
                     <b style={{ color: 'white' }}>MANAGER</b>
@@ -86,7 +86,7 @@ const AdminDashboard = () => {
                 <div style={{ backgroundColor: '#f1f6f9', width: '100%', height: '15vh', padding: '2% 0%' }}></div>
 
                 {/* Main content */}
-                <div className='container'>
+                <div >
                     <div style={{ width: '100%', height: '70vh' }}>
                         {/* Hiển thị "xin chao" chỉ khi ở trang chính của AdminDashboard */}
                         {isDashboardHome && (
@@ -94,8 +94,8 @@ const AdminDashboard = () => {
                                 <div align="center" style={{ padding: '2% 0' }}>
                                     <h1>Welcome to Moonbay hotel management system!</h1>
                                 </div>
-                                <div>
-                                    
+                                <div align="center">
+                                    <img src="./images/Hung/manager_BG.jpg" alt="" style={{width:'800px', height:'400px'}}/>
                                 </div>
                             </div>
                         )}

@@ -49,3 +49,5 @@ Route::post('/contact', [App\Http\Controllers\ContactController::class, 'send'])
 Route::post('/follow-email', [FollowEmailController::class, 'store']);
 
 Route::get('/users_manager', [UserController::class, 'index']);
+
+Route::delete('/users_manager/{id}', [UserController::class, 'destroy']);
