@@ -6,6 +6,7 @@ import axios from "axios";
 import "./AuthContext.jsx"; // Giả sử bạn đã định nghĩa $user trong AuthContext
 import Banner from "./banner.jsx";
 import { useLocation } from "react-router-dom";
+import PopUp_deposit from "./PopUp_deposit.jsx";
 
 const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
     const { user } = useContext(AuthContext);
@@ -25,6 +26,7 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
         price: '0',
         Total_price: '0',
     });
+    const [isPopUp_deposit, setIsPopUp_deposit] = useState(false); // State để quản lý popup
 
     // Tính thời gian hiện tại và ngày kế tiếp
     const now = new Date();
@@ -132,45 +134,56 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
             return;
         }
 
-        try {
-            const selectedRoom = roomTypes.find((room) => room.name === formData.roomType);
-            const roomTypeId = selectedRoom ? selectedRoom.id : null;
-            const response = await axios.post('/api/booking', {
-                user_id: user.id,
-                name: user.name,
-                email: user.email,
-                phone: user.phone,
-                room_type: formData.roomType,
-                number_of_rooms: formData.room,
-                children: formData.children,
-                member: formData.member,
-                price: selectedRoomPrice,
-                total_price: Total_price(selectedRoomPrice, formData.room),
-                checkin_date: formData.checkin,
-                checkout_date: formData.checkout,
-            });
+        setIsPopUp_deposit(true);
+    };
 
-            if (response.status === 201) {
-                window.showNotification("Booking created successfully!", "success");
-                setFormData({
-                    checkin: '',
-                    checkout: '',
-                    roomType: '',
-                    room: 1,
-                    children: 0,
-                    member: 1,
-                    price: '0',
-                    Total_price: '0',
+    const handlePopupConfirm = async (confirmed) => {
+        if (confirmed) {
+            try {
+                const selectedRoom = roomTypes.find((room) => room.name === formData.roomType);
+                const roomTypeId = selectedRoom ? selectedRoom.id : null;
+                const response = await axios.post('/api/booking', {
+                    user_id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    phone: user.phone,
+                    room_type: formData.roomType,
+                    number_of_rooms: formData.room,
+                    children: formData.children,
+                    member: formData.member,
+                    price: selectedRoomPrice,
+                    total_price: Total_price(selectedRoomPrice, formData.room),
+                    checkin_date: formData.checkin,
+                    checkout_date: formData.checkout,
                 });
-                setSelectedRoomPrice(0);
+
+                if (response.status === 201) {
+                    window.showNotification("Booking created successfully!", "success");
+                    setFormData({
+                        checkin: '',
+                        checkout: '',
+                        roomType: '',
+                        room: 1,
+                        children: 0,
+                        member: 1,
+                        price: '0',
+                        Total_price: '0',
+                    });
+                    setSelectedRoomPrice(0);
+                }
+            } catch (error) {
+                console.error('Error creating booking:', error.response || error);
+                window.showNotification("Failed to create booking", "error");
+                setTimeout(() => {
+                    window.showNotification("Pls add the phone number if you don't have", "error");
+                }, 4000);
             }
-        } catch (error) {
-            console.error('Error creating booking:', error.response || error);
-            window.showNotification("Failed to create booking", "error");
-            setTimeout(() => {
-                window.showNotification("Pls add the phone number if you don't have", "error");
-            }, 4000);
         }
+        setIsPopUp_deposit(false); // Đóng popup dù có xác nhận hay không
+    };
+
+    const handlePopupClose = () => {
+        setIsPopupOpen(false); // Đóng popup mà không xác nhận
     };
 
     // Scroll to the selected section
@@ -287,10 +300,17 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
                                 </div>
                                 <div className="view-price col-md-6">
                                     <p>Total Price: {formData.Total_price}$</p>
+                                    <p>Deposit (20%): {(parseFloat(formData.Total_price) * 0.2).toFixed(2)}$</p>
                                 </div>
                                 <div className="mt-4">
                                     <button onClick={handleBooking} className="btn btn-warning w-100">Book Now</button>
                                 </div>
+                                {isPopUp_deposit && (
+                                    <PopUp_deposit
+                                        onConfirm={handlePopupConfirm}
+                                        onClose={handlePopupClose}
+                                    />
+                                )}
                             </div>
 
                         </form>
