@@ -165,6 +165,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
 
     const handlePopupConfirm = async (confirmed) => {
         if (confirmed) {
+            // cmt đoạn này lại sau khi có component thanh toán 
             try {
                 const response = await axios.post('/api/booking', {
                     user_id: user.id,
@@ -193,12 +194,13 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                     window.showNotification("Pls add the phone number if you don't have", "error");
                 }, 4000);
             }
+            //----------------------------------------------------------------------------------
         }
-        setIsPopUp_deposit(false); // Đóng popup dù có xác nhận hay không
+        setIsPopUp_deposit(false);
     };
 
     const handlePopupClose = () => {
-        setIsPopupOpen(false); // Đóng popup mà không xác nhận
+        setIsPopUp_deposit(false); 
     };
 
     return (
