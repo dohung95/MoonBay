@@ -26,9 +26,12 @@ use App\Http\Controllers\UserController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+//Room Type
 Route::get('/room_types', [RoomController::class, 'index']);
 Route::get('/room-types', [RoomController::class, 'show']);
-Route::get('/tbhotel', [HotelController::class, 'index']);
+Route::put('/room_types/{id}', [RoomController::class, 'update']);
+Route::apiResource('room_types', RoomController::class)->except(['update']);
 
 // dangerous
 Route::get('/google/login', [AuthController::class, 'redirectToGoogle'])->name('google.login');
@@ -50,7 +53,7 @@ Route::post('/contact', [App\Http\Controllers\ContactController::class, 'send'])
 Route::post('/follow-email', [FollowEmailController::class, 'store']);
 
 // fix infor rooms of admin
-Route::put('/room_types/{id}', [RoomController::class, 'update']);
+
 
 
 Route::get('/users_manager', [UserController::class, 'index']);
