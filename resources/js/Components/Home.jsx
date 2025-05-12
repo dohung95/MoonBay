@@ -100,7 +100,7 @@ const Home = () => {
                                                     paddingTop: '15%',
                                                     paddingLeft: '10%'
                                                 }}>
-                                                    <div className='col-md-5'><div>Total Bill</div><b>{offer.total_bill_threshold} VND</b></div>
+                                                    <div className='col-md-5'><div>Total Bill</div><b>{Math.floor(offer.total_bill_threshold).toLocaleString('vi-VN')} VND</b></div>
                                                     <div className='col-md-5'><div>Discount</div><b>{offer.discount_percent}%</b></div>
                                                     <div style={{ textAlign: 'center' }}>
                                                         Time: {new Date(offer.discount_start).toLocaleDateString('vi-VN')} - {new Date(offer.discount_end).toLocaleDateString('vi-VN')}

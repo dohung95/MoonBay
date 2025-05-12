@@ -44,4 +44,5 @@ class SpecialOffer extends Model
         'other_offer_start' => 'date',
         'other_offer_end' => 'date',
     ];
+    public $timestamps = false;
 }

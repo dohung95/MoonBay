@@ -7,19 +7,113 @@ const EditOffer = () => {
     const [offers, setOffers] = useState([]);
 
     useEffect(() => {
-        axios.get('http://localhost:8000/api/special-offers') // hoặc URL deploy
+        axios.get('http://localhost:8000/api/special-offers')
             .then(response => {
                 const filtered = response.data.filter(offer =>
                     offer.season || offer.free_services || offer.total_bill_threshold || offer.stay_duration_days || offer.other_package_description
                 );
                 setOffers(filtered);
+
+                // Đợi DOM render xong rồi set dữ liệu vào form
+                setTimeout(() => {
+                    const first = filtered[0];
+                    if (first) {
+                        if (first.season) document.getElementById('season').value = first.season;
+                        if (first.free_services) document.getElementById('service').value = first.free_services;
+                        if (first.season_start) document.getElementById('seasonStart').value = first.season_start.substring(0, 10);
+                        if (first.season_end) document.getElementById('seasonEnd').value = first.season_end.substring(0, 10);
+
+                        if (first.total_bill_threshold) document.getElementById('totalBill').value = first.total_bill_threshold;
+                        if (first.discount_percent) document.getElementById('discount').value = first.discount_percent;
+                        if (first.discount_start) document.getElementById('discountStart').value = first.discount_start.substring(0, 10);
+                        if (first.discount_end) document.getElementById('discountEnd').value = first.discount_end.substring(0, 10);
+
+                        if (first.stay_duration_days) document.getElementById('totalDays').value = first.stay_duration_days;
+                        if (first.gift_description) document.getElementById('souvenir').value = first.gift_description;
+                        if (first.gift_start) document.getElementById('giftStart').value = first.gift_start.substring(0, 10);
+                        if (first.gift_end) document.getElementById('giftEnd').value = first.gift_end.substring(0, 10);
+
+                        if (first.other_package_description) document.getElementById('condition').value = first.other_package_description;
+                        if (first.offer_type) document.getElementById('endow').value = first.offer_type;
+                        if (first.other_offer_start) document.getElementById('otherStart').value = first.other_offer_start.substring(0, 10);
+                        if (first.other_offer_end) document.getElementById('otherEnd').value = first.other_offer_end.substring(0, 10);
+                    }
+                }, 100); // đợi DOM render xong mới gán
             })
             .catch(error => {
                 console.error("Error while getting offer:", error);
             });
     }, []);
+
+    const handleSubmit = (e) => {
+        e.preventDefault(); // Ngăn reload trang
+
+        // Lấy dữ liệu trực tiếp từ form
+        const updatedOffer = {
+            season: document.getElementById('season').value,
+            free_services: document.getElementById('service').value,
+            season_start: document.getElementById('seasonStart').value,
+            season_end: document.getElementById('seasonEnd').value,
+
+            total_bill_threshold: document.getElementById('totalBill').value,
+            discount_percent: document.getElementById('discount').value,
+            discount_start: document.getElementById('discountStart').value,
+            discount_end: document.getElementById('discountEnd').value,
+
+            stay_duration_days: document.getElementById('totalDays').value,
+            gift_description: document.getElementById('souvenir').value,
+            gift_start: document.getElementById('giftStart').value,
+            gift_end: document.getElementById('giftEnd').value,
+
+            other_package_description: document.getElementById('condition').value,
+            offer_type: document.getElementById('endow').value,
+            other_offer_start: document.getElementById('otherStart').value,
+            other_offer_end: document.getElementById('otherEnd').value,
+        };
+
+        // Gửi dữ liệu lên server (giả sử bạn muốn cập nhật offer đầu tiên)
+        const firstOfferId = offers[0]?.id;
+        if (firstOfferId) {
+            axios.put(`http://localhost:8000/api/special-offers/${firstOfferId}`, updatedOffer)
+                .then(response => {
+                    alert("Update successful!");
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.error("Error while updating:", error);
+                    alert("An error occurred while sending data..");
+                });
+        } else {
+            alert("No offers to update.");
+        }
+    };
+
+    const [status, setStatus] = useState('');
+
+    const sendOffers = async () => {
+        try {
+            const response = await axios.post('http://localhost:8000/api/send-offers', {}, {
+                headers: { 'Accept': 'application/json' }
+            });
+            setStatus('Offers sent successfully!');
+        } catch (error) {
+            console.error('Error sending offers:', error);
+            setStatus('Failed to send offers.');
+        }
+    };
+
     return (
         <>
+        <div className="container py-5">
+                <div className="card shadow-sm">
+                    <div className="card-body text-center">
+                        <h1 className="card-title mb-4">Send promotional information to customers</h1>
+                        <button className="btn btn-primary mb-3" onClick={sendOffers}>Send Offers</button>
+                        {status && <p className="alert alert-info">{status}</p>}
+                    </div>
+                </div>
+            </div>
+
             <div className='row' style={{ padding: '0 5%', justifyContent: 'center' }}>
                 {offers.map((offer, index) => (
                     <React.Fragment key={index}>
@@ -67,7 +161,7 @@ const EditOffer = () => {
                                         paddingTop: '15%',
                                         paddingLeft: '10%'
                                     }}>
-                                        <div className='col-md-5'><div>Total Bill</div><b>{offer.total_bill_threshold} VND</b></div>
+                                        <div className='col-md-5'><div>Total Bill</div><b>{Math.floor(offer.total_bill_threshold).toLocaleString('vi-VN')} VND</b></div>
                                         <div className='col-md-5'><div>Discount</div><b>{offer.discount_percent}%</b></div>
                                         <div style={{ textAlign: 'center' }}>
                                             Time: {new Date(offer.discount_start).toLocaleDateString('vi-VN')} - {new Date(offer.discount_end).toLocaleDateString('vi-VN')}
@@ -129,7 +223,7 @@ const EditOffer = () => {
 
             <div className="container mt-5">
                 <h4 className="mb-4">Edit / Add Offer</h4>
-                <form>
+                <form onSubmit={handleSubmit}>
                     <fieldset className="border p-3 mb-4">
                         <legend className="w-auto px-2">Seasons & Services</legend>
                         <div className="row">
@@ -228,7 +322,6 @@ const EditOffer = () => {
                     </div>
                 </form>
             </div>
-
         </>
     );
 }

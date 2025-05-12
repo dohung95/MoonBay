@@ -10,6 +10,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FollowEmailController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SpecialOfferController;
+use App\Http\Controllers\OfferController;
 
 
 
@@ -62,3 +63,5 @@ Route::get('/users_manager', [UserController::class, 'index']);
 Route::delete('/users_manager/{id}', [UserController::class, 'destroy']);
 
 Route::get('/special-offers', [SpecialOfferController::class, 'index']);
+Route::put('/special-offers/{id}', [SpecialOfferController::class, 'update']);
+Route::post('/send-offers', [OfferController::class, 'sendOffers']);
