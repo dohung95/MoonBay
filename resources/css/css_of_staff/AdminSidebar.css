@@ -1,0 +1,75 @@
+/* Sidebar Wrapper */
+.sidebar-wrapper-staff {
+  width: 240px;
+  background-color: #343a40; /* Dark background */
+  color: #ffffff;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  transition: width 0.3s;
+  overflow: hidden;
+}
+
+.sidebar-wrapper-staff.sidebar-closed-staff {
+  width: 120px;
+  transition: width 0.3s;
+}
+
+/* Sidebar Header */
+.sidebar-header-staff {
+  background-color: #212529; /* Slightly darker header */
+  padding: 15px;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+/* Logo Icon */
+.logo-icon-staff {
+  width: 40px;
+  height: 40px;
+}
+
+.logo-text-staff {
+  transition: opacity 0.3s;
+}
+
+.sidebar-wrapper-staff.sidebar-closed-staff .logo-text {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+/* Navigation Links */
+.nav-link {
+  padding: 10px 15px;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.nav-link:hover {
+  background-color: #495057; /* Hover effect */
+  text-decoration: none;
+  border-radius: 5px;
+}
+
+/* Active Link */
+.nav-link.active {
+  background-color: #495057;
+  font-weight: bold;
+  border-radius: 5px;
+}
+
+/* Icons */
+.nav-link i {
+  font-size: 1.2rem;
+}
+
+/* Sidebar Footer (Optional) */
+.sidebar-footer-staff {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 10px;
+  background-color: #212529;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #adb5bd;
+}
