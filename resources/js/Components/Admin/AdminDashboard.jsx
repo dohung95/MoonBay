@@ -8,7 +8,7 @@ const AdminDashboard = () => {
     const location = useLocation();
 
     const features = ['User Management', 'Room list', 'Employee List','Edit Offer', 'Cài đặt', 'Thông báo', 'Manage Room Info'];
-    const routes = ['UserManagement', 'RoomListManagement', 'EmployeeListManagement','EditOffer', 'tinh_nang4', 'tinh_nang5', 'tinh_nang6'];
+    const routes = ['UserManagement', 'RoomListManagement', 'EmployeeListManagement','EditOffer', 'tinh_nang4', 'tinh_nang5', 'RoomManagement'];
 
     const isDashboardHome = location.pathname === '/admin';
 
