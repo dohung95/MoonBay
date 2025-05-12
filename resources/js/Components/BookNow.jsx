@@ -78,7 +78,7 @@ const BookNow = ({ checkLogins }) => {
                                     {/* Thông tin phòng bên dưới hình ảnh */}
                                     <div className="room-info">
                                         <h3 className="room-name">{room.name}</h3>
-                                        <p className="room-price">beds: {room.capacity}</p>
+                                        <p className="room-price bi bi-people"> {room.capacity}</p>
                                         <p className="room-details">{room.description}</p>
                                     </div>
                                 </div>
