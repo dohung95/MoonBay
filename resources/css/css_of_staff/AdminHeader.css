@@ -1,0 +1,35 @@
+/* Header Wrapper */
+.staff-header {
+  background-color: #343a40;
+  border-bottom: 1px solid #495057;
+  height: 70px;
+}
+
+/* Search Bar */
+.search-staff {
+  width: 250px;
+  border-radius: 20px;
+  padding: 5px 15px;
+  border: 1px solid #495057;
+  background-color: #495057;
+  color: #ffffff;
+}
+
+.search-staff::placeholder {
+  color: #adb5bd;
+}
+
+/* User Box */
+.staff-box {
+  display: flex;
+  align-items: center;
+}
+
+.staff-img {
+  border: 2px solid #adb5bd;
+}
+
+.staff-info {
+  color: #adb5bd;
+  font-size: 0.9rem;
+}
