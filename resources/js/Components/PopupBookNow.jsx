@@ -283,10 +283,10 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                                     Days: {CalculatorDays(formData.checkin, formData.checkout) || '0'}
                                 </p>
                                 <p className="info-item">
-                                    The {selectedRoomName}: {selectedRoomPrice} VNĐ/night
+                                    The {selectedRoomName}: {selectedRoomPrice}0 VNĐ/night
                                 </p>
-                                <p className="info-item">Deposit (20%): {(parseFloat(formData.Total_price) * 0.2).toFixed(2)} VNĐ</p>
-                                <p className="info-item" style={{ marginTop: '5px', marginBottom: '10px' }} >Total Price: {(Total_price(selectedRoomPrice, formData.room) * parseInt(CalculatorDays(formData.checkin, formData.checkout) || 0))} VNĐ</p>
+                                <p className="info-item">Deposit (20%): {(parseFloat(formData.Total_price) * 0.2).toFixed(2)}0 VNĐ</p>
+                                <p className="info-item" style={{ marginTop: '5px', marginBottom: '10px' }} >Total Price: {(Total_price(selectedRoomPrice, formData.room) * parseInt(CalculatorDays(formData.checkin, formData.checkout) || 0))}.000 VNĐ</p>
                             </div>
                             <button onClick={handleBookNow} className="btn btn-primary w-100">Submit</button>
                             {isPopUp_deposit && (
