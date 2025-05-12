@@ -127,11 +127,108 @@ const EditOffer = () => {
                 ))}
             </div>
 
-            <div>
-                <form action="">
-                    
+            <div className="container mt-5">
+                <h4 className="mb-4">Edit / Add Offer</h4>
+                <form>
+                    <fieldset className="border p-3 mb-4">
+                        <legend className="w-auto px-2">Seasons & Services</legend>
+                        <div className="row">
+                            <div className="form-group col-md-6">
+                                <label htmlFor="season">Season</label>
+                                <select className="form-control" id="season">
+                                    <option>Spring</option><option>Summer</option><option>Autumn</option><option>Winter</option>
+                                </select>
+                            </div>
+                            <div className="form-group col-md-6">
+                                <label htmlFor="service">Service</label>
+                                <select className="form-control" id="service">
+                                    <option>Spa</option><option>Swimming pool</option><option>Gym</option><option>Buffet</option><option>Shuttle and Transportation</option>
+                                </select>
+                            </div>
+                            <div className="form-group col-md-6">
+                                <label htmlFor="seasonStart">Start Date</label>
+                                <input type="date" className="form-control" id="seasonStart" />
+                            </div>
+                            <div className="form-group col-md-6">
+                                <label htmlFor="seasonEnd">End Date</label>
+                                <input type="date" className="form-control" id="seasonEnd" />
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset className="border p-3 mb-4">
+                        <legend className="w-auto px-2">Invoice Offer</legend>
+                        <div className="row">
+                            <div className="form-group col-md-6">
+                                <label htmlFor="totalBill">Total Bill (VND)</label>
+                                <input type="number" className="form-control" id="totalBill" />
+                            </div>
+                            <div className="form-group col-md-6">
+                                <label htmlFor="discount">Discount (%)</label>
+                                <input type="number" className="form-control" id="discount" />
+                            </div>
+                            <div className="form-group col-md-6">
+                                <label htmlFor="discountStart">Start Date</label>
+                                <input type="date" className="form-control" id="discountStart" />
+                            </div>
+                            <div className="form-group col-md-6">
+                                <label htmlFor="discountEnd">End Date</label>
+                                <input type="date" className="form-control" id="discountEnd" />
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset className="border p-3 mb-4">
+                        <legend className="w-auto px-2">Accommodation Offers</legend>
+                        <div className="row">
+                            <div className="form-group col-md-6">
+                                <label htmlFor="totalDays">Total Stay Days</label>
+                                <input type="number" className="form-control" id="totalDays" />
+                            </div>
+                            <div className="form-group col-md-6">
+                                <label htmlFor="souvenir">Souvenir</label>
+                                <input type="text" className="form-control" id="souvenir" />
+                            </div>
+                            <div className="form-group col-md-6">
+                                <label htmlFor="giftStart">Start Date</label>
+                                <input type="date" className="form-control" id="giftStart" />
+                            </div>
+                            <div className="form-group col-md-6">
+                                <label htmlFor="giftEnd">End Date</label>
+                                <input type="date" className="form-control" id="giftEnd" />
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset className="border p-3 mb-4">
+                        <legend className="w-auto px-2">Other offers</legend>
+                        <div className="row">
+                            <div className="form-group col-md-6">
+                                <label htmlFor="condition">Condition</label>
+                                <input type="text" className="form-control" id="condition" />
+                            </div>
+                            <div className="form-group col-md-6">
+                                <label htmlFor="endow">Endow</label>
+                                <input type="text" className="form-control" id="endow" />
+                            </div>
+                            <div className="form-group col-md-6">
+                                <label htmlFor="otherStart">Start Date</label>
+                                <input type="date" className="form-control" id="otherStart" />
+                            </div>
+                            <div className="form-group col-md-6">
+                                <label htmlFor="otherEnd">End Date</label>
+                                <input type="date" className="form-control" id="otherEnd" />
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <div className="mt-4 d-flex justify-content-end gap-3">
+                        <button type="submit" className="btn btn-primary">Submit</button>
+                        <button type="reset" className="btn btn-secondary">Reset</button>
+                    </div>
                 </form>
             </div>
+
         </>
     );
 }
