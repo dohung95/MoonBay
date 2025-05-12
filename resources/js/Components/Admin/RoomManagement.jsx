@@ -59,6 +59,12 @@ const RoomManagement = () => {
     formData.append('capacity', String(editingRoom.capacity || '0'));
     formData.append('price', String(editingRoom.price || '0'));
     formData.append('description', String(editingRoom.description || ''));
+
+    // Thêm ảnh mới nếu có
+    if (editingRoom.image) {
+      formData.append('image', editingRoom.image);
+  }
+
     setLoading(true);
 
     formData.append('_method', 'PUT');
@@ -94,15 +100,9 @@ const RoomManagement = () => {
     formData.append('description', newRoom.description);
 
     if (newRoom.image) {
-      const file = newRoom.image;
-      const sanitizedFile = new File(
-        [file],
-        file.name.replace(/[^\w\s.-]/g, "_"),
-        { type: file.type }
-      );
-      formData.append('image', sanitizedFile);
-    }
-
+      formData.append('image', newRoom.image);
+  }
+  
     setLoading(true);
     fetch('/api/room_types', {
       method: 'POST',
@@ -152,6 +152,14 @@ const RoomManagement = () => {
         setLoading(false);
       });
   };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setEditingRoom({ ...editingRoom, image: file });
+};
+
+
+
 
   return (
     <div className="container mt-4">
@@ -272,6 +280,10 @@ const RoomManagement = () => {
                           <div className="col-md-6">
                             <label className="form-label">Description</label>
                             <textarea name="description" className="form-control" value={editingRoom.description} onChange={handleInputChange} />
+                          </div>
+                          <div>
+                            <label className="form-label">Image</label>
+                            <input type="file" name="image" className="form-control" onChange={handleImageChange} />
                           </div>
                         </div>
                         <div className="d-flex gap-2 mt-3">
