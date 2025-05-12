@@ -189,7 +189,7 @@ const Footer = () => {
 
                         <hr />
                         <p>
-                            Copyright ©2025 All rights reserved | This website is made with <span role="img" aria-label="crown">👑</span> by <strong style={{ color: "white" }}>&nbsp;<Link to="/About#The_Brogrammers" smooth={true} duration={500} style={{ textDecoration: 'none', color: 'white' }} >
+                            Copyright ©2025 All rights reserved | This website is made with <span role="img" aria-label="crown">👑</span> by <strong style={{ color: "white" }}>&nbsp;<Link to="/About#The_Brogrammers" smooth="true" duration={500} style={{ textDecoration: 'none', color: 'white' }} >
                                 The Brogrammers
                             </Link></strong>
                         </p>

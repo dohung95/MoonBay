@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import '../../css/my_css/PopupBookNow.css'
 import { AuthContext } from "./AuthContext.jsx";
 import axios from "axios";
+import PopUp_deposit from "./PopUp_deposit.jsx";
 
 const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
     const { user } = useContext(AuthContext);
@@ -20,6 +21,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
         price: '0',
         Total_price: '0',
     });
+    const [isPopUp_deposit, setIsPopUp_deposit] = useState(false); // State để quản lý popup
 
     // Reset formData khi popup đóng
     useEffect(() => {
@@ -158,35 +160,48 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
             return;
         }
 
-        try {
-            const response = await axios.post('/api/booking', {
-                user_id: user.id,
-                name: user.name,
-                email: user.email,
-                phone: user.phone,
-                room_type: formData.roomType,
-                number_of_rooms: formData.room,
-                children: formData.children,
-                member: formData.member,
-                checkin_date: formData.checkin,
-                checkout_date: formData.checkout,
-                price: formData.price,
-                total_price: formData.Total_price,
-            });
-
-            if (response.status === 201) {
-                window.showNotification("Booking created successfully!", "success");
-                closePopup();
-            }
-        } catch (error) {
-
-            console.error('Error creating booking:', error.response || error);
-            setTimeout(() => {
-                window.showNotification("Failed to create booking", "error");
-            }, 0);
-        }
+        setIsPopUp_deposit(true);
     };
 
+    const handlePopupConfirm = async (confirmed) => {
+        if (confirmed) {
+            // cmt đoạn này lại sau khi có component thanh toán 
+            try {
+                const response = await axios.post('/api/booking', {
+                    user_id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    phone: user.phone,
+                    room_type: formData.roomType,
+                    number_of_rooms: formData.room,
+                    children: formData.children,
+                    member: formData.member,
+                    checkin_date: formData.checkin,
+                    checkout_date: formData.checkout,
+                    price: formData.price,
+                    total_price: formData.Total_price,
+                });
+
+                if (response.status === 201) {
+                    window.showNotification("Booking created successfully!", "success");
+                    closePopup();
+                    setIsPopUp_deposit(false);
+                }
+            } catch (error) {
+                console.error('Error creating booking:', error.response || error);
+                window.showNotification("Failed to create booking", "error");
+                setTimeout(() => {
+                    window.showNotification("Pls add the phone number if you don't have", "error");
+                }, 4000);
+            }
+            //----------------------------------------------------------------------------------
+        }
+        setIsPopUp_deposit(false);
+    };
+
+    const handlePopupClose = () => {
+        setIsPopUp_deposit(false); 
+    };
 
     return (
         <>
@@ -239,8 +254,15 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                                     The {selectedRoomName}: {selectedRoomPrice} /night
                                 </p>
                                 <p style={{ marginTop: '5px', marginBottom: '10px' }} >Total Price: {Total_price(selectedRoomPrice, formData.room)}</p>
+                                <p>Deposit (20%): {(parseFloat(formData.Total_price) * 0.2).toFixed(2)}$</p>
                             </div>
                             <button onClick={handleBookNow} className="btn btn-primary w-100">Submit</button>
+                            {isPopUp_deposit && (
+                                <PopUp_deposit
+                                    onConfirm={handlePopupConfirm}
+                                    onClose={handlePopupClose}
+                                />
+                            )}
                         </form>
                     </div>
                 </div>
