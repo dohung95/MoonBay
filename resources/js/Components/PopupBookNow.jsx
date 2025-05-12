@@ -22,6 +22,9 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
         Total_price: '0',
     });
     const [isPopUp_deposit, setIsPopUp_deposit] = useState(false); // State để quản lý popup
+    const CalculatorDays = (checkin, checkout) => {
+        return Math.ceil(Math.abs(new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24) + 1);
+    }
 
     // Reset formData khi popup đóng
     useEffect(() => {
@@ -77,13 +80,15 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                     formattedRooms = response.data.map(room => ({
                         id: room.id,
                         name: room.name,
-                        price: room.price
+                        price: room.price,
+                        capacity: room.capacity || 0
                     }));
                 } else if (response.data && response.data.data && Array.isArray(response.data.data)) {
                     formattedRooms = response.data.data.map(room => ({
                         id: room.id,
                         name: room.name,
-                        price: room.price
+                        price: room.price,
+                        capacity: room.capacity || 0 
                     }));
                 } else {
                     console.error('Unexpected data structure:', response.data);
@@ -115,6 +120,13 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
 
     const handleChange = (event) => {
         const { id, value } = event.target;
+        const newValue = id === "member" ? parseInt(value) || 0 : value;
+
+        const maxCapacity =
+        roomTypes.length > 0
+            ? roomTypes.find((roomType) => roomType.name === selectedRoomName)?.capacity || 0
+            : 0;
+        
         setFormData((prevData) => ({
             ...prevData,
             [id]: value,
@@ -124,6 +136,10 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
             const selectedRoom = roomTypes.find((room) => room.id === parseInt(value));
             const price = selectedRoom ? selectedRoom.price : 0;
             setSelectedRoomPrice(price);
+        }
+
+        if (id === "member" && newValue > maxCapacity) {
+            window.showNotification(`Maximum capacity is ${maxCapacity}. Please reduce the number of members.`, "error");
         }
     };
 
@@ -157,6 +173,16 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
         minCheckoutDate.setHours(checkinDate.getHours() + 1);
         if (checkoutDate <= minCheckoutDate) {
             window.showNotification("Check-out time must be at least 1 hour after check-in.", "error");
+            return;
+        }
+
+        const maxCapacity =
+            roomTypes.length > 0
+                ? roomTypes.find((roomType) => roomType.name === selectedRoomName)?.capacity || 0
+                : 0;
+
+        if (parseInt(formData.member) > maxCapacity) {
+            window.showNotification(`Cannot book. Number of members (${formData.member}) exceeds room capacity (${maxCapacity}).`, "error");
             return;
         }
 
@@ -247,14 +273,20 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                             </div>
                             <div className="mb-3">
                                 <label htmlFor="member" className="form-label">Member:</label>
-                                <input type="number" id="member" name="member" className="form-control" placeholder="1" min="1" onChange={handleChange} />
+                                <input type="number" id="member" name="member" className="form-control" min={0}
+                                        max={formData.roomType ? roomTypes.find((roomType) => roomType.name === formData.roomType).capacity : 0}
+                                        onChange={handleChange}
+                                        placeholder="0" />
                             </div>
-                            <div className="view-price-popup">
-                                <p>
-                                    The {selectedRoomName}: {selectedRoomPrice} /night
+                            <div className="view-price-popup info-row">
+                                <p className="info-item">
+                                    Days: {CalculatorDays(formData.checkin, formData.checkout) || '0'}
                                 </p>
-                                <p style={{ marginTop: '5px', marginBottom: '10px' }} >Total Price: {Total_price(selectedRoomPrice, formData.room)}</p>
-                                <p>Deposit (20%): {(parseFloat(formData.Total_price) * 0.2).toFixed(2)}$</p>
+                                <p className="info-item">
+                                    The {selectedRoomName}: {selectedRoomPrice} VNĐ/night
+                                </p>
+                                <p className="info-item">Deposit (20%): {(parseFloat(formData.Total_price) * 0.2).toFixed(2)} VNĐ</p>
+                                <p className="info-item" style={{ marginTop: '5px', marginBottom: '10px' }} >Total Price: {(Total_price(selectedRoomPrice, formData.room) * parseInt(CalculatorDays(formData.checkin, formData.checkout) || 0))} VNĐ</p>
                             </div>
                             <button onClick={handleBookNow} className="btn btn-primary w-100">Submit</button>
                             {isPopUp_deposit && (

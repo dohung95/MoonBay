@@ -37,6 +37,7 @@ class RoomController extends Controller
                 'id' => $roomType->id,
                 'name' => $roomType->name,
                 'price' => $roomType->price,
+                'capacity' => $roomType->capacity,
             ];
         });
 

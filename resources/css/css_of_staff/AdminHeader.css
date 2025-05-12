@@ -13,6 +13,7 @@
   border: 1px solid #495057;
   background-color: #495057;
   color: #ffffff;
+  margin: 0 !important;
 }
 
 .search-staff::placeholder {
@@ -26,10 +27,14 @@
 }
 
 .staff-img {
-  border: 2px solid #adb5bd;
+  margin-right: 10px;
 }
 
 .staff-info {
   color: #adb5bd;
   font-size: 0.9rem;
+}
+
+.logo-icon-staff {
+  border-radius: 30px;
 }

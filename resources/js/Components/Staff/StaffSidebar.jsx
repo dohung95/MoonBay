@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import "./AdminSidebar.css"; // Import CSS tùy chỉnh
+import "../../../css/css_of_staff/AdminSidebar.css"; // Import CSS tùy chỉnh
 
-const AdminSidebar = () => {
+const StaffSidebar = () => {
   const [isOpen, setIsOpen] = useState(true);
 
   const handleToggle = () => {
@@ -13,7 +13,7 @@ const AdminSidebar = () => {
       <div className="sidebar-header-staff d-flex align-items-center justify-content-between p-3 border-bottom">
         <div className="d-flex align-items-center">
           <img
-            src="/backend/assets/images/logo-icon.png"
+            src="/images/logo/moonbaylogo.png"
             className="logo-icon-staff me-2"
             alt="logo icon"
           />
@@ -40,4 +40,4 @@ const AdminSidebar = () => {
   );
 };
 
-export default AdminSidebar;
+export default StaffSidebar;

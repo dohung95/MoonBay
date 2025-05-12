@@ -271,7 +271,7 @@ const Account = () => {
                             {bookings.length > 0 ? (
                                 <div className="bookings-container">
                                     {bookings.map((booking) => {
-                                        const checkinDate = new Date(booking.checkin_date + 'Z'); // Thêm 'Z' để giả định UTC
+                                        const checkinDate = new Date(booking.checkin_date + 'Z');
                                         const now = new Date();
                                         const canCancel = checkinDate > now;
                                         return (
@@ -296,6 +296,22 @@ const Account = () => {
                                                             </span>
                                                             <span className="info-item">
                                                                 <strong>Member:</strong> <span className="text-muted">{booking.member}</span>
+                                                            </span>
+                                                        </div>
+                                                        <div className="info-row">
+                                                            <span className="info-item">
+                                                                <strong>Days:</strong> <span className="text-muted">{Math.ceil(Math.abs(new Date(booking.checkout_date) - new Date(booking.checkin_date)) / (1000 * 60 * 60 * 24) + 1)}</span>
+                                                            </span>
+                                                            <span className='info-item'>
+                                                                <strong>Price:</strong> <span className="text-muted">{booking.price} VNĐ/night</span>
+                                                            </span>
+                                                            <span className="info-item">  
+                                                                <strong>Deposit:</strong> <span className="text-muted">{(parseFloat(booking.total_price) * 0.2).toFixed(2)} VNĐ % of total price</span>
+                                                            </span>
+                                                        </div>
+                                                        <div className="info-row">
+                                                            <span className="info-item">
+                                                                <strong>Total Cost:</strong> <span className="text-muted">{booking.total_price} VNĐ</span>
                                                             </span>
                                                         </div>
                                                     </div>

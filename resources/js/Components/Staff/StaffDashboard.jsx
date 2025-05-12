@@ -1,19 +1,22 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import '../../../css/StaffDashboard.css';
+import React from "react";
+import StaffHeader from "./StaffHeader";
+import StaffSidebar from "./StaffSidebar";
+import StaffFooter from "./StaffFooter";
+import "simplebar-react/dist/simplebar.min.css";
+import "boxicons/css/boxicons.min.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+//import "./App.css"; // Assuming you have a CSS file for custom styles
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
-const StaffDashboard = () => {
+const StaffDashboard = ({children}) => {
     return (
-        <div className="staff-dashboard container mt-4">
-            <h1 className="mb-4">Bảng điều khiển Nhân viên</h1>
-            <nav className="staff-nav mb-4">
-                <Link to="/staff/bookings" className="btn btn-primary me-2">Quản lý đặt phòng</Link>
-                <Link to="/staff/rooms" className="btn btn-primary">Quản lý phòng</Link>
-            </nav>
-            <div className="staff-content card p-4">
-                <p>Chào mừng đến với bảng điều khiển Nhân viên! Chọn một mục từ menu để bắt đầu quản lý.</p>
+        <div className="admin-layout">
+            <StaffHeader />
+            <div className="admin-content d-flex">
+                <StaffSidebar />
+                <main className="flex-grow-1">{children}</main>
             </div>
+            <StaffFooter />
         </div>
     );
 };
