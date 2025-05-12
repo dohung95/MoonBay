@@ -9,6 +9,7 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FollowEmailController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\SpecialOfferController;
 
 
 
@@ -59,3 +60,5 @@ Route::post('/follow-email', [FollowEmailController::class, 'store']);
 Route::get('/users_manager', [UserController::class, 'index']);
 
 Route::delete('/users_manager/{id}', [UserController::class, 'destroy']);
+
+Route::get('/special-offers', [SpecialOfferController::class, 'index']);
