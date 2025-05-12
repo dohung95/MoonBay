@@ -29,7 +29,7 @@ import RoomListManagement from './Components/Admin/RoomListManagement.jsx';
 import EmployeeListManagement from './Components/Admin/EmployeeListManagement.jsx';
 import TinhNang4 from './Components/Admin/TinhNang4.jsx';
 import TinhNang5 from './Components/Admin/TinhNang5.jsx';
-import TinhNang6 from './Components/Admin/Tinhnang6.jsx';
+import RoomManagement from './Components/Admin/RoomManagement.jsx';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 // PopupContext để quản lý trạng thái popup
@@ -364,7 +364,7 @@ const App = () => {
                         <Route path="EmployeeListManagement" element={<EmployeeListManagement />} />
                         <Route path="tinh_nang4" element={<TinhNang4 />} />
                         <Route path="tinh_nang5" element={<TinhNang5 />} />
-                        <Route path="tinh_nang6" element={<TinhNang6 />} />
+                        <Route path="RoomManagement" element={<RoomManagement />} />
                         </Route>
                         <Route
                             path="/admin/users"

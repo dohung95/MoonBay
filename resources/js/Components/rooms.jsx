@@ -72,7 +72,7 @@ const Rooms = ({ checkLogins }) => {
                   }`}
               >
                 <div className="room-image">
-                  <img src={room.image} alt={room.name} />
+                  <img src={`/storage/${room.image}`} alt={room.name} />
                 </div>
                 <div className="room-info p-4">
                   <h5 className="mb-3">{room.name}</h5>
