@@ -11,6 +11,7 @@ use App\Http\Controllers\FollowEmailController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SpecialOfferController;
 use App\Http\Controllers\OfferController;
+use App\Http\Controllers\RoomInfoController;
 
 
 
@@ -54,13 +55,13 @@ Route::post('/contact', [App\Http\Controllers\ContactController::class, 'send'])
 
 Route::post('/follow-email', [FollowEmailController::class, 'store']);
 
-// fix infor rooms of admin
-
-
 
 Route::get('/users_manager', [UserController::class, 'index']);
+Route::get('/staff_manager', [UserController::class, 'show_staff']);
+Route::get('/room_list', [RoomInfoController::class, 'index']);
 
 Route::delete('/users_manager/{id}', [UserController::class, 'destroy']);
+Route::delete('/staff_manager/{id}', [UserController::class, 'destroy']);
 
 Route::get('/special-offers', [SpecialOfferController::class, 'index']);
 Route::put('/special-offers/{id}', [SpecialOfferController::class, 'update']);

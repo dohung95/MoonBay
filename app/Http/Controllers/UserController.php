@@ -22,4 +22,9 @@ class UserController extends Controller
         $user->delete();
         return response()->json(['message' => 'User deleted successfully']);
     }
+    public function show_staff()
+    {
+        $staff = User::where('role', 'staff')->paginate(10);
+        return response()->json($staff);
+    }
 }
