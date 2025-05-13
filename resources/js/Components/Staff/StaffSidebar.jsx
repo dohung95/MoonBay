@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import "../../../css/css_of_staff/StaffSidebar.css"; 
+import "../../../css/css_of_staff/StaffSidebar.css";
 import { NavLink } from 'react-router-dom';
+import { useSearch } from './SearchContext';
 
 const StaffSidebar = () => {
   const [isOpen, setIsOpen] = useState(true);
+  const { searchQuery, setSearchQuery } = useSearch();
 
   const handleToggle = () => {
     setIsOpen((prev) => !prev);
@@ -33,14 +35,18 @@ const StaffSidebar = () => {
 
       <ul className={`nav flex-column mt-3`}>
         <li className="nav-item">
-          <NavLink className="nav-link text-white d-flex align-items-center" to="/staff/UserData">
+          <NavLink
+            className="nav-link text-white d-flex align-items-center btn me-2" to="/staff/UserData"
+          >
             <i className="bx bx-user-circle me-2"></i>
             {isOpen && "List User"}
-            
           </NavLink>
         </li>
         <li className="nav-item">
-          <NavLink className="nav-link text-white d-flex align-items-center" to="/staff/BookingList">
+          <NavLink
+            className="nav-link text-white d-flex align-items-center btn "
+            to="/staff/BookingList"
+          >
             <i className="bx bx-right-arrow-alt me-2"></i>
             {isOpen && "booking history"}
           </NavLink>

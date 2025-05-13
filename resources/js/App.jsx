@@ -38,6 +38,7 @@ import RoomManagement from './Components/Admin/RoomManagement.jsx';
 import StaffBookings from './Components/Staff/StaffBookings.jsx';
 import StaffUser from './Components/Staff/StaffUser.jsx';
 import StaffRooms from './Components/Staff/StaffRooms.jsx';
+import { SearchProvider } from './Components/Staff/SearchContext.jsx'
 //---------------------------------------------------------
 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -186,6 +187,7 @@ const App = () => {
     return (
         <PopupContext.Provider value={{ closePopup }}>
             <AuthProvider>
+                <SearchProvider>
                 <Router>
                     <AuthHandler />
                     <Routes>
@@ -406,37 +408,40 @@ const App = () => {
                         />
 
                         {/* Route Staff */}
-                        <Route
-                            path="/staff"
-                            element={
-                                <ProtectedStaffRoute>
-                                    <StaffLayout>
-                                        <StaffDashboard />
-                                    </StaffLayout>
-                                </ProtectedStaffRoute>
-                            }
-                        >
+                       
                             <Route
-                                path="UserData"
+                                path="/staff"
                                 element={
-                                    <StaffUser />
+                                    <ProtectedStaffRoute>
+                                        <StaffLayout>
+                                            <StaffDashboard />
+                                        </StaffLayout>
+                                    </ProtectedStaffRoute>
                                 }
-                            />
-                            <Route
-                                path="BookingList"
-                                element={
-                                    <StaffBookings />
-                                }
-                            />
-                            <Route
-                                path="RoomList"
-                                element={
-                                    <StaffRooms />
-                                }
-                            />
-                        </Route>
+                            >
+                                <Route
+                                    path="UserData"
+                                    element={
+                                        <StaffUser />
+                                    }
+                                />
+                                <Route
+                                    path="BookingList"
+                                    element={
+                                        <StaffBookings />
+                                    }
+                                />
+                                <Route
+                                    path="RoomList"
+                                    element={
+                                        <StaffRooms />
+                                    }
+                                />
+                            </Route>
+                        
                     </Routes>
                 </Router>
+                </SearchProvider>
             </AuthProvider>
         </PopupContext.Provider>
     );
