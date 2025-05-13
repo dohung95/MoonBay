@@ -24,6 +24,7 @@ import ProtectedStaffRoute from './Components/ProtectedStaffRoute.jsx';
 import AdminDashboard from './Components/Admin/AdminDashboard.jsx';
 import StaffDashboard from './Components/Staff/StaffDashboard.jsx';
 
+// components admin
 import UserManagement from './Components/Admin/UserManagement.jsx';
 import RoomListManagement from './Components/Admin/RoomListManagement.jsx';
 import EmployeeListManagement from './Components/Admin/EmployeeListManagement.jsx';
@@ -31,8 +32,15 @@ import EditOffer from './Components/Admin/EditOffer.jsx';
 import TinhNang4 from './Components/Admin/TinhNang4.jsx';
 import TinhNang5 from './Components/Admin/TinhNang5.jsx';
 import RoomManagement from './Components/Admin/RoomManagement.jsx';
+import StaffUser from './Components/Staff/StaffUser.jsx';
+//-----------------------------------------------------
+
+//components staff
+import StaffBookings from './Components/Staff/StaffBookings.jsx';
+//---------------------------------------------------------
 
 import 'bootstrap/dist/css/bootstrap.min.css';
+
 // PopupContext để quản lý trạng thái popup
 export const PopupContext = React.createContext();
 
@@ -408,19 +416,21 @@ const App = () => {
                             }
                         />
                         <Route
-                            path="/staff/bookings"
+                            path="/staff/users"
                             element={
                                 <ProtectedStaffRoute>
                                     <StaffLayout>
+                                        <StaffUser />
                                     </StaffLayout>
                                 </ProtectedStaffRoute>
                             }
                         />
                         <Route
-                            path="/staff/rooms"
+                            path="/staff/bookings"
                             element={
                                 <ProtectedStaffRoute>
                                     <StaffLayout>
+                                        <StaffBookings />
                                     </StaffLayout>
                                 </ProtectedStaffRoute>
                             }

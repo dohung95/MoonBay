@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import '../../css/my_css/booking.css';
 import BookNow from "./BookNow.jsx";
 import { AuthContext } from "./AuthContext.jsx"; // Import AuthContext
@@ -146,7 +146,7 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
             window.showNotification("Check-out time must be at least 1 hour after check-in.", "error");
             return;
         }
-        
+
         const maxCapacity =
             roomTypes.length > 0
                 ? roomTypes.find((roomType) => roomType.name === formData.roomType)?.capacity || 0
@@ -194,6 +194,12 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
                         Total_price: '0',
                     });
                     setSelectedRoomPrice(0);
+                    if (checkinRef.current) {
+                        checkinRef.current.value = '';
+                    }
+                    if (checkoutRef.current) {
+                        checkoutRef.current.value = '';
+                    }
                 }
             } catch (error) {
                 console.error('Error creating booking:', error.response || error);
@@ -223,6 +229,9 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
         }
     }, [location]);
 
+    const checkinRef = useRef(null);
+    const checkoutRef = useRef(null);
+
     return (
         <>
             <Banner title="Booking Now" description="Book your stay with us" />
@@ -247,11 +256,13 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
                             <div className="row g-3">
                                 <div className="col-md-6">
                                     <label htmlFor="checkin" className="form-label">Check-in:</label>
-                                    <input type="datetime-local" id="checkin" className="form-control" onChange={handleChange} min={minCheckin} />
+                                    <input ref={checkinRef} value={formData.checkin} type="datetime-local" id="checkin" className="form-control" onChange={handleChange} min={minCheckin} />
                                 </div>
                                 <div className="col-md-6">
                                     <label htmlFor="checkout" className="form-label">Check-out:</label>
                                     <input
+                                        ref={checkoutRef}
+                                        value={formData.checkout}
                                         type="datetime-local"
                                         id="checkout"
                                         className="form-control"
@@ -328,7 +339,7 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
                                 </div>
                                 <div className="view-price col-md-6">
                                     <p>Deposit (20%): {(parseFloat(formData.Total_price) * 0.2).toFixed(2)}0 VNĐ</p>
-                                    <p>Total Price: {(formData.Total_price * parseInt(CalculatorDays(formData.checkin, formData.checkout) || '0'))}00 VNĐ</p>
+                                    <p>Total Price: {(formData.Total_price * parseInt(CalculatorDays(formData.checkin, formData.checkout) || '0'))}000 VNĐ</p>
                                 </div>
                                 <div className="mt-4">
                                     <button onClick={handleBooking} className="btn btn-warning w-100">Book Now</button>

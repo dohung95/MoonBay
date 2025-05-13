@@ -53,6 +53,11 @@ Route::post('/contact', [App\Http\Controllers\ContactController::class, 'send'])
 
 Route::post('/follow-email', [FollowEmailController::class, 'store']);
 
+// route của staff
+Route::get('/dataUser', [UserController::class, 'dataUser']);
+//=----------------------------------------------
+
+
 // fix infor rooms of admin
 
 

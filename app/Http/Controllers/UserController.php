@@ -1,5 +1,6 @@
 <?php
 
+namespace App\Http\Controllers\Api;
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
@@ -21,5 +22,22 @@ class UserController extends Controller
 
         $user->delete();
         return response()->json(['message' => 'User deleted successfully']);
+    }
+
+    public function dataUser(Request $request)
+    {
+        try {
+            // Lấy danh sách người dùng với role = 'user'
+            $users = User::where('role', 'user')
+                ->select('id', 'name', 'email', 'role', 'phone', 'email_verified_at', 'status', 'created_at', 'updated_at', 'provider') // Chỉ lấy các trường cần thiết
+                ->get();
+
+            return response()->json($users, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Lỗi khi lấy danh sách người dùng',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
