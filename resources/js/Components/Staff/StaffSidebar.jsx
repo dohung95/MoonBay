@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import "../../../css/css_of_staff/AdminSidebar.css"; 
+import "../../../css/css_of_staff/StaffSidebar.css"; 
+import { NavLink } from 'react-router-dom';
 
 const StaffSidebar = () => {
   const [isOpen, setIsOpen] = useState(true);
@@ -28,16 +29,21 @@ const StaffSidebar = () => {
         </div>
       </div>
 
-      <ul className={`nav flex-column mt-3${isOpen ? "" : " d-none"}`}>
+      {/* Menu items */}
+
+      <ul className={`nav flex-column mt-3`}>
         <li className="nav-item">
-          <a className="nav-link text-white d-flex align-items-center" href="/staff/users">
-            <i className="bx bx-home-circle me-2"></i> List User
-          </a>
+          <NavLink className="nav-link text-white d-flex align-items-center" to="/staff/UserData">
+            <i className="bx bx-user-circle me-2"></i>
+            {isOpen && "List User"}
+            
+          </NavLink>
         </li>
         <li className="nav-item">
-          <a className="nav-link text-white d-flex align-items-center" href="/staff/bookings">
-            <i className="bx bx-right-arrow-alt me-2"></i> List Bookings
-          </a>
+          <NavLink className="nav-link text-white d-flex align-items-center" to="/staff/BookingList">
+            <i className="bx bx-right-arrow-alt me-2"></i>
+            {isOpen && "booking history"}
+          </NavLink>
         </li>
         {/* Add other menu items here */}
       </ul>

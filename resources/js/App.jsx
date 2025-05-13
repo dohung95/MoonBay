@@ -32,11 +32,12 @@ import EditOffer from './Components/Admin/EditOffer.jsx';
 import TinhNang4 from './Components/Admin/TinhNang4.jsx';
 import TinhNang5 from './Components/Admin/TinhNang5.jsx';
 import RoomManagement from './Components/Admin/RoomManagement.jsx';
-import StaffUser from './Components/Staff/StaffUser.jsx';
 //-----------------------------------------------------
 
 //components staff
 import StaffBookings from './Components/Staff/StaffBookings.jsx';
+import StaffUser from './Components/Staff/StaffUser.jsx';
+import StaffRooms from './Components/Staff/StaffRooms.jsx';
 //---------------------------------------------------------
 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -414,27 +415,26 @@ const App = () => {
                                     </StaffLayout>
                                 </ProtectedStaffRoute>
                             }
-                        />
-                        <Route
-                            path="/staff/users"
-                            element={
-                                <ProtectedStaffRoute>
-                                    <StaffLayout>
-                                        <StaffUser />
-                                    </StaffLayout>
-                                </ProtectedStaffRoute>
-                            }
-                        />
-                        <Route
-                            path="/staff/bookings"
-                            element={
-                                <ProtectedStaffRoute>
-                                    <StaffLayout>
-                                        <StaffBookings />
-                                    </StaffLayout>
-                                </ProtectedStaffRoute>
-                            }
-                        />
+                        >
+                            <Route
+                                path="UserData"
+                                element={
+                                    <StaffUser />
+                                }
+                            />
+                            <Route
+                                path="BookingList"
+                                element={
+                                    <StaffBookings />
+                                }
+                            />
+                            <Route
+                                path="RoomList"
+                                element={
+                                    <StaffRooms />
+                                }
+                            />
+                        </Route>
                     </Routes>
                 </Router>
             </AuthProvider>

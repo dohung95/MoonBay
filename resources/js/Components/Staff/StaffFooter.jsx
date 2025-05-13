@@ -1,5 +1,5 @@
 import React from "react";
-import "../../../css/css_of_staff/AdminFooter.css"; // Import CSS tùy chỉnh
+import "../../../css/css_of_staff/StaffFooter.css"; // Import CSS tùy chỉnh
 
 const StaffFooter = () => {
   return (

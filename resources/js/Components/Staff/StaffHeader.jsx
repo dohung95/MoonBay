@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import "../../../css/css_of_staff/AdminHeader.css";
+import "../../../css/css_of_staff/StaffHeader.css";
 import { AuthContext } from '../AuthContext';
 
 const StaffHeader = () => {
