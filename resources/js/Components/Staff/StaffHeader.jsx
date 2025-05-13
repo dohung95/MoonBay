@@ -1,13 +1,12 @@
-import React from "react";
-import "./AdminHeader.css"; // Import CSS tùy chỉnh
+import React, { useContext, useState, useEffect } from 'react';
+import "../../../css/css_of_staff/AdminHeader.css";
+import { AuthContext } from '../AuthContext';
 
-const AdminHeader = () => {
+const StaffHeader = () => {
+  const { user } = useContext(AuthContext);
   return (
     <header className="staff-header bg-dark text-white d-flex align-items-center justify-content-between px-3 py-2">
       <div className="d-flex align-items-center">
-        <div className="mobile-toggle-menu me-3">
-          <i className="bx bx-menu text-white fs-4"></i>
-        </div>
         <h4 className="mb-0">Staff Dashboard</h4>
       </div>
       <div className="d-flex align-items-center">
@@ -20,15 +19,15 @@ const AdminHeader = () => {
         </div>
         <div className="staff-box d-flex align-items-center">
           <img
-            src="/path/to/admin-image.jpg"
-            className="staff-img rounded-circle me-2"
-            alt="Staff avatar"
+            src={user.avatar}
+            alt="Avatar"
             width="40"
             height="40"
+            className="staff-img"
           />
           <div className="staff-info">
-            <p className="staff-name mb-0">Admin Name</p>
-            <p className="staff-designation mb-0">admin@example.com</p>
+            <p className="staff-name mb-0">{user.name}</p>
+            <p className="staff-designation mb-0">{user.email}</p>
           </div>
         </div>
       </div>
@@ -36,4 +35,4 @@ const AdminHeader = () => {
   );
 };
 
-export default AdminHeader;
+export default StaffHeader;

@@ -27,7 +27,9 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
         Total_price: '0',
     });
     const [isPopUp_deposit, setIsPopUp_deposit] = useState(false); // State để quản lý popup
-
+    const CalculatorDays = (checkin, checkout) => {
+        return Math.ceil(Math.abs(new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24) + 1);
+    }
     // Tính thời gian hiện tại và ngày kế tiếp
     const now = new Date();
 
@@ -46,6 +48,13 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
 
     const handleChange = (event) => {
         const { id, value } = event.target;
+        const newValue = id === "member" ? parseInt(value) || 0 : value;
+
+        const maxCapacity =
+            roomTypes.length > 0
+                ? roomTypes.find((roomType) => roomType.name === formData.roomType)?.capacity || 0
+                : 0;
+
         setFormData((prevData) => {
             const updatedData = {
                 ...prevData,
@@ -60,6 +69,10 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
                 updatedData.Total_price = Total_price(price, updatedData.room).toString();
             } else if (id === 'room') {
                 updatedData.Total_price = Total_price(selectedRoomPrice, value).toString();
+            }
+
+            if (id === "member" && newValue > maxCapacity) {
+                window.showNotification(`Maximum capacity is ${maxCapacity}. Please reduce the number of members.`, "error");
             }
 
             return updatedData;
@@ -133,6 +146,16 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
             window.showNotification("Check-out time must be at least 1 hour after check-in.", "error");
             return;
         }
+        
+        const maxCapacity =
+            roomTypes.length > 0
+                ? roomTypes.find((roomType) => roomType.name === formData.roomType)?.capacity || 0
+                : 0;
+
+        if (parseInt(formData.member) > maxCapacity) {
+            window.showNotification(`Cannot book. Number of members (${formData.member}) exceeds room capacity (${maxCapacity}).`, "error");
+            return; // Ngăn không mở popup nếu vượt quá capacity
+        }
 
         setIsPopUp_deposit(true);
     };
@@ -140,7 +163,7 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
     const handlePopupConfirm = async (confirmed) => {
         if (confirmed) {
             // cmt đoạn này lại sau khi có component thanh toán
-            try {    
+            try {
                 const selectedRoom = roomTypes.find((room) => room.name === formData.roomType);
                 const roomTypeId = selectedRoom ? selectedRoom.id : null;
                 const response = await axios.post('/api/booking', {
@@ -287,22 +310,25 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
                                         type="number"
                                         id="member"
                                         className="form-control"
-                                        min="1"
-                                        // value={formData.member}
+                                        min={0}
+                                        max={formData.roomType ? roomTypes.find((roomType) => roomType.name === formData.roomType).capacity : 0}
                                         onChange={handleChange}
-                                        placeholder="1"
+                                        placeholder="0"
                                     />
                                 </div>
                             </div>
                             <div className="row">
                                 <div className="view-price col-md-6">
                                     <p>
-                                        The {formData.roomType || 'room Type'}: {selectedRoomPrice}$/night
+                                        Days: {CalculatorDays(formData.checkin, formData.checkout) || '0'}
+                                    </p>
+                                    <p>
+                                        The {formData.roomType || 'room Type'}: {selectedRoomPrice}0 VNĐ/night
                                     </p>
                                 </div>
                                 <div className="view-price col-md-6">
-                                    <p>Total Price: {formData.Total_price}$</p>
-                                    <p>Deposit (20%): {(parseFloat(formData.Total_price) * 0.2).toFixed(2)}$</p>
+                                    <p>Deposit (20%): {(parseFloat(formData.Total_price) * 0.2).toFixed(2)}0 VNĐ</p>
+                                    <p>Total Price: {(formData.Total_price * parseInt(CalculatorDays(formData.checkin, formData.checkout) || '0'))}00 VNĐ</p>
                                 </div>
                                 <div className="mt-4">
                                     <button onClick={handleBooking} className="btn btn-warning w-100">Book Now</button>

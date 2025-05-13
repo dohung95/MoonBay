@@ -1,7 +1,7 @@
 import React from "react";
-import "./AdminFooter.css"; // Import CSS tùy chỉnh
+import "../../../css/css_of_staff/AdminFooter.css"; // Import CSS tùy chỉnh
 
-const AdminFooter = () => {
+const StaffFooter = () => {
   return (
     <footer className="staff-footer bg-dark text-white text-center py-3">
       <p className="mb-0">
@@ -11,4 +11,4 @@ const AdminFooter = () => {
   );
 };
 
-export default AdminFooter;
+export default StaffFooter;
