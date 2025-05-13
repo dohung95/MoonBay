@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, NavLink } from 'react-router-dom';
-import '../../../css/AdminDashboard.css';
+import '../../../css/css_of_admin/AdminDashboard.css';
 
 const AdminDashboard = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);

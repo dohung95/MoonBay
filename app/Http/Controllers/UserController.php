@@ -40,4 +40,10 @@ class UserController extends Controller
             ], 500);
         }
     }
+    
+    public function show_staff()
+    {
+        $staff = User::where('role', 'staff')->paginate(10);
+        return response()->json($staff);
+    }
 }

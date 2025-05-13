@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import '../../../css/UserManagement.css';
+import '../../../css/css_of_admin/UserManagement.css'; // File CSS đã được scoped
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
@@ -54,105 +54,140 @@ const UserManagement = () => {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-2">
-            <ToastContainer
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-            />
-            <div align="center" style={{ padding: '0.5% 0' }}>
-                <b style={{ fontSize: '30px' }}>Customer List</b>
-            </div>
-
-            {loading && <p>Loading data...</p>}
-
-            {!loading && (
-                <div className="w-full max-w-5xl overflow-x-auto" align="center">
-                    <table className="min-w-full table-auto border-2 divide-y" style={{ borderColor: "#9ebed1" }}>
-                        <thead>
-                            <tr className="border-2 px-4 py-2">
-                                <th className="border-2 px-4 py-2">No.</th>
-                                <th className="border-2 px-4 py-2">ID</th>
-                                <th className="border-2 px-4 py-2">Name</th>
-                                <th className="border-2 px-4 py-2">Email</th>
-                                <th className="border-2 px-4 py-2">Phone number</th>
-                                <th className="border-2 px-4 py-2">Role</th>
-                                <th className="border-2 px-4 py-2">Status</th>
-                                <th className="border-2 px-4 py-2">Created_at</th>
-                                <th className="border-2 px-4 py-2">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {users.length > 0 ? (
-                                users.map((user, index) => (
-                                    <tr key={user.id} className="border-2 px-4 py-2">
-                                        <td className="border-2 px-4 py-2">
-                                            {(currentPage - 1) * 10 + index + 1}
-                                        </td>
-                                        <td className="border-2 px-4 py-2">{user.id}</td>
-                                        <td className="border-2 px-4 py-2">{user.name}</td>
-                                        <td className="border-2 px-4 py-2">{user.email}</td>
-                                        <td className="border-2 px-4 py-2">{user.phone || 'N/A'}</td>
-                                        <td className="border-2 px-4 py-2">{user.role}</td>
-                                        <td className="border-2 px-4 py-2">{user.status}</td>
-                                        <td className="border-2 px-4 py-2">
-                                            {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
-                                        </td>
-                                        <td className="border-2 px-4 py-2 next_hung" >
-                                            <button
-                                                onClick={() => handleDelete(user.id)}
-                                                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                                                style={{ backgroundColor: '#da3e3eab' }}
-                                            >
-                                                Delete
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="9" className="py-2 px-4 text-center">
-                                        There are no customers.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-
-                    {/* Phân trang */}
-                    <div className="mt-4 flex justify-center items-center space-x-4 next_hung">
-                        <button
-                            onClick={handlePreviousPage}
-                            disabled={currentPage === 1}
-                            className={`px-4 py-2 rounded ${currentPage === 1
-                                ? 'bg-gray-300 text-black'
-                                : 'bg-blue-500 text-black'
-                            }`} style={{border:'none'}}
-                        >
-                            <b>«</b>
-                        </button>
-                        <span>
-                            &nbsp;{currentPage} / {lastPage}&nbsp;
-                        </span>
-                        <button
-                            onClick={handleNextPage}
-                            disabled={currentPage === lastPage}
-                            className={`px-4 py-2 rounded ${currentPage === lastPage
-                                ? 'bg-gray-300 text-black'
-                                : 'bg-blue-500 text-black'
-                            }`} style={{border:'none'}}
-                        >
-                            <b>»</b>
-                        </button>
-                    </div>
+        <div className="user-management">
+            <div className="container-fluid py-5 bg-light min-vh-100">
+                <ToastContainer
+                    position="top-right"
+                    autoClose={3000}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                    theme="colored"
+                />
+                <div className="text-center mb-5">
+                    <h1 className="display-5 fw-bold text-primary">
+                        <i className="bi bi-people-fill me-2"></i>Customer Management
+                    </h1>
                 </div>
-            )}
+
+                {loading && (
+                    <div className="text-center">
+                        <div className="spinner-border text-primary" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                )}
+
+                {!loading && (
+                    <div className="card shadow-lg border-0">
+                        <div className="card-body p-4">
+                            <div className="table-responsive">
+                                <table className="table table-hover table-bordered align-middle">
+                                    <thead className="table-primary">
+                                        <tr>
+                                            <th scope="col" className="text-center">No.</th>
+                                            <th scope="col" className="text-center">ID</th>
+                                            <th scope="col" className="text-center">Name</th>
+                                            <th scope="col" className="text-center">Email</th>
+                                            <th scope="col" className="text-center">Phone</th>
+                                            <th scope="col" className="text-center">Role</th>
+                                            <th scope="col" className="text-center">Status</th>
+                                            <th scope="col" className="text-center">Created At</th>
+                                            <th scope="col" className="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {users.length > 0 ? (
+                                            users.map((user, index) => (
+                                                <tr key={user.id} className="hover-row">
+                                                    <td className="text-center">{(currentPage - 1) * 10 + index + 1}</td>
+                                                    <td className="text-center">{user.id}</td>
+                                                    <td className="text-center">{user.name}</td>
+                                                    <td className="text-center">{user.email}</td>
+                                                    <td className="text-center">{user.phone || 'N/A'}</td>
+                                                    <td className="text-center">
+                                                        <span className="badge bg-info">{user.role}</span>
+                                                    </td>
+                                                    <td className="text-center">
+                                                        <span
+                                                            className={`badge ${
+                                                                user.status === 'active'
+                                                                    ? 'bg-success'
+                                                                    : user.status === 'inactive'
+                                                                    ? 'bg-warning'
+                                                                    : 'bg-danger'
+                                                            }`}
+                                                        >
+                                                            {user.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="text-center">
+                                                        {user.created_at
+                                                            ? new Date(user.created_at).toLocaleDateString('vi-VN', {
+                                                                  day: '2-digit',
+                                                                  month: '2-digit',
+                                                                  year: 'numeric',
+                                                              })
+                                                            : 'N/A'}
+                                                    </td>
+                                                    <td className="text-center">
+                                                        <button
+                                                            onClick={() => handleDelete(user.id)}
+                                                            className="btn btn-danger btn-sm"
+                                                            title="Delete User"
+                                                        >
+                                                            <i className="bi bi-trash-fill"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="9" className="text-center text-muted py-3">
+                                                    No customers available.
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Phân trang */}
+                            <nav aria-label="Page navigation">
+                                <ul className="pagination justify-content-center mt-4">
+                                    <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                                        <button
+                                            className="page-link"
+                                            onClick={handlePreviousPage}
+                                            disabled={currentPage === 1}
+                                        >
+                                            <i className="bi bi-chevron-left"></i>
+                                        </button>
+                                    </li>
+                                    <li className="page-item disabled">
+                                        <span className="page-link">
+                                            {currentPage} / {lastPage}
+                                        </span>
+                                    </li>
+                                    <li className={`page-item ${currentPage === lastPage ? 'disabled' : ''}`}>
+                                        <button
+                                            className="page-link"
+                                            onClick={handleNextPage}
+                                            disabled={currentPage === lastPage}
+                                        >
+                                            <i className="bi bi-chevron-right"></i>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
