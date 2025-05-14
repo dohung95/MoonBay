@@ -45,6 +45,12 @@ const StaffSidebar = () => {
             {isOpen && "booking history"}
           </NavLink>
         </li>
+        <li className="nav-item">
+          <NavLink className="nav-link text-white d-flex align-items-center" to="/staff/StaffRoomManagement">
+            <i className="bx bx-right-arrow-alt me-2"></i>
+            {isOpen && "Room Management"}
+          </NavLink>
+        </li>
         {/* Add other menu items here */}
       </ul>
     </div>

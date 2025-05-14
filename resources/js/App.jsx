@@ -38,6 +38,7 @@ import RoomManagement from './Components/Admin/RoomManagement.jsx';
 import StaffBookings from './Components/Staff/StaffBookings.jsx';
 import StaffUser from './Components/Staff/StaffUser.jsx';
 import StaffRooms from './Components/Staff/StaffRooms.jsx';
+import StaffRoomManagement from './Components/Staff/StaffRoomManagement.jsx';
 //---------------------------------------------------------
 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -432,6 +433,12 @@ const App = () => {
                                 path="RoomList"
                                 element={
                                     <StaffRooms />
+                                }
+                            />
+                            <Route
+                                path="StaffRoomManagement"
+                                element={
+                                    <StaffRoomManagement />
                                 }
                             />
                         </Route>

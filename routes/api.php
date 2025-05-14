@@ -12,6 +12,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\SpecialOfferController;
 use App\Http\Controllers\OfferController;
 use App\Http\Controllers\RoomInfoController;
+use App\Http\Controllers\StaffRoomManagementController;
 
 
 
@@ -72,3 +73,10 @@ Route::delete('/staff_manager/{id}', [UserController::class, 'destroy']);
 Route::get('/special-offers', [SpecialOfferController::class, 'index']);
 Route::put('/special-offers/{id}', [SpecialOfferController::class, 'update']);
 Route::post('/send-offers', [OfferController::class, 'sendOffers']);
+
+// Route Rooms Management
+Route::get('/rooms', [StaffRoomManagementController::class, 'index']);
+Route::get('/rooms/{id}', [StaffRoomManagementController::class, 'show']);
+Route::put('/rooms/{id}', [StaffRoomManagementController::class, 'update']);
+Route::delete('/rooms/{id}', [StaffRoomManagementController::class, 'destroy']);
+Route::post('/rooms', [StaffRoomManagementController::class, 'store']);
