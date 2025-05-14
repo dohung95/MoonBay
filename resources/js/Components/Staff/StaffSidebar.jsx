@@ -16,7 +16,8 @@ const StaffSidebar = () => {
   };
 
   return (
-    <div className={`sidebar-wrapper-staff bg-dark text-white vh-100${isOpen ? "" : " sidebar-closed-staff"}`}>
+   <div className="staff-sidebar-page">
+     <div className={`sidebar-wrapper-staff bg-dark text-white vh-100${isOpen ? "" : " sidebar-closed-staff"}`}>
       <div className="sidebar-header-staff d-flex align-items-center justify-content-between p-3 border-bottom">
         <div className="d-flex align-items-center" onClick={handlenavigation}>
           <img
@@ -54,6 +55,7 @@ const StaffSidebar = () => {
         {/* Add other menu items here */}
       </ul>
     </div>
+   </div>
   );
 };
 

@@ -210,10 +210,5 @@ select {
   z-index: 10;
 }
 .chiecla1_hung{
-  border-top-left-radius: 30px;   /* Góc trên bên trái */
-  border-bottom-right-radius: 30px; /* Góc dưới bên phải */
-}
-.chiecla2_hung{
-  border-top-right-radius: 30px;   /* Góc trên bên trái */
-  border-bottom-left-radius: 30px; /* Góc dưới bên phải */
+  border-right: white solid 1px;
 }

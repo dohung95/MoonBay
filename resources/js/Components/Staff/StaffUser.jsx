@@ -66,7 +66,8 @@ const StaffUser = () => {
 
     return (
         <>
-            <div className="staff-users-container">
+            <div className="staff-user-page">
+                <div className="staff-users-container">
                 <div className="table-wrapper">
                     <table className="staff-users-table">
                     <thead>
@@ -136,6 +137,7 @@ const StaffUser = () => {
                 >
                     Next <i className="fas fa-chevron-right"></i>
                 </button>
+            </div>
             </div>
         </>
     );
