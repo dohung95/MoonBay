@@ -39,6 +39,7 @@ import StaffBookingList from './Components/Staff/StaffBookingList.jsx';
 import StaffUser from './Components/Staff/StaffUser.jsx';
 import StaffRooms from './Components/Staff/StaffRooms.jsx';
 import { SearchProvider } from './Components/Staff/SearchContext.jsx'
+import StaffRoomManagement from './Components/Staff/StaffRoomManagement.jsx';
 //---------------------------------------------------------
 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -408,6 +409,12 @@ const App = () => {
                                     path="RoomList"
                                     element={
                                         <StaffRooms />
+                                    }
+                                />
+                                <Route
+                                    path="StaffRoomManagement"
+                                    element={
+                                        <StaffRoomManagement />
                                     }
                                 />
                             </Route>

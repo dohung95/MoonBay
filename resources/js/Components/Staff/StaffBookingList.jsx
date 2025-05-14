@@ -25,7 +25,6 @@ const StaffBookings = () => {
         const fetchBookings = async () => {
             try {
                 const token = Cookies.get('auth_token');
-                console.log("Auth Token:", token); // Kiểm tra token
                 if (!token) {
                     throw new Error('Không tìm thấy token xác thực');
                 }
