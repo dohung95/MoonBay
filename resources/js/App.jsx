@@ -35,7 +35,7 @@ import RoomManagement from './Components/Admin/RoomManagement.jsx';
 //-----------------------------------------------------
 
 //components staff
-import StaffBookings from './Components/Staff/StaffBookings.jsx';
+import StaffBookingList from './Components/Staff/StaffBookingList.jsx';
 import StaffUser from './Components/Staff/StaffUser.jsx';
 import StaffRooms from './Components/Staff/StaffRooms.jsx';
 import { SearchProvider } from './Components/Staff/SearchContext.jsx'
@@ -401,7 +401,7 @@ const App = () => {
                                 <Route
                                     path="BookingList"
                                     element={
-                                        <StaffBookings />
+                                        <StaffBookingList />
                                     }
                                 />
                                 <Route

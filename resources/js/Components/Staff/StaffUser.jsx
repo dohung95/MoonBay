@@ -68,76 +68,76 @@ const StaffUser = () => {
         <>
             <div className="staff-user-page">
                 <div className="staff-users-container">
-                <div className="table-wrapper">
-                    <table className="staff-users-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th>Email_verified_at</th>
-                            <th>Provider</th>
-                            <th>Created_at</th>
-                            <th>Updated_at</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredUsers.length === 0 ? (
-                            <p className="no-data">Không tìm thấy người dùng nào.</p>
-                        ) : currentData.map(user => (
-                            <tr key={user.id}>
-                                <td>{user.id}</td>
-                                <td>{user.name}</td>
-                                <td>{user.email}</td>
-                                <td>{user.phone}</td>
-                                <td>{user.role}</td>
-                                <td><span className={`badge ${user.status === 'active' ? 'badge-success' : 'badge-danger'}`}>
-                                    {user.status}
-                                </span></td>
-                                <td>{user.email_verified_at}</td>
-                                <td>{user.provider}</td>
-                                <td>{user.created_at}</td>
-                                <td>{user.updated_at}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                    <div className="table-wrapper">
+                        <table className="staff-users-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Email_verified_at</th>
+                                    <th>Provider</th>
+                                    <th>Created_at</th>
+                                    <th>Updated_at</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredUsers.length === 0 ? (
+                                    <p className="no-data">Không tìm thấy người dùng nào.</p>
+                                ) : currentData.map(user => (
+                                    <tr key={user.id}>
+                                        <td>{user.id}</td>
+                                        <td>{user.name}</td>
+                                        <td>{user.email}</td>
+                                        <td>{user.phone}</td>
+                                        <td>{user.role}</td>
+                                        <td><span className={`badge ${user.status === 'active' ? 'badge-success' : 'badge-danger'}`}>
+                                            {user.status}
+                                        </span></td>
+                                        <td>{user.email_verified_at}</td>
+                                        <td>{user.provider}</td>
+                                        <td>{user.created_at}</td>
+                                        <td>{user.updated_at}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
 
-            <div className="pagination-controls">
-                <button
-                    className="btn btn-primary pagination-btn"
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                >
-                    <i className="fas fa-chevron-left"></i> Previous
-                </button>
-                <span className="pagination-page">
-                    Page {currentPage} / {totalPages}
-                </span>
-                <input
-                    type="number"
-                    className="page-input"
-                    placeholder='1'
-                    onChange={(e) => {
-                        const pageNumber = Math.min(Math.max(parseInt(e.target.value, 10) || 1, 1), totalPages);
-                        setCurrentPage(pageNumber);
-                    }}
-                    min="1"
-                    max={totalPages}
-                />
-                <button
-                    className="btn btn-primary pagination-btn"
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                >
-                    Next <i className="fas fa-chevron-right"></i>
-                </button>
-            </div>
+                <div className="pagination-controls">
+                    <button
+                        className="btn btn-primary pagination-btn"
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                    >
+                        <i className="fas fa-chevron-left"></i> Previous
+                    </button>
+                    <span className="pagination-page">
+                        Page {currentPage} / {totalPages}
+                    </span>
+                    <input
+                        type="number"
+                        className="page-input"
+                        placeholder='1'
+                        onChange={(e) => {
+                            const pageNumber = Math.min(Math.max(parseInt(e.target.value, 10) || 1, 1), totalPages);
+                            setCurrentPage(pageNumber);
+                        }}
+                        min="1"
+                        max={totalPages}
+                    />
+                    <button
+                        className="btn btn-primary pagination-btn"
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                    >
+                        Next <i className="fas fa-chevron-right"></i>
+                    </button>
+                </div>
             </div>
         </>
     );

@@ -92,4 +92,10 @@ class BookingController extends Controller
         return response()->json(['message' => 'Booking cancelled successfully'], 200);
     }
 
+    public function BookingList()
+    {
+        $bookings = Booking::all();
+        return response()->json(['bookings' => $bookings]);
+    }
+
 }
