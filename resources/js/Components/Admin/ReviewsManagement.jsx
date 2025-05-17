@@ -103,9 +103,9 @@ const ReviewsManagement = () => {
                         onChange={handleSortChange}
                         className="border p-2 rounded"
                     >
-                        <option value="">Mặc định</option>
-                        <option value="asc">Tăng dần</option>
-                        <option value="desc">Giảm dần</option>
+                        <option value="">Default</option>
+                        <option value="asc">Ascending</option>
+                        <option value="desc">Descending</option>
                     </select>
                 </div>
 
