@@ -44,11 +44,6 @@ class User extends Authenticatable
     {
         parent::boot();
 
-        static::creating(function ($user) {
-            if (empty($user->remember_token)) {
-                $user->remember_token = Str::random(60); // Tạo token ngẫu nhiên dài 60 ký tự
-            }
-        });
     }
 
     /**

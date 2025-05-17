@@ -32,7 +32,7 @@ class AuthController extends Controller
                 'password' => Hash::make($validated['password']),
             ]);
 
-            // Token đã được tự động tạo bởi model User (trong boot method)
+            $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
                 'message' => 'Registration successful',
@@ -60,6 +60,20 @@ class AuthController extends Controller
                 'password' => 'required|string',
             ]);
             Log::info('Validation passed', $validated);
+
+            // Sử dụng Auth::attempt để kiểm tra đăng nhập
+            if (!Auth::attempt($validated)) {
+                Log::warning('Invalid credentials', ['email' => $validated['email']]);
+                return response()->json(['message' => 'Invalid credentials'], 401);
+            }
+
+            // Lấy user đã đăng nhập
+            $user = Auth::user();
+            Log::info('User authenticated', ['user_id' => $user->id]);
+
+            // Tạo token API bằng Sanctum
+            $token = $user->createToken('auth_token')->plainTextToken;
+            Log::info('Token generated', ['user_id' => $user->id, 'token' => $token]);
 
             // Tìm user theo email
             $user = User::where('email', $validated['email'])->first();
