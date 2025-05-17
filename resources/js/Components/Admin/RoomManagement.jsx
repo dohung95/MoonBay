@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Edit, Save, X, Plus, Trash2, Search, Loader2, Info, Users, DollarSign } from 'lucide-react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 const RoomManagement = () => {
   const [rooms, setRooms] = useState([]);
@@ -63,7 +66,7 @@ const RoomManagement = () => {
     // Thêm ảnh mới nếu có
     if (editingRoom.image) {
       formData.append('image', editingRoom.image);
-  }
+    }
 
     setLoading(true);
 
@@ -82,12 +85,14 @@ const RoomManagement = () => {
       })
       .then(data => {
         console.log("Response from server:", data);
+        toast.success('Room updated successfully!');
         setEditingRoom(null);
         fetchRooms();
         setLoading(false);
       })
       .catch(error => {
         console.error('Error:', error.message);
+        toast.error(`Update failed: ${error.message}`);
         setLoading(false);
       });
   };
@@ -101,14 +106,15 @@ const RoomManagement = () => {
 
     if (newRoom.image) {
       formData.append('image', newRoom.image);
-  }
-  
+    }
+
     setLoading(true);
     fetch('/api/room_types', {
       method: 'POST',
       body: formData,
     })
       .then(() => {
+        toast.success('New room added successfully!');
         setShowAddForm(false);
         setNewRoom({ name: '', capacity: '', price: '', description: '', image: null });
         fetchRooms();
@@ -116,6 +122,7 @@ const RoomManagement = () => {
       })
       .catch((error) => {
         console.error("ERROR when adding room:", error);
+        toast.error(`Add room failed: ${error.message}`);
         setLoading(false);
       });
   };
@@ -145,10 +152,12 @@ const RoomManagement = () => {
       method: 'DELETE',
     })
       .then(() => {
+        toast.success('Room deleted successfully!');
         fetchRooms();
       })
       .catch((error) => {
         console.error("ERROR when deleting room:", error);
+        toast.error(`Delete failed: ${error.message}`);
         setLoading(false);
       });
   };
@@ -156,13 +165,11 @@ const RoomManagement = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     setEditingRoom({ ...editingRoom, image: file });
-};
-
-
-
+  };
 
   return (
     <div className="container mt-4">
+      <ToastContainer />
       <div className="bg-primary text-white p-4 rounded-top">
         <h2 className="h4 mb-1">Room Type Management</h2>
         <p className="mb-0">Add, edit and manage room types in your hotel</p>
@@ -171,22 +178,21 @@ const RoomManagement = () => {
       <div className="border p-4 rounded-bottom bg-white">
         <div className="row mb-4">
           <div className="col-md-6 mb-2">
-            <div className="row">
-              <div className='col-md-10'>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Search room type..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <div className='col-md-2' style={{ marginLeft: '-20px' }}>
-                <span className="form-control" align="center">
-                  <Search size={16} />
-                </span>
+            <div className="row mb-4">
+              <div className="col-md-8 mb-2">
+                <div className="position-relative">
+                  <Search size={16} className="position-absolute top-50 start-0 translate-middle-y ms-2 text-muted" />
+                  <input
+                    type="text"
+                    className="form-control ps-5"
+                    placeholder="Search room type..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
+
           </div>
           <div className="col-md-6 text-md-end">
             <button className="btn btn-primary" onClick={() => setShowAddForm(true)}>

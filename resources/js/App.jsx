@@ -24,14 +24,14 @@ import ProtectedStaffRoute from './Components/ProtectedStaffRoute.jsx';
 import AdminDashboard from './Components/Admin/AdminDashboard.jsx';
 import StaffDashboard from './Components/Staff/StaffDashboard.jsx';
 
-// components admin
 import UserManagement from './Components/Admin/UserManagement.jsx';
 import RoomListManagement from './Components/Admin/RoomListManagement.jsx';
 import EmployeeListManagement from './Components/Admin/EmployeeListManagement.jsx';
 import EditOffer from './Components/Admin/EditOffer.jsx';
-import TinhNang4 from './Components/Admin/TinhNang4.jsx';
-import TinhNang5 from './Components/Admin/TinhNang5.jsx';
+import ReviewsManagement from './Components/Admin/ReviewsManagement.jsx';
+import ManageComplaints from './Components/Admin/ManageComplaints.jsx';
 import RoomManagement from './Components/Admin/RoomManagement.jsx';
+import Reviews from './Components/Reviews.jsx';
 import ManageBookings from './Components/Admin/ManageBookings.jsx';
 //-----------------------------------------------------
 
@@ -42,8 +42,7 @@ import StaffRooms from './Components/Staff/StaffRooms.jsx';
 import { SearchProvider } from './Components/Staff/SearchContext.jsx'
 import StaffRoomManagement from './Components/Staff/StaffRoomManagement.jsx';
 import Staff_BookingRooms from './Components/Staff/Staff_BookingRooms.jsx';
-//---------------------------------------------------------
-
+import Complaints from './Components/Complaints.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 // PopupContext để quản lý trạng thái popup
@@ -190,7 +189,7 @@ const App = () => {
     return (
         <PopupContext.Provider value={{ closePopup }}>
             <AuthProvider>
-                <SearchProvider>
+            <SearchProvider>
                     <Router>
                         <AuthHandler />
                         <Routes>
@@ -345,48 +344,111 @@ const App = () => {
                                 }
                             />
                             <Route
-                                path="*"
-                                element={
-                                    <PublicLayout
-                                        openLoginPopup={openLoginPopup}
-                                        isPopupLogin={isPopupLogin}
-                                        isPopupRegister={isPopupRegister}
-                                        isPopupForgotPassword={isPopupForgotPassword}
-                                        isPopupBookNow={isPopupBookNow}
-                                        closePopup={closePopup}
-                                        openRegisterPopup={openRegisterPopup}
-                                        openForgotPassword={openForgotPassword}
-                                        selectedRoomName={selectedRoomName}
-                                    >
-                                        <Home />
-                                    </PublicLayout>
-                                }
-                            />
+                            path="/review"
+                            element={
+                                <PublicLayout
+                                    openLoginPopup={openLoginPopup}
+                                    isPopupLogin={isPopupLogin}
+                                    isPopupRegister={isPopupRegister}
+                                    isPopupForgotPassword={isPopupForgotPassword}
+                                    isPopupBookNow={isPopupBookNow}
+                                    closePopup={closePopup}
+                                    openRegisterPopup={openRegisterPopup}
+                                    openForgotPassword={openForgotPassword}
+                                    selectedRoomName={selectedRoomName}
+                                >
+                                    <Reviews checkLogins={checkLogin} />
+                                </PublicLayout>
+                            }
+                        />
+                        <Route
+                            path="/complaint"
+                            element={
+                                <PublicLayout
+                                    openLoginPopup={openLoginPopup}
+                                    isPopupLogin={isPopupLogin}
+                                    isPopupRegister={isPopupRegister}
+                                    isPopupForgotPassword={isPopupForgotPassword}
+                                    isPopupBookNow={isPopupBookNow}
+                                    closePopup={closePopup}
+                                    openRegisterPopup={openRegisterPopup}
+                                    openForgotPassword={openForgotPassword}
+                                    selectedRoomName={selectedRoomName}
+                                >
+                                    <Complaints checkLogins={checkLogin} />
+                                </PublicLayout>
+                            }
+                        />
+                        <Route
+                            path="*"
+                            element={
+                                <PublicLayout
+                                    openLoginPopup={openLoginPopup}
+                                    isPopupLogin={isPopupLogin}
+                                    isPopupRegister={isPopupRegister}
+                                    isPopupForgotPassword={isPopupForgotPassword}
+                                    isPopupBookNow={isPopupBookNow}
+                                    closePopup={closePopup}
+                                    openRegisterPopup={openRegisterPopup}
+                                    openForgotPassword={openForgotPassword}
+                                    selectedRoomName={selectedRoomName}
+                                >
+                                    <Home />
+                                </PublicLayout>
+                            }
+                        />
 
-                            {/* Route Admin */}
-                            <Route
-                                path="/admin"
-                                element={
-                                    <ProtectedAdminRoute>
-                                        <AdminLayout>
-                                            <AdminDashboard />
-                                        </AdminLayout>
-                                    </ProtectedAdminRoute>
-                                }
-                            >
-                                <Route path="UserManagement" element={<UserManagement />} />
-                                <Route path="RoomListManagement" element={<RoomListManagement />} />
-                                <Route path="EmployeeListManagement" element={<EmployeeListManagement />} />
-                                <Route path="EditOffer" element={<EditOffer />} />
-                                <Route path="ManageBookings" element={<ManageBookings />} />
-                                <Route path="tinh_nang4" element={<TinhNang4 />} />
-                                <Route path="tinh_nang5" element={<TinhNang5 />} />
-                                <Route path="RoomManagement" element={<RoomManagement />} />
-                            </Route>
+                        {/* Route Admin */}
+                        <Route
+                            path="/admin"
+                            element={
+                                <ProtectedAdminRoute>
+                                    <AdminLayout>
+                                        <AdminDashboard />
+                                    </AdminLayout>
+                                </ProtectedAdminRoute>
+                            }
+                        >
+                        <Route path="UserManagement" element={<UserManagement />} />
+                        <Route path="RoomListManagement" element={<RoomListManagement />} />
+                        <Route path="EmployeeListManagement" element={<EmployeeListManagement />} />
+                        <Route path="EditOffer" element={<EditOffer />} />
+                        <Route path="ManageBookings" element={<ManageBookings />} />
+                        <Route path="ReviewsManagement" element={<ReviewsManagement />} />
+                            <Route path="ManageComplaints" element={<ManageComplaints />} />
+                        <Route path="RoomManagement" element={<RoomManagement />} />
+                        </Route>
+                        <Route
+                            path="/admin/users"
+                            element={
+                                <ProtectedAdminRoute>
+                                    <AdminLayout>
+                                    </AdminLayout>
+                                </ProtectedAdminRoute>
+                            }
+                        />
+                        <Route
+                            path="/admin/bookings"
+                            element={
+                                <ProtectedAdminRoute>
+                                    <AdminLayout>
+                                    </AdminLayout>
+                                </ProtectedAdminRoute>
+                            }
+                        />
+                        <Route
+                            path="/admin/rooms"
+                            element={
+                                <ProtectedAdminRoute>
+                                    <AdminLayout>
+                                    </AdminLayout>
+                                </ProtectedAdminRoute>
+                            }
+                        />
 
-                            {/* Route Staff */}
+                        {/* Route Staff */}
 
-                            <Route
+                        <Route
                                 path="/staff"
                                 element={
                                     <ProtectedStaffRoute>
