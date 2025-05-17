@@ -92,6 +92,7 @@ class AuthController extends Controller
                     'avatar' => $user->avatar,
                     'phone' => $user->phone,
                     'role' => $user->role,
+                    'status' => $user->status,
                 ],
                 'token' => $token,
             ], 200);
