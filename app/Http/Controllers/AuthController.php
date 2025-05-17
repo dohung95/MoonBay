@@ -10,6 +10,8 @@ use App\Models\User;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\Booking;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+
 
 class AuthController extends Controller
 {
@@ -49,6 +51,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         try {
+            // Ghi log thông tin yêu cầu đăng nhập
             Log::info('Login attempt', ['email' => $request->input('email')]);
 
             // Validate request
@@ -58,7 +61,7 @@ class AuthController extends Controller
             ]);
             Log::info('Validation passed', $validated);
 
-            // Tìm user
+            // Tìm user theo email
             $user = User::where('email', $validated['email'])->first();
             if (!$user) {
                 Log::warning('User not found', ['email' => $validated['email']]);
@@ -73,24 +76,27 @@ class AuthController extends Controller
             }
             Log::info('Password verified');
 
-            // Lấy token từ cột remember_token
-            if (!$user->remember_token) {
-                // Nếu không có token, tạo mới và lưu lại
-                $user->remember_token = \Illuminate\Support\Str::random(60);
-                $user->save();
-            }
+            // Tạo token mới và lưu vào remember_token
+            $token = Str::random(60);
+            $user->remember_token = $token;
+            $user->save();
+            Log::info('Token generated and saved', ['user_id' => $user->id, 'token' => $token]);
 
+            // Trả về thông tin user và token
             return response()->json([
                 'message' => 'Login successful',
-                'user' => $user,
-                'name' => $user->name,
-                'avatar' => $user->avatar,
-                'phone' => $user->phone,
-                'id' => $user->id,
-                'email' => $user->email,
-                'token' => $user->remember_token,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'avatar' => $user->avatar,
+                    'phone' => $user->phone,
+                    'role' => $user->role,
+                ],
+                'token' => $token,
             ], 200);
         } catch (\Exception $e) {
+            // Ghi log lỗi nếu có ngoại lệ
             Log::error('Login Error: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
                 'request' => $request->all(),
@@ -308,6 +314,19 @@ class AuthController extends Controller
         }
     }
 
-    
+    public function getUser(Request $request)
+{
+    $token = $request->header('Authorization');
+    $token = str_replace('Bearer ', '', $token);
+
+    $user = User::where('remember_token', $token)->first();
+
+    if (!$user) {
+        return response()->json(['message' => 'Unauthorized'], 401);
+    }
+
+    return response()->json(['email' => $user->email]);
+}
+
 
 }

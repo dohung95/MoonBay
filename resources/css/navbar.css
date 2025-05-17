@@ -28,17 +28,9 @@
   }
 }
 
-.dropdown-menu {
-  animation: slideDown 0.3s ease-in-out;
-}
-
-.dropdown-menu.hide {
-  animation: slideUp 0.3s ease-in-out;
-}
-
 .navbar {
   position: fixed;
-  font-weight:700;
+  font-weight: 700;
   width: 100%;
   z-index: 1030;
   top: 0;
@@ -62,4 +54,53 @@
 
 .navbar .nav-link:hover {
   color: #499cee !important; /* Màu chữ khi hover */
+}
+
+/* Hover dropdown effect */
+.nav-item.dropdown:hover .dropdown-menu {
+  display: block;
+  margin-top: 0; /* Aligns dropdown with nav item */
+}
+
+.dropdown-menu {
+  animation: slideDown 0.3s ease-in-out;
+  background-color: #04091e !important; /* Match navbar background */
+  border: none; /* Remove default border for cleaner look */
+}
+
+.dropdown-menu.hide {
+  animation: slideUp 0.3s ease-in-out;
+}
+
+/* Dropdown item styles to match navbar links */
+.dropdown-item {
+  color: #fff !important; /* Match nav-link color */
+  transition: color 0.7s ease; /* Match nav-link transition */
+}
+
+.dropdown-item:hover {
+  color: #499cee !important; /* Match nav-link hover color */
+  background-color: gray;
+}
+
+/* Ensure dropdown closes when not hovering */
+.nav-item.dropdown .dropdown-menu {
+  display: none;
+}
+
+.nav-item.dropdown:hover .dropdown-toggle::after {
+  transform: rotate(180deg); /* Optional: Rotate arrow on hover */
+  transition: transform 0.2s ease-in-out;
+}
+
+.navbar.visible {
+  top: 0;
+}
+
+.navbar.hidden {
+  top: -80px;
+}
+
+.dropdown-toggle::after {
+  display: none !important;
 }
