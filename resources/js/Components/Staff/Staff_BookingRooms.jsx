@@ -127,6 +127,7 @@ const Staff_BookingRooms = () => {
     const maxCapacity = roomTypes.length > 0 && roomType
         ? roomTypes.find((room) => room.name === roomType)?.capacity || 0
         : 1;
+    const totalMaxCapacity = maxCapacity * (parseInt(numberOfRooms) || 1);
 
     const onSubmit = async (data) => {
         setLoading(true);
@@ -312,13 +313,13 @@ const isBookNowDisabled = !roomType || !numberOfRooms || parseInt(numberOfRooms)
                                 id="member"
                                 className={`form-control ${errors.member ? 'is-invalid' : ''}`}
                                 min={1}
-                                max={maxCapacity}
+                                max={totalMaxCapacity}
                                 {...register('member', {
                                     required: 'Số người lớn là bắt buộc',
                                     min: { value: 1, message: 'Phải có ít nhất 1 người lớn' },
                                     max: {
-                                        value: maxCapacity,
-                                        message: `Số người lớn không được vượt quá sức chứa của phòng (${maxCapacity})`,
+                                        value: totalMaxCapacity,
+                                        message: `Số người lớn không được vượt quá sức chứa của phòng (${totalMaxCapacity})`,
                                     },
                                 })}
                             />

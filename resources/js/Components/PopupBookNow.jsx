@@ -14,7 +14,6 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
     const [roomTypes, setRoomTypes] = useState([]);
     const [selectedRoomPrice, setSelectedRoomPrice] = useState(0);
     const [rooms, setRooms] = useState([]);
-    const [memberError, setMemberError] = useState(false);
     const Total_price = (price, room) => {
         return parseFloat(price) * parseInt(room); // Đảm bảo tính toán với số
     };
@@ -31,6 +30,13 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
     const [isPopUp_deposit, setIsPopUp_deposit] = useState(false); // State để quản lý popup
     const CalculatorDays = (checkin, checkout) => {
         return Math.ceil(Math.abs(new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24));
+    }
+    const maxCapacity =
+            roomTypes.length > 0
+                ? roomTypes.find((roomType) => roomType.name === formData.roomType)?.capacity || 0
+                : 0;
+    const Maxmember = () => {
+        return formData.room * maxCapacity;
     }
 
     // Reset formData khi popup đóng
@@ -135,11 +141,6 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
             const { id, value } = event.target;
             const newValue = id === "member" ? parseInt(value) || 0 : value;
 
-            const maxCapacity =
-                roomTypes.length > 0
-                    ? roomTypes.find((roomType) => roomType.name === selectedRoomName)?.capacity || 0
-                    : 0;
-
             setFormData((prevData) => ({
                 ...prevData,
                 [id]: value,
@@ -152,8 +153,9 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                     total_price: total,
                 }));
             }
-            if (id === "member" && newValue > maxCapacity) {
-                window.showNotification(`Maximum capacity is ${maxCapacity}. Please reduce the number of members.`, "error");
+            
+            if (id === "member" && newValue > Maxmember(formData.room)) {
+                window.showNotification(`Maximum capacity is ${Maxmember(formData.room)} member${Maxmember(formData.room) > 1 ? 's' : ''} for ${formData.room} room${formData.room > 1 ? 's' : ''}. Please reduce the number of members.`, "error");
             }
 
             if (id === 'roomType') {
@@ -162,14 +164,6 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                 setSelectedRoomPrice(price);
             }
 
-            if (id === "member") {
-                if (newValue > maxCapacity && !memberError) {
-                    setMemberError(true);
-                    window.showNotification(`Maximum capacity is ${maxCapacity}. Please reduce the number of members.`, "error");
-                } else if (newValue <= maxCapacity && memberError) {
-                    setMemberError(false);
-                }
-            }
         }, 300),
         [selectedRoomPrice, roomTypes, selectedRoomName]
     );
@@ -202,18 +196,8 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
             return;
         }
 
-        const maxCapacity =
-            roomTypes.length > 0
-                ? roomTypes.find((roomType) => roomType.name === selectedRoomName)?.capacity || 0
-                : 0;
-
-        if (parseInt(formData.member) > maxCapacity) {
-            window.showNotification(`Cannot book. Number of members (${formData.member}) exceeds room capacity (${maxCapacity}).`, "error");
-            return;
-        }
-
-        if (parseInt(formData.member) === 0) {
-            window.showNotification("Please select the number of members.", "error");
+        if (parseInt(formData.member) > Maxmember(formData.room) || parseInt(formData.member) <= 0) {
+            window.showNotification(`Cannot book. Number of members (${formData.member}) exceeds room capacity (${Maxmember(formData.room)}).`, "error");
             return;
         }
 
@@ -328,7 +312,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                             <div className="mb-3">
                                 <label htmlFor="member" className="form-label">Member:</label>
                                 <input type="number" id="member" name="member" className="form-control" min={0}
-                                    max={formData.roomType ? roomTypes.find((roomType) => roomType.name === formData.roomType).capacity : 0}
+                                    max={formData.roomType ? roomTypes.find((roomType) => roomType.name === formData.roomType).capacity * formData.room : 0}
                                     onChange={handleChange}
                                     placeholder="1" />
                             </div>

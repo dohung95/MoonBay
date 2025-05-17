@@ -35,6 +35,14 @@ const Booking = ({ checkLogin, checkLogins }) => {
     const CalculatorDays = (checkin, checkout) => {
         return Math.ceil(Math.abs(new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24));
     }
+    const maxCapacity =
+            roomTypes.length > 0
+                ? roomTypes.find((roomType) => roomType.name === formData.roomType)?.capacity || 0
+                : 0;
+    const Maxmember = () => {
+        return formData.room * maxCapacity;
+    }
+
     // Tính thời gian hiện tại và ngày kế tiếp
     const now = new Date();
 
@@ -55,11 +63,6 @@ const Booking = ({ checkLogin, checkLogins }) => {
         const { id, value } = event.target;
         const newValue = id === "member" ? parseInt(value) || 0 : value;
 
-        const maxCapacity =
-            roomTypes.length > 0
-                ? roomTypes.find((roomType) => roomType.name === formData.roomType)?.capacity || 0
-                : 0;
-
         setFormData((prevData) => {
             const updatedData = {
                 ...prevData,
@@ -79,8 +82,8 @@ const Booking = ({ checkLogin, checkLogins }) => {
                 updatedData.Total_price = Total_price(selectedRoomPrice, value).toString();
             }
 
-            if (id === "member" && newValue > maxCapacity) {
-                window.showNotification(`Maximum capacity is ${maxCapacity}. Please reduce the number of members.`, "error");
+            if (id === "member" && newValue > Maxmember(updatedData.room)) {
+                window.showNotification(`Maximum capacity is ${Maxmember(updatedData.room)} member${Maxmember(updatedData.room) > 1 ? 's' : ''} for ${updatedData.room} room${updatedData.room > 1 ? 's' : ''}. Please reduce the number of members.`, "error");
             }
 
             const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available').length;
@@ -168,13 +171,8 @@ const Booking = ({ checkLogin, checkLogins }) => {
             return;
         }
 
-        const maxCapacity =
-            roomTypes.length > 0
-                ? roomTypes.find((roomType) => roomType.name === formData.roomType)?.capacity || 0
-                : 0;
-
-        if (parseInt(formData.member) > maxCapacity || parseInt(formData.member) <= 0) {
-            window.showNotification(`Cannot book. Number of members (${formData.member}) exceeds room capacity (${maxCapacity}).`, "error");
+        if (parseInt(formData.member) > Maxmember(formData.room) || parseInt(formData.member) <= 0) {
+            window.showNotification(`Cannot book. Number of members (${formData.member}) exceeds room capacity (${Maxmember(formData.room)}).`, "error");
             return; // Ngăn không mở popup nếu vượt quá capacity
         }
 
@@ -364,7 +362,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
                                         id="member"
                                         className="form-control"
                                         min={0}
-                                        max={formData.roomType ? roomTypes.find((roomType) => roomType.name === formData.roomType).capacity : 0}
+                                        max={formData.roomType ? roomTypes.find((roomType) => roomType.name === formData.roomType).capacity * formData.room : 0}
                                         onChange={handleChange}
                                         placeholder="1"
                                     />
