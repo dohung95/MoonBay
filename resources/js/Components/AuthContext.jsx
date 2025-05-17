@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const isStaff = () => {
-        return user && user.role === 'staff';
+        return user && user.role === 'staff' && user.status === 'active';
     };
 
     return (

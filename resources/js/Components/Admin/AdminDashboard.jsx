@@ -7,8 +7,8 @@ const AdminDashboard = () => {
     const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
     const location = useLocation();
 
-    const features = ['User Management', 'Room list', 'Employee List','Edit Offer', 'Cài đặt', 'Thông báo', 'Manage Room Info'];
-    const routes = ['UserManagement', 'RoomListManagement', 'EmployeeListManagement','EditOffer', 'tinh_nang4', 'tinh_nang5', 'RoomManagement'];
+    const features = ['User Management', 'Room list', 'Employee List', 'Edit Offer', 'ManageBookings','Cài đặt', 'Thông báo', 'Manage Room Info'];
+    const routes = ['UserManagement', 'RoomListManagement', 'EmployeeListManagement', 'EditOffer', 'ManageBookings','tinh_nang4', 'tinh_nang5', 'RoomManagement'];
 
     const isDashboardHome = location.pathname === '/admin';
 
@@ -49,8 +49,9 @@ const AdminDashboard = () => {
                             <div style={{ padding: '8px 0' }} key={i}>
                                 <NavLink
                                     to={`/admin/${routes[i]}`}
-                                    className="sidebar-link_Hung"
-                                    activeClassName="active"
+                                    className={({ isActive }) =>
+                                        isActive ? 'sidebar-link_Hung active' : 'sidebar-link_Hung'
+                                    }
                                 >
                                     <b>{label}</b>
                                 </NavLink>
@@ -97,8 +98,9 @@ const AdminDashboard = () => {
                                 <div style={{ padding: '8px 0' }} key={i}>
                                     <NavLink
                                         to={`/admin/${routes[i]}`}
-                                        className="sidebar-link_Hung"
-                                        activeClassName="active"
+                                        className={({ isActive }) =>
+                                            isActive ? 'sidebar-link_Hung active' : 'sidebar-link_Hung'
+                                        }
                                         onClick={() => setSidebarOpen(false)}
                                     >
                                         <b>{label}</b>
