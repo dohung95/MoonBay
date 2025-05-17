@@ -6,6 +6,7 @@ import SortStart from "./SortStart";
 import Banner from "./banner";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Sitemapmini from "./sitemapmini";
 
 const Reviews = ({ checkLogins }) => {
   const { user, token } = useContext(AuthContext);
@@ -23,6 +24,10 @@ const Reviews = ({ checkLogins }) => {
   const [filterRating, setFilterRating] = useState(null);
   const [ratingsCount, setRatingsCount] = useState({});
   const [totalReviews, setTotalReviews] = useState(0);
+  const sitemap = [
+    { label: 'Home', link: '/' },
+    { label: 'Reviews' }
+  ];
 
 
   axios.defaults.withCredentials = true;
@@ -149,6 +154,7 @@ const Reviews = ({ checkLogins }) => {
       <Banner />
       <ToastContainer />
       <div className="container border p-4 rounded mt-4 mb-4">
+        <Sitemapmini items={sitemap} />
         <h3 Align="center">Đánh giá của khách hàng</h3>
 
         {user ? (
