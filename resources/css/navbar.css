@@ -104,3 +104,10 @@
 .dropdown-toggle::after {
   display: none !important;
 }
+
+.user-name {
+  max-width: 60px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

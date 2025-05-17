@@ -4,6 +4,7 @@ import { AuthContext } from "./AuthContext";
 import Banner from "./banner";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Sitemapmini from "./sitemapmini";
 
 const Complaints = ({ checkLogins }) => {
   const { user, token } = useContext(AuthContext);
@@ -16,6 +17,11 @@ const Complaints = ({ checkLogins }) => {
     description: "",
     contact_preference: false,
   });
+
+  const sitemap = [
+    { label: 'Home', link: '/' },
+    { label: 'Complaints'}
+  ];
 
   const [loading, setLoading] = useState(false);
 
@@ -87,6 +93,7 @@ const Complaints = ({ checkLogins }) => {
       <Banner/>
       <ToastContainer />
       <div className="container border p-4 rounded mt-4 mb-4">
+      <Sitemapmini items={sitemap} />
       <h4 Align="center">Complaints</h4>
 
       {user ? (
