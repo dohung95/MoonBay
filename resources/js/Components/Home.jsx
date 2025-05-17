@@ -163,6 +163,7 @@ const Home = () => {
                     </div>
                 </section>
             </div>
+            
             <hr className='container'/>
             <div>
                 <section className="latest_blog_area section_gap py-5">

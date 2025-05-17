@@ -32,6 +32,7 @@ import EditOffer from './Components/Admin/EditOffer.jsx';
 import TinhNang4 from './Components/Admin/TinhNang4.jsx';
 import TinhNang5 from './Components/Admin/TinhNang5.jsx';
 import RoomManagement from './Components/Admin/RoomManagement.jsx';
+import ManageBookings from './Components/Admin/ManageBookings.jsx';
 //-----------------------------------------------------
 
 //components staff
@@ -376,6 +377,7 @@ const App = () => {
                                 <Route path="RoomListManagement" element={<RoomListManagement />} />
                                 <Route path="EmployeeListManagement" element={<EmployeeListManagement />} />
                                 <Route path="EditOffer" element={<EditOffer />} />
+                                <Route path="ManageBookings" element={<ManageBookings />} />
                                 <Route path="tinh_nang4" element={<TinhNang4 />} />
                                 <Route path="tinh_nang5" element={<TinhNang5 />} />
                                 <Route path="RoomManagement" element={<RoomManagement />} />
