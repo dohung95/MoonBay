@@ -16,7 +16,7 @@ class BookingController extends Controller
                 'user_id' => 'required|exists:users,id',
                 'name' => 'required|string|max:255',
                 'email' => 'required|email',
-                'phone' => 'required|string|max:15',
+                'phone' => 'nullable|string|max:15',
                 'room_type' => 'required|string',
                 'number_of_rooms' => 'required|integer|min:1',
                 'children' => 'required|integer|min:0',
