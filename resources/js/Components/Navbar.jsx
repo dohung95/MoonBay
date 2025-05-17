@@ -163,7 +163,7 @@ const Navbar = ({ openLoginPopup }) => {
                                     height="40"
                                     className="rounded-circle me-1"
                                 />
-                                Hi {user.name}
+                                <span className="user-name text-white">{user.name}</span>
                             </a>
                             <ul className="dropdown-menu" aria-labelledby="userDropdown">
                                 <li><Link className="dropdown-item" to="/account">Account</Link></li>
