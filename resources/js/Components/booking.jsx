@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import '../../css/my_css/booking.css';
 import BookNow from "./BookNow.jsx";
 import { AuthContext } from "./AuthContext.jsx"; // Import AuthContext
@@ -8,11 +8,16 @@ import Banner from "./banner.jsx";
 import { useLocation } from "react-router-dom";
 import PopUp_deposit from "./PopUp_deposit.jsx";
 
+const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+};
+
 const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
     const { user } = useContext(AuthContext);
     const [isLoading, setIsLoading] = useState(true);
     const [roomTypes, setRoomTypes] = useState([]); // Thêm state để lưu danh sách room_types từ API
     const [selectedRoomPrice, setSelectedRoomPrice] = useState(0);
+    const [rooms, setRooms] = useState([]);
     const Total_price = (price, room) => {
         return parseFloat(price) * parseInt(room); // Đảm bảo tính toán với số
     };
@@ -28,7 +33,7 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
     });
     const [isPopUp_deposit, setIsPopUp_deposit] = useState(false); // State để quản lý popup
     const CalculatorDays = (checkin, checkout) => {
-        return Math.ceil(Math.abs(new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24) + 1);
+        return Math.ceil(Math.abs(new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24));
     }
     // Tính thời gian hiện tại và ngày kế tiếp
     const now = new Date();
@@ -62,17 +67,25 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
             };
 
             if (id === 'roomType') {
+                const room = roomTypes.find(r => r.name === value);
+                const available = rooms.filter(r => r.type === value && r.status === 'available').length;
                 const selectedRoom = roomTypes.find((room) => room.name === value);
                 const price = selectedRoom ? selectedRoom.price : 0;
                 setSelectedRoomPrice(price);
                 updatedData.price = price.toString();
                 updatedData.Total_price = Total_price(price, updatedData.room).toString();
+                window.showNotification(available ? `${available} room${available > 1 ? 's' : ''} available` : 'No rooms available, please choose another room type or call hotline', available ? 'success' : 'error');
             } else if (id === 'room') {
                 updatedData.Total_price = Total_price(selectedRoomPrice, value).toString();
             }
 
             if (id === "member" && newValue > maxCapacity) {
                 window.showNotification(`Maximum capacity is ${maxCapacity}. Please reduce the number of members.`, "error");
+            }
+
+            const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available').length;
+            if (id === "room" && newValue > availableRooms) {
+                window.showNotification(`Only ${availableRooms} room${availableRooms > 1 ? 's' : ''} available`, "error");
             }
 
             return updatedData;
@@ -83,7 +96,14 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
     useEffect(() => {
         const fetchRoomTypes = async () => {
             try {
-                const response = await axios.get('/api/room-types');
+
+                const [response, roomsRes] = await Promise.all([
+                    axios.get('/api/room-types'),
+                    axios.get('/api/rooms')
+                ]);
+
+
+                // const response = await axios.get('/api/room-types');
                 let formattedRooms = [];
                 if (Array.isArray(response.data)) {
                     formattedRooms = response.data;
@@ -95,6 +115,7 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
                     return;
                 }
                 setRoomTypes(formattedRooms);
+                setRooms(roomsRes.data || []);
             } catch (error) {
                 console.error('Error fetching room types:', error.response || error);
                 window.showNotification('Failed to load room types', 'error');
@@ -146,15 +167,24 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
             window.showNotification("Check-out time must be at least 1 hour after check-in.", "error");
             return;
         }
-        
+
         const maxCapacity =
             roomTypes.length > 0
                 ? roomTypes.find((roomType) => roomType.name === formData.roomType)?.capacity || 0
                 : 0;
 
-        if (parseInt(formData.member) > maxCapacity) {
+        if (parseInt(formData.member) > maxCapacity || parseInt(formData.member) <= 0) {
             window.showNotification(`Cannot book. Number of members (${formData.member}) exceeds room capacity (${maxCapacity}).`, "error");
             return; // Ngăn không mở popup nếu vượt quá capacity
+        }
+
+        const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available').length;
+        if (availableRooms < 1) {
+            window.showNotification("No rooms available for booking.", "error");
+            return;
+        } else if (availableRooms < parseInt(formData.room)) {
+            window.showNotification(`Only ${availableRooms} room${availableRooms > 1 ? 's' : ''} available, but you selected ${formData.room}.`, "error");
+            return;
         }
 
         setIsPopUp_deposit(true);
@@ -183,6 +213,18 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
 
                 if (response.status === 201) {
                     window.showNotification("Booking created successfully!", "success");
+
+                    // Cập nhật trạng thái phòng thành rỗng
+                    const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available');
+                    for (let i = 0; i < parseInt(formData.room) && i < availableRooms.length; i++) {
+                        await axios.put(`/api/rooms/${availableRooms[i].id}`, { status: '' });
+                    }
+
+                    // Cập nhật state rooms cục bộ
+                    setRooms(prevRooms => prevRooms.map(room =>
+                        availableRooms.some(ar => ar.id === room.id) ? { ...room, status: '' } : room
+                    ));
+
                     setFormData({
                         checkin: '',
                         checkout: '',
@@ -194,6 +236,12 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
                         Total_price: '0',
                     });
                     setSelectedRoomPrice(0);
+                    if (checkinRef.current) {
+                        checkinRef.current.value = '';
+                    }
+                    if (checkoutRef.current) {
+                        checkoutRef.current.value = '';
+                    }
                 }
             } catch (error) {
                 console.error('Error creating booking:', error.response || error);
@@ -223,6 +271,9 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
         }
     }, [location]);
 
+    const checkinRef = useRef(null);
+    const checkoutRef = useRef(null);
+
     return (
         <>
             <Banner title="Booking Now" description="Book your stay with us" />
@@ -247,11 +298,13 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
                             <div className="row g-3">
                                 <div className="col-md-6">
                                     <label htmlFor="checkin" className="form-label">Check-in:</label>
-                                    <input type="datetime-local" id="checkin" className="form-control" onChange={handleChange} min={minCheckin} />
+                                    <input ref={checkinRef} value={formData.checkin} type="datetime-local" id="checkin" className="form-control" onChange={handleChange} min={minCheckin} />
                                 </div>
                                 <div className="col-md-6">
                                     <label htmlFor="checkout" className="form-label">Check-out:</label>
                                     <input
+                                        ref={checkoutRef}
+                                        value={formData.checkout}
                                         type="datetime-local"
                                         id="checkout"
                                         className="form-control"
@@ -313,7 +366,7 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
                                         min={0}
                                         max={formData.roomType ? roomTypes.find((roomType) => roomType.name === formData.roomType).capacity : 0}
                                         onChange={handleChange}
-                                        placeholder="0"
+                                        placeholder="1"
                                     />
                                 </div>
                             </div>
@@ -323,12 +376,12 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
                                         Days: {CalculatorDays(formData.checkin, formData.checkout) || '0'}
                                     </p>
                                     <p>
-                                        The {formData.roomType || 'room Type'}: {selectedRoomPrice}0 VNĐ/night
+                                        The {formData.roomType || 'room Type'}: {formatCurrency(selectedRoomPrice * 1000)}/night
                                     </p>
                                 </div>
                                 <div className="view-price col-md-6">
-                                    <p>Deposit (20%): {(parseFloat(formData.Total_price) * 0.2).toFixed(2)}0 VNĐ</p>
-                                    <p>Total Price: {(formData.Total_price * parseInt(CalculatorDays(formData.checkin, formData.checkout) || '0'))}00 VNĐ</p>
+                                    <p>Deposit (20%): {formatCurrency((parseFloat(formData.Total_price) * 0.2) * 1000)}</p>
+                                    <p>Total Price: {formatCurrency((parseFloat(formData.Total_price) * (CalculatorDays(formData.checkin, formData.checkout) || 0)) * 1000)}</p>
                                 </div>
                                 <div className="mt-4">
                                     <button onClick={handleBooking} className="btn btn-warning w-100">Book Now</button>

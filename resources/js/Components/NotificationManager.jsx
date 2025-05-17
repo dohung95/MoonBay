@@ -4,9 +4,15 @@ import Notification from './Notification';
 const NotificationManager = () => {
     const [notifications, setNotifications] = useState([]);
 
-    const addNotification = (message, type = 'success') => {
+    const addNotification = (message, type = 'success', duration = 3000) => {
         const id = Date.now();
-        setNotifications((prev) => [...prev, { id, message, type }]);
+        // Kiểm tra nếu đã có thông báo với cùng message và type, chỉ cập nhật nếu cần
+        const existingNotification = notifications.find((notif) => notif.message === message && notif.type === type);
+        if (!existingNotification) {
+            setNotifications((prev) => [...prev, { id, message, type }]);
+            // Tự động xóa sau duration
+            setTimeout(() => removeNotification(id), duration);
+        }
     };
 
     const removeNotification = (id) => {

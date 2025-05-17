@@ -1,0 +1,119 @@
+/* StaffBookings.css */
+.staff-bookinglist {
+    width: 100%;
+    padding: 10px 0;
+    padding-left: 10px;
+    max-height: calc(100vh - 50px);
+    display: flex;
+    flex-direction: column;
+}
+
+.staff-bookinglist .table-wrapper {
+    overflow-x: auto;
+}
+
+.staff-bookinglist-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.staff-bookinglist-table th,
+.staff-bookinglist-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.staff-bookinglist-table th {
+    background-color: #343a40;
+    color: #fff;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 14px;
+}
+
+.staff-bookinglist-table td {
+    font-size: 14px;
+    color: #333;
+}
+
+.staff-bookinglist-table tbody tr:hover {
+    background-color: #f4f4f4;
+}
+
+.staff-bookinglist .no-data {
+    text-align: center;
+    padding: 20px;
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Pagination styles */
+.pagination-booklist-staff .pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.pagination-booklist-staff .pagination-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 15px;
+    font-size: 14px;
+    border-radius: 30px;
+    transition: background-color 0.3s;
+}
+
+.pagination-booklist-staff .pagination-btn:disabled {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}
+
+.pagination-booklist-staff .pagination-page {
+    font-size: 14px;
+    color: #333;
+}
+
+.pagination-booklist-staff .page-input {
+    width: 60px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    text-align: center;
+    margin: 0 10px;
+}
+
+.pagination-booklist-staff .page-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+
+    .staff-bookinglist-table th,
+    .staff-bookinglist-table td {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .pagination-booklist-staff .pagination-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    .pagination-booklist-staff .pagination-page {
+        font-size: 12px;
+    }
+
+    .pagination-booklist-staff .page-input {
+        width: 50px;
+        font-size: 12px;
+    }
+}

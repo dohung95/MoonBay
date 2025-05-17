@@ -53,20 +53,20 @@ const Home = () => {
                             </p>
                         </div>
                         
-                        <div className='row' style={{ padding: '0 5%', justifyContent: 'center' }}>
+                        <div className='row' style={{ padding: '0 5%', justifyContent: 'center',"--bs-gutter-x": 0  }}>
                             {offers.map((offer, index) => (
                                 <React.Fragment key={index}>
                                     {/* Mùa + dịch vụ miễn phí */}
                                     {offer.season && offer.free_services &&
                                         <div className='col-md-3' style={{paddingBottom:'2%'}}>
-                                            <div className='chiecla2_hung' style={{
+                                            <div className='chiecla1_hung' style={{
                                                 backgroundImage: `url('/images/Hung/${offer.season.toLowerCase()}.jpg')`,
 
                                                 backgroundSize: 'cover',
                                                 width: '100%',
                                                 height: '200px'
                                             }}>
-                                                <div className='row container chiecla2_hung' style={{
+                                                <div className='row container chiecla1_hung' style={{
                                                     backgroundColor: 'rgba(0, 0, 0, 0.25)',
                                                     color: 'white',
                                                     height: '100%',
@@ -93,7 +93,7 @@ const Home = () => {
                                     {offer.total_bill_threshold && offer.discount_percent &&
                                         <div className='col-md-3' style={{paddingBottom:'2%'}}>
                                             <div style={{ width: '100%', height: '200px' }}>
-                                                <div className='row container chiecla2_hung' style={{
+                                                <div className='row container chiecla1_hung' style={{
                                                     backgroundColor: 'rgba(64, 190, 225, 0.54)',
                                                     color: 'white',
                                                     height: '100%',
@@ -163,6 +163,7 @@ const Home = () => {
                     </div>
                 </section>
             </div>
+            
             <hr className='container'/>
             <div>
                 <section className="latest_blog_area section_gap py-5">

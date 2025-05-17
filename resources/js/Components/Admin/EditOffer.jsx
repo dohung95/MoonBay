@@ -120,14 +120,14 @@ const EditOffer = () => {
                         {/* Mùa + dịch vụ miễn phí */}
                         {offer.season && offer.free_services &&
                             <div className='col-md-3' style={{ paddingBottom: '2%' }}>
-                                <div className='chiecla2_hung' style={{
+                                <div className='chiecla1_hung' style={{
                                     backgroundImage: `url('/images/Hung/${offer.season.toLowerCase()}.jpg')`,
 
                                     backgroundSize: 'cover',
                                     width: '100%',
                                     height: '200px'
                                 }}>
-                                    <div className='row container chiecla2_hung' style={{
+                                    <div className='row container chiecla1_hung' style={{
                                         backgroundColor: 'rgba(0, 0, 0, 0.25)',
                                         color: 'white',
                                         height: '100%',
@@ -154,7 +154,7 @@ const EditOffer = () => {
                         {offer.total_bill_threshold && offer.discount_percent &&
                             <div className='col-md-3' style={{ paddingBottom: '2%' }}>
                                 <div style={{ width: '100%', height: '200px' }}>
-                                    <div className='row container chiecla2_hung' style={{
+                                    <div className='row container chiecla1_hung' style={{
                                         backgroundColor: 'rgba(64, 190, 225, 0.54)',
                                         color: 'white',
                                         height: '100%',

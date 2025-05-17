@@ -13,10 +13,11 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\SpecialOfferController;
 use App\Http\Controllers\OfferController;
 use App\Http\Controllers\RoomInfoController;
+use App\Http\Controllers\StaffRoomManagementController;
+use App\Http\Controllers\BookingManagerController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Middleware\RememberTokenAuth;
 use App\Http\Controllers\ComplaintsController;
-
 
 
 
@@ -60,10 +61,32 @@ Route::post('/contact', [App\Http\Controllers\ContactController::class, 'send'])
 
 Route::post('/follow-email', [FollowEmailController::class, 'store']);
 
+// route của staff
+    Route::get('/dataUser', [UserController::class, 'dataUser']);
+    Route::get('/bookingList', [BookingController::class, 'BookingList']);
+    Route::post('/Staff_booking', [BookingController::class, 'booking_by_staff']);
+    // Route Rooms Management
+    Route::get('/rooms', [StaffRoomManagementController::class, 'index']);
+    Route::get('/rooms/{id}', [StaffRoomManagementController::class, 'show']);
+    Route::put('/rooms/{id}', [StaffRoomManagementController::class, 'update']);
+    Route::delete('/rooms/{id}', [StaffRoomManagementController::class, 'destroy']);
+    Route::post('/rooms', [StaffRoomManagementController::class, 'store']);
+//=----------------------------------------------
+
+
+// fix infor rooms of admin
 
 Route::get('/users_manager', [UserController::class, 'index']);
 Route::get('/staff_manager', [UserController::class, 'show_staff']);
+Route::put('/staff_manager/{id}', [UserController::class, 'update']);
+Route::post('/staff_manager', [UserController::class, 'add_new']);
+
 Route::get('/room_list', [RoomInfoController::class, 'index']);
+Route::post('/room_list', [RoomInfoController::class, 'store']);
+Route::put('/room_list/{id}', [RoomInfoController::class, 'update']);
+Route::delete('/room_list/{id}', [RoomInfoController::class, 'destroy']);
+
+Route::get('/booking_manager', [BookingManagerController::class, 'index']);
 
 Route::delete('/users_manager/{id}', [UserController::class, 'destroy']);
 Route::delete('/staff_manager/{id}', [UserController::class, 'destroy']);
@@ -126,6 +149,3 @@ Route::get('/admin/employees', [ComplaintsController::class, 'getStaffList']);
 Route::get('/admin/complaints', [ComplaintsController::class, 'indexAdmin']);
 Route::put('/admin/complaints/{id}', [ComplaintsController::class, 'update']);
 Route::delete('/admin/complaints/{id}', [ComplaintsController::class, 'destroy']);
-
-
-

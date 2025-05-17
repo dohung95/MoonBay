@@ -7,8 +7,8 @@ const AdminDashboard = () => {
     const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
     const location = useLocation();
 
-    const features = ['User Management', 'Room list', 'Employee List','Edit Offer', 'Reviews Management', 'Manage Complaints', 'Manage Room Info'];
-    const routes = ['UserManagement', 'RoomListManagement', 'EmployeeListManagement','EditOffer', 'ReviewsManagement', 'ManageComplaints', 'RoomManagement'];
+    const features = ['User Management', 'Room list', 'Employee List','Edit Offer', 'ManageBookings', 'Reviews Management', 'Manage Complaints', 'Manage Room Info'];
+    const routes = ['UserManagement', 'RoomListManagement', 'EmployeeListManagement','EditOffer', 'ManageBookings', 'ReviewsManagement', 'ManageComplaints', 'RoomManagement'];
 
     const isDashboardHome = location.pathname === '/admin';
 
@@ -49,8 +49,9 @@ const AdminDashboard = () => {
                             <div style={{ padding: '8px 0' }} key={i}>
                                 <NavLink
                                     to={`/admin/${routes[i]}`}
-                                    className="sidebar-link_Hung"
-                                    activeClassName="active"
+                                    className={({ isActive }) =>
+                                        isActive ? 'sidebar-link_Hung active' : 'sidebar-link_Hung'
+                                    }
                                 >
                                     <b>{label}</b>
                                 </NavLink>
@@ -97,8 +98,9 @@ const AdminDashboard = () => {
                                 <div style={{ padding: '8px 0' }} key={i}>
                                     <NavLink
                                         to={`/admin/${routes[i]}`}
-                                        className="sidebar-link_Hung"
-                                        activeClassName="active"
+                                        className={({ isActive }) =>
+                                            isActive ? 'sidebar-link_Hung active' : 'sidebar-link_Hung'
+                                        }
                                         onClick={() => setSidebarOpen(false)}
                                     >
                                         <b>{label}</b>

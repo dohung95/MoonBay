@@ -1,12 +1,14 @@
 import React, { useContext, useState, useEffect } from 'react';
-import "../../../css/css_of_staff/AdminHeader.css";
+import "../../../css/css_of_staff/StaffHeader.css";
 import { AuthContext } from '../AuthContext';
+import { useSearch } from './SearchContext';
 
-const StaffHeader = () => {
+const StaffHeader = ({ handleSearchChange }) => {
   const { user } = useContext(AuthContext);
+  const { searchQuery, setSearchQuery } = useSearch();
   return (
     <header className="staff-header bg-dark text-white d-flex align-items-center justify-content-between px-3 py-2">
-      <div className="d-flex align-items-center">
+      <div className="d-flex align-items-center" onClick={() => window.location.href = "/staff"} >
         <h4 className="mb-0">Staff Dashboard</h4>
       </div>
       <div className="d-flex align-items-center">
@@ -14,7 +16,9 @@ const StaffHeader = () => {
           <input
             type="text"
             className="form-control search-staff"
-            placeholder="Search..."
+            placeholder="Search data..."
+            value={searchQuery}
+            onChange={handleSearchChange}
           />
         </div>
         <div className="staff-box d-flex align-items-center">

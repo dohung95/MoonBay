@@ -1,13 +1,20 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useCallback } from "react";
 import '../../css/my_css/PopupBookNow.css'
 import { AuthContext } from "./AuthContext.jsx";
 import axios from "axios";
 import PopUp_deposit from "./PopUp_deposit.jsx";
+import debounce from 'lodash/debounce';
+
+const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+};
 
 const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
     const { user } = useContext(AuthContext);
     const [roomTypes, setRoomTypes] = useState([]);
     const [selectedRoomPrice, setSelectedRoomPrice] = useState(0);
+    const [rooms, setRooms] = useState([]);
+    const [memberError, setMemberError] = useState(false);
     const Total_price = (price, room) => {
         return parseFloat(price) * parseInt(room); // Đảm bảo tính toán với số
     };
@@ -19,11 +26,11 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
         children: 0,
         member: 1,
         price: '0',
-        Total_price: '0',
+        total_price: '0',
     });
     const [isPopUp_deposit, setIsPopUp_deposit] = useState(false); // State để quản lý popup
     const CalculatorDays = (checkin, checkout) => {
-        return Math.ceil(Math.abs(new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24) + 1);
+        return Math.ceil(Math.abs(new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24));
     }
 
     // Reset formData khi popup đóng
@@ -37,7 +44,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                 children: 0,
                 member: 1,
                 price: '0',
-                Total_price: '0',
+                total_price: '0',
             });
             setSelectedRoomPrice(0);
         }
@@ -54,7 +61,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                     ...prevData,
                     roomType: defaultRoom.name.toString(),
                     price: price.toString(),
-                    Total_price: total,
+                    total_price: total,
                 }));
                 setSelectedRoomPrice(price);
             }
@@ -74,7 +81,11 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
     useEffect(() => {
         const fetchRoomTypes = async () => {
             try {
-                const response = await axios.get('/api/room_types');
+
+                const [response, roomsRes] = await Promise.all([
+                    axios.get('/api/room_types'),
+                    axios.get('/api/rooms')
+                ]);
                 let formattedRooms = [];
                 if (Array.isArray(response.data)) {
                     formattedRooms = response.data.map(room => ({
@@ -88,7 +99,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                         id: room.id,
                         name: room.name,
                         price: room.price,
-                        capacity: room.capacity || 0 
+                        capacity: room.capacity || 0
                     }));
                 } else {
                     console.error('Unexpected data structure:', response.data);
@@ -96,6 +107,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                     return;
                 }
                 setRoomTypes(formattedRooms);
+                setRooms(roomsRes.data || []);
             } catch (error) {
                 console.error('Error fetching room types:', error.response || error);
                 window.showNotification('Failed to load room types', 'error');
@@ -118,38 +130,52 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
     // Giá trị min cho checkin (ngày kế tiếp)
     const minCheckin = formatDateTime(now);
 
-    const handleChange = (event) => {
-        const { id, value } = event.target;
-        const newValue = id === "member" ? parseInt(value) || 0 : value;
+    const handleChange = useCallback(
+        debounce((event) => {
+            const { id, value } = event.target;
+            const newValue = id === "member" ? parseInt(value) || 0 : value;
 
-        const maxCapacity =
-        roomTypes.length > 0
-            ? roomTypes.find((roomType) => roomType.name === selectedRoomName)?.capacity || 0
-            : 0;
-        
-        setFormData((prevData) => ({
-            ...prevData,
-            [id]: value,
-        }));
+            const maxCapacity =
+                roomTypes.length > 0
+                    ? roomTypes.find((roomType) => roomType.name === selectedRoomName)?.capacity || 0
+                    : 0;
 
-        if (id === 'roomType') {
-            const selectedRoom = roomTypes.find((room) => room.id === parseInt(value));
-            const price = selectedRoom ? selectedRoom.price : 0;
-            setSelectedRoomPrice(price);
-        }
+            setFormData((prevData) => ({
+                ...prevData,
+                [id]: value,
+            }));
 
-        if (id === "member" && newValue > maxCapacity) {
-            window.showNotification(`Maximum capacity is ${maxCapacity}. Please reduce the number of members.`, "error");
-        }
-    };
+            if (id === 'room') {
+                const total = Total_price(selectedRoomPrice, value).toString();
+                setFormData((prevData) => ({
+                    ...prevData,
+                    total_price: total,
+                }));
+            }
+            if (id === "member" && newValue > maxCapacity) {
+                window.showNotification(`Maximum capacity is ${maxCapacity}. Please reduce the number of members.`, "error");
+            }
+
+            if (id === 'roomType') {
+                const selectedRoom = roomTypes.find((room) => room.id === parseInt(value));
+                const price = selectedRoom ? selectedRoom.price : 0;
+                setSelectedRoomPrice(price);
+            }
+
+            if (id === "member") {
+                if (newValue > maxCapacity && !memberError) {
+                    setMemberError(true);
+                    window.showNotification(`Maximum capacity is ${maxCapacity}. Please reduce the number of members.`, "error");
+                } else if (newValue <= maxCapacity && memberError) {
+                    setMemberError(false);
+                }
+            }
+        }, 300),
+        [selectedRoomPrice, roomTypes, selectedRoomName]
+    );
 
     const handleBookNow = async (e) => {
         e.preventDefault();
-
-        if (!user.id) {
-            checkLogin();
-            return;
-        }
 
         // Kiểm tra các trường bắt buộc
         if (!formData.checkin || !formData.checkout) {
@@ -186,6 +212,21 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
             return;
         }
 
+        if (parseInt(formData.member) === 0) {
+            window.showNotification("Please select the number of members.", "error");
+            return;
+        }
+
+        const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available').length;
+        if (availableRooms < 1) {
+            window.showNotification("No rooms available for booking.", "error");
+            return;
+        } else if (availableRooms < parseInt(formData.room)) {
+            window.showNotification(`Only ${availableRooms} room${availableRooms > 1 ? 's' : ''} available, but you selected ${formData.room}.`, "error");
+            return;
+        }
+
+        window.showNotification(`${availableRooms} room${availableRooms > 1 ? 's' : ''} available for booking.`, "success");
         setIsPopUp_deposit(true);
     };
 
@@ -205,11 +246,24 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                     checkin_date: formData.checkin,
                     checkout_date: formData.checkout,
                     price: formData.price,
-                    total_price: formData.Total_price,
+                    total_price: formData.total_price,
                 });
 
                 if (response.status === 201) {
                     window.showNotification("Booking created successfully!", "success");
+
+                    const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available');
+                    for (let i = 0; i < parseInt(formData.room) && i < availableRooms.length; i++) {
+                        await axios.put(`/api/rooms/${availableRooms[i].id}`, { status: "" })
+                            .then(() => console.log(`Updated room ${availableRooms[i].id} status to null`))
+                            .catch(err => console.error(`Error updating room ${availableRooms[i].id}:`, err));
+                    }
+
+                    // Cập nhật state rooms cục bộ
+                    setRooms(prev => prev.map(room =>
+                        availableRooms.some(ar => ar.id === room.id) ? { ...room, status: null } : room
+                    ));
+
                     closePopup();
                     setIsPopUp_deposit(false);
                 }
@@ -226,7 +280,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
     };
 
     const handlePopupClose = () => {
-        setIsPopUp_deposit(false); 
+        setIsPopUp_deposit(false);
     };
 
     return (
@@ -274,19 +328,19 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                             <div className="mb-3">
                                 <label htmlFor="member" className="form-label">Member:</label>
                                 <input type="number" id="member" name="member" className="form-control" min={0}
-                                        max={formData.roomType ? roomTypes.find((roomType) => roomType.name === formData.roomType).capacity : 0}
-                                        onChange={handleChange}
-                                        placeholder="0" />
+                                    max={formData.roomType ? roomTypes.find((roomType) => roomType.name === formData.roomType).capacity : 0}
+                                    onChange={handleChange}
+                                    placeholder="1" />
                             </div>
                             <div className="view-price-popup info-row">
                                 <p className="info-item">
                                     Days: {CalculatorDays(formData.checkin, formData.checkout) || '0'}
                                 </p>
                                 <p className="info-item">
-                                    The {selectedRoomName}: {selectedRoomPrice}0 VNĐ/night
+                                    The {selectedRoomName}: {formatCurrency(selectedRoomPrice * 1000)}/night
                                 </p>
-                                <p className="info-item">Deposit (20%): {(parseFloat(formData.Total_price) * 0.2).toFixed(2)}0 VNĐ</p>
-                                <p className="info-item" style={{ marginTop: '5px', marginBottom: '10px' }} >Total Price: {(Total_price(selectedRoomPrice, formData.room) * parseInt(CalculatorDays(formData.checkin, formData.checkout) || 0))}.000 VNĐ</p>
+                                <p className="info-item">Deposit (20%): {formatCurrency((parseFloat(formData.total_price) * 0.2) * 1000)}</p>
+                                <p className="info-item" style={{ marginTop: '5px', marginBottom: '10px' }} >Total Price: {formatCurrency((parseFloat(formData.total_price) * (CalculatorDays(formData.checkin, formData.checkout) || 0)) * 1000)}</p>
                             </div>
                             <button onClick={handleBookNow} className="btn btn-primary w-100">Submit</button>
                             {isPopUp_deposit && (

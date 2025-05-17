@@ -92,4 +92,43 @@ class BookingController extends Controller
         return response()->json(['message' => 'Booking cancelled successfully'], 200);
     }
 
+    public function BookingList()
+    {
+        $bookings = Booking::all();
+        return response()->json(['bookings' => $bookings]);
+    }
+
+    public function booking_by_staff (Request $request)
+    {
+        try {
+            $validatedData = $request->validate([
+                'user_id' => 'required|exists:users,id',
+                'name' => 'required|string|max:255',
+                'email' => 'required|string',
+                'phone' => 'required|string|max:15',
+                'room_type' => 'required|string',
+                'number_of_rooms' => 'required|integer|min:1',
+                'children' => 'required|integer|min:0',
+                'member' => 'required|integer|min:1',
+                'price' => 'required|numeric',
+                'total_price' => 'required|numeric',
+                'checkin_date' => 'required|date',
+                'checkout_date' => 'required|date',
+            ]);
+
+            $validatedData['price'] = $validatedData['price'] / 1000;
+            $validatedData['total_price'] = $validatedData['total_price'] / 1000;
+
+            $booking = Booking::create($validatedData);
+
+            return response()->json([
+                'message' => 'Booking created successfully!',
+                'booking' => $booking,
+            ], 201);
+        } catch (\Exception $e) {
+            Log::error('Booking Error:', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Failed to create booking.'], 500);
+        }
+    }
+
 }
