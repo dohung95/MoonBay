@@ -109,6 +109,29 @@ const Navbar = ({ openLoginPopup }) => {
                                 Contact Us
                             </Link>
                         </li>
+                        <li className="nav-item dropdown">
+                            <a
+                                className="nav-link dropdown-toggle"
+                                href="#"
+                                id="feedbackDropdown"
+                                role="button"
+                                aria-expanded="false"
+                            >
+                                Feedback
+                            </a>
+                            <ul className="dropdown-menu" aria-labelledby="feedbackDropdown">
+                                <li>
+                                    <Link className="dropdown-item" to="/review" onClick={top}>
+                                        Review
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link className="dropdown-item" to="/complaint" onClick={top}>
+                                        Complaint
+                                    </Link>
+                                </li>
+                            </ul>
+                        </li>
                         {user && isAdmin() && (
                             <li className="nav-item">
                                 <Link to="/admin" className="nav-link" onClick={top}>
@@ -124,60 +147,31 @@ const Navbar = ({ openLoginPopup }) => {
                             </li>
                         )}
                         {user ? (
-                            <li className="nav-item dropdown d-flex align-items-center">
+                            <li className="nav-item dropdown">
+                            <a
+                                className="nav-link dropdown-toggle d-flex align-items-center"
+                                href="#"
+                                id="userDropdown"
+                                role="button"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                            >
                                 <img
                                     src={user.avatar}
                                     alt="Avatar"
                                     width="40"
                                     height="40"
-                                    className="rounded-circle"
+                                    className="rounded-circle me-1"
                                 />
-                                <button
-                                    className="nav-link"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                                >
-                                    HI {user.name}
-                                </button>
-                                <ul className="dropdown-menu">
-                                    <li>
-                                        <Link className="dropdown-item" to="/account">
-                                            Account
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <a className="dropdown-item" href="#">
-                                            Setting
-                                        </a>
-                                    </li>
-                                    {user && isAdmin() && (
-                                        <li>
-                                            <Link className="dropdown-item" to="/admin">
-                                                Admin Dashboard
-                                            </Link>
-                                        </li>
-                                    )}
-                                    {user && isStaff() && (
-                                        <li>
-                                            <Link className="dropdown-item" to="/staff">
-                                                Staff Dashboard
-                                            </Link>
-                                        </li>
-                                    )}
-                                    <li style={{ display: 'flex', justifyContent: 'center' }}>
-                                        <hr className="dropdown-divider" style={{ width: '80%' }} />
-                                    </li>
-                                    <li>
-                                        <Link
-                                            to="/"
-                                            className="dropdown-item"
-                                            onClick={handleLogout}
-                                        >
-                                            Logout
-                                        </Link>
-                                    </li>
-                                </ul>
-                            </li>
+                                <span className="user-name text-white">{user.name}</span>
+                            </a>
+                            <ul className="dropdown-menu" aria-labelledby="userDropdown">
+                                <li><Link className="dropdown-item" to="/account">Account</Link></li>
+                                <li><a className="dropdown-item" href="#">Setting</a></li>
+                                <li><Link to="/" className="dropdown-item" onClick={handleLogout}>Logout</Link></li>
+                            </ul>
+                        </li>
+                        
                         ) : (
                             <li className="nav-item">
                                 <button
