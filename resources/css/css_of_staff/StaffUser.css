@@ -30,6 +30,10 @@
     color: white;
 }
 
+.staff-user-page .staff-users-table tbody tr:hover {
+    background-color: #f4f4f4;
+}
+
 .staff-user-page .staff-users-table th,
 .staff-user-page .staff-users-table td {
     padding: 12px 15px;
@@ -73,6 +77,7 @@
     justify-content: center;
     align-items: center;
     gap: 10px;
+    margin: 10px 0;
 }
 
 .staff-user-page .pagination-controls button {

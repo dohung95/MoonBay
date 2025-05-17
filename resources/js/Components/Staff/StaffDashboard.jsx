@@ -17,11 +17,11 @@ const StaffDashboard = () => {
         setSearchQuery(e.target.value.toLowerCase());
     };
     return (
-        <div className="admin-layout">
+        <div className="admin-layout" style={{minHeight: "100vh", height: "auto"}}>
             <StaffHeader handleSearchChange={handleSearchChange}/>
             <div className="admin-content d-flex">
                 <StaffSidebar handleSearchChange={handleSearchChange}/>
-                <main className="flex-grow-1" style={{ width: "100vh" }}><Outlet /></main>
+                <main className="flex-grow-1" style={{minHeight: "100vh", height: "auto", overflow: "auto"}}><Outlet /></main>
             </div>
             <StaffFooter />
         </div>

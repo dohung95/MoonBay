@@ -12,7 +12,18 @@ class Booking extends Model
     protected $table = 'booking_rooms';
 
     protected $fillable = [
-        '*'
+        'user_id',
+        'name',
+        'email',
+        'phone',
+        'room_type',
+        'number_of_rooms',
+        'children',
+        'member',
+        'price',
+        'total_price',
+        'checkin_date',
+        'checkout_date',
     ];
 
     public function user()

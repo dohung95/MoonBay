@@ -1,4 +1,4 @@
-import React, { useState, useContext, useRef, useEffect } from 'react';
+import React, { useState, useContext, useRef, useEffect, Navigate } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import ReactDOM from 'react-dom/client';
 import Cookies from 'js-cookie';
@@ -40,6 +40,7 @@ import StaffUser from './Components/Staff/StaffUser.jsx';
 import StaffRooms from './Components/Staff/StaffRooms.jsx';
 import { SearchProvider } from './Components/Staff/SearchContext.jsx'
 import StaffRoomManagement from './Components/Staff/StaffRoomManagement.jsx';
+import Staff_BookingRooms from './Components/Staff/Staff_BookingRooms.jsx';
 //---------------------------------------------------------
 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -393,6 +394,9 @@ const App = () => {
                                     </ProtectedStaffRoute>
                                 }
                             >
+                                <Route
+                                    index element={<Staff_BookingRooms />}
+                                />
                                 <Route
                                     path="UserData"
                                     element={

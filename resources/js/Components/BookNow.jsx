@@ -9,13 +9,17 @@ import axios from 'axios';
 
 const BookNow = ({ checkLogins }) => {
     const [rooms, setRooms] = useState([]); // State để lưu dữ liệu từ database
+    const [allRooms, setAllRooms] = useState([]);
     const [isLoading, setIsLoading] = useState(true); // State để quản lý trạng thái tải
 
     // Fetch dữ liệu từ API Laravel
     useEffect(() => {
         const fetchRooms = async () => {
             try {
-                const response = await axios.get('/api/room_types'); // Gọi API từ Laravel
+                const [response, roomsRes] = await Promise.all([
+                    axios.get('/api/room_types'),
+                    axios.get('/api/rooms')
+                ]);
                 // Lọc các trường cần thiết để khớp với cấu trúc trước đây
                 const formattedRooms = response.data.map(room => ({
                     id: room.id,
@@ -25,6 +29,7 @@ const BookNow = ({ checkLogins }) => {
                     image: room.image
                 }));
                 setRooms(formattedRooms); // Lưu dữ liệu vào state
+                setAllRooms(roomsRes.data || []);
                 setIsLoading(false); // Tắt trạng thái tải khi dữ liệu sẵn sàng
             } catch (error) {
                 console.error('Error fetching rooms:', error);
@@ -36,9 +41,19 @@ const BookNow = ({ checkLogins }) => {
         fetchRooms();
     }, []);
 
-    // Hàm xử lý khi nhấn Book Now, truyền room.name
+    // Hàm kiểm tra số phòng trống cho một loại phòng
+    const getAvailableRoomsCount = (roomName) => {
+        return allRooms.filter(room => room.type === roomName && room.status === 'available').length;
+    };
+
+    // Hàm xử lý khi nhấn Book Now, kiểm tra phòng trống trước khi mở popup
     const handleBookNowClick = (roomName) => {
-        checkLogins(roomName); // Truyền room.name vào checkLogins
+        const availableCount = getAvailableRoomsCount(roomName);
+        if (availableCount > 0) {
+            checkLogins(roomName); // Mở popup nếu còn phòng trống
+        } else {
+            window.showNotification(`No rooms available for ${roomName}, please call hotline.`, 'error');
+        }
     };
 
     return (
@@ -46,7 +61,7 @@ const BookNow = ({ checkLogins }) => {
             <div className="container text-white" >
                 <h2 className="text-center mb-4">BEST SELLER</h2>
                 {isLoading ? (
-                    <div className="text-center" style={{ color: 'white', fontSize: '20px',  }}>Loading...</div> // Hiển thị khi đang tải
+                    <div className="text-center" style={{ color: 'white', fontSize: '20px', }}>Loading...</div> // Hiển thị khi đang tải
                 ) : (
                     <Swiper
                         modules={[Pagination, Autoplay]}

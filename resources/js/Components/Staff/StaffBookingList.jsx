@@ -46,6 +46,9 @@ const StaffBookings = () => {
                     bookingsData = [];
                 }
 
+                // Sắp xếp dữ liệu mới nhất
+                bookingsData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
                 setBookings(bookingsData);
                 setLoading(false);
             } catch (err) {

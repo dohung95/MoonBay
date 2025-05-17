@@ -40,7 +40,7 @@
 }
 
 .staff-bookinglist-table tbody tr:hover {
-    background-color: #f8f9fa;
+    background-color: #f4f4f4;
 }
 
 .staff-bookinglist .no-data {
@@ -56,6 +56,7 @@
     justify-content: center;
     align-items: center;
     gap: 10px;
+    margin: 10px 0;
 }
 
 .pagination-booklist-staff .pagination-btn {
@@ -95,6 +96,7 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+
     .staff-bookinglist-table th,
     .staff-bookinglist-table td {
         padding: 8px 10px;

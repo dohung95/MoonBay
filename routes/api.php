@@ -57,14 +57,15 @@ Route::post('/contact', [App\Http\Controllers\ContactController::class, 'send'])
 Route::post('/follow-email', [FollowEmailController::class, 'store']);
 
 // route của staff
-Route::get('/dataUser', [UserController::class, 'dataUser']);
-Route::get('/bookingList', [BookingController::class, 'BookingList']);
-// Route Rooms Management
-Route::get('/rooms', [StaffRoomManagementController::class, 'index']);
-Route::get('/rooms/{id}', [StaffRoomManagementController::class, 'show']);
-Route::put('/rooms/{id}', [StaffRoomManagementController::class, 'update']);
-Route::delete('/rooms/{id}', [StaffRoomManagementController::class, 'destroy']);
-Route::post('/rooms', [StaffRoomManagementController::class, 'store']);
+    Route::get('/dataUser', [UserController::class, 'dataUser']);
+    Route::get('/bookingList', [BookingController::class, 'BookingList']);
+    Route::post('/Staff_booking', [BookingController::class, 'booking_by_staff']);
+    // Route Rooms Management
+    Route::get('/rooms', [StaffRoomManagementController::class, 'index']);
+    Route::get('/rooms/{id}', [StaffRoomManagementController::class, 'show']);
+    Route::put('/rooms/{id}', [StaffRoomManagementController::class, 'update']);
+    Route::delete('/rooms/{id}', [StaffRoomManagementController::class, 'destroy']);
+    Route::post('/rooms', [StaffRoomManagementController::class, 'store']);
 //=----------------------------------------------
 
 

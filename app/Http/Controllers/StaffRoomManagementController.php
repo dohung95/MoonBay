@@ -64,10 +64,10 @@ class StaffRoomManagementController extends Controller
     {
         $room = \App\Models\StaffRoomManagement::findOrFail($id);
         $validated = $request->validate([
-            'room_number' => 'required|unique:rooms,room_number,' . $id,
-            'type' => 'required',
-            'status' => 'required',
-            'price' => 'required|numeric',
+            'room_number' => 'unique:rooms,room_number,' . $id,
+            'type' => '',
+            'status' => '',
+            'price' => 'numeric',
             'description' => 'nullable',
         ]);
         $room->update($validated);
