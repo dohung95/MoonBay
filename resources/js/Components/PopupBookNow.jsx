@@ -254,7 +254,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
 
                     const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available');
                     for (let i = 0; i < parseInt(formData.room) && i < availableRooms.length; i++) {
-                        await axios.put(`/api/rooms/${availableRooms[i].id}`, { status: "" })
+                        await axios.put(`/api/rooms/${availableRooms[i].id}`, { status: "booked" })
                             .then(() => console.log(`Updated room ${availableRooms[i].id} status to null`))
                             .catch(err => console.error(`Error updating room ${availableRooms[i].id}:`, err));
                     }

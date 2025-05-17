@@ -189,11 +189,39 @@ const Staff_BookingRooms = () => {
 
     // Hàm đếm số phòng đang có người đặt (status null hoặc rỗng)
     const getBookedCount = (roomTypeName) => {
-        return rooms.filter(room => room.type === roomTypeName && (!room.status || room.status === '')).length;
+        return rooms.filter(room => room.type === roomTypeName && (!room.status || room.status === 'booked')).length;
     };
 const isBookNowDisabled = !roomType || !numberOfRooms || parseInt(numberOfRooms) > getAvailableCount(roomType) || getAvailableCount(roomType) === 0;
     return (
         <div className="Staff_IndexPage">
+            <div className="table-container mt-4">
+                <h3>Room Type Availability</h3>
+                {isFetchingRooms ? (
+                    <div>Loading rooms...</div>
+                ) : (
+                    <table className="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Room Type</th>
+                                <th>Available Rooms</th>
+                                <th>Under Maintenance</th>
+                                <th>Booked</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {roomTypes.map((roomType) => (
+                                <tr key={roomType.id}>
+                                    <td>{roomType.name}</td>
+                                    <td>{getAvailableCount(roomType.name)}</td>
+                                    <td>{getMaintenanceCount(roomType.name)}</td>
+                                    <td>{getBookedCount(roomType.name)}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
+            </div>
+
             <div className="Staff_BookingRooms-container container mt-4">
                 <h2 className="Staff_BookingRooms-container-title mb-4">FORM BOOKING ROOM</h2>
                 {success && <div className="alert alert-success">{success}</div>}
@@ -379,34 +407,6 @@ const isBookNowDisabled = !roomType || !numberOfRooms || parseInt(numberOfRooms)
                         {loading ? 'Đang xử lý...' : 'BOOK NOW'}
                     </button>
                 </form>
-            </div>
-
-            <div className="table-container mt-4">
-                <h3>Room Type Availability</h3>
-                {isFetchingRooms ? (
-                    <div>Loading rooms...</div>
-                ) : (
-                    <table className="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Room Type</th>
-                                <th>Available Rooms</th>
-                                <th>Under Maintenance</th>
-                                <th>Booked</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {roomTypes.map((roomType) => (
-                                <tr key={roomType.id}>
-                                    <td>{roomType.name}</td>
-                                    <td>{getAvailableCount(roomType.name)}</td>
-                                    <td>{getMaintenanceCount(roomType.name)}</td>
-                                    <td>{getBookedCount(roomType.name)}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
             </div>
         </div>
     );

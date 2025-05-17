@@ -12,7 +12,7 @@ const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 };
 
-const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
+const Booking = ({ checkLogin, checkLogins }) => {
     const { user } = useContext(AuthContext);
     const [isLoading, setIsLoading] = useState(true);
     const [roomTypes, setRoomTypes] = useState([]); // Thêm state để lưu danh sách room_types từ API
@@ -138,7 +138,7 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
     const handleBooking = async (e) => {
         e.preventDefault();
 
-        if (!user.id) {
+        if (!user) {
             checkLogin();
             return;
         }
@@ -217,7 +217,7 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
                     // Cập nhật trạng thái phòng thành rỗng
                     const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available');
                     for (let i = 0; i < parseInt(formData.room) && i < availableRooms.length; i++) {
-                        await axios.put(`/api/rooms/${availableRooms[i].id}`, { status: '' });
+                        await axios.put(`/api/rooms/${availableRooms[i].id}`, { status: 'booked' });
                     }
 
                     // Cập nhật state rooms cục bộ
@@ -298,14 +298,14 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
                             <div className="row g-3">
                                 <div className="col-md-6">
                                     <label htmlFor="checkin" className="form-label">Check-in:</label>
-                                    <input ref={checkinRef} value={formData.checkin} type="datetime-local" id="checkin" className="form-control" onChange={handleChange} min={minCheckin} />
+                                    <input ref={checkinRef} value={formData.checkin} type="date" id="checkin" className="form-control" onChange={handleChange} min={minCheckin} />
                                 </div>
                                 <div className="col-md-6">
                                     <label htmlFor="checkout" className="form-label">Check-out:</label>
                                     <input
                                         ref={checkoutRef}
                                         value={formData.checkout}
-                                        type="datetime-local"
+                                        type="date"
                                         id="checkout"
                                         className="form-control"
                                         onChange={handleChange}
