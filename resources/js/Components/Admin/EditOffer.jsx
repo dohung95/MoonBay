@@ -114,112 +114,121 @@ const EditOffer = () => {
                 </div>
             </div>
 
-            <div className='row' style={{ padding: '0 5%', justifyContent: 'center' }}>
-                {offers.map((offer, index) => (
-                    <React.Fragment key={index}>
-                        {/* Mùa + dịch vụ miễn phí */}
-                        {offer.season && offer.free_services &&
-                            <div className='col-md-3' style={{ paddingBottom: '2%' }}>
-                                <div className='chiecla1_hung' style={{
-                                    backgroundImage: `url('/images/Hung/${offer.season.toLowerCase()}.jpg')`,
-
-                                    backgroundSize: 'cover',
-                                    width: '100%',
-                                    height: '200px'
-                                }}>
-                                    <div className='row container chiecla1_hung' style={{
-                                        backgroundColor: 'rgba(0, 0, 0, 0.25)',
-                                        color: 'white',
-                                        height: '100%',
-                                        paddingTop: '15%',
-                                        paddingLeft: '10%'
-                                    }}>
-                                        <div className='col-md-5'>
-                                            <div>Season</div>
-                                            <b>{offer.season}</b>
-                                        </div>
-                                        <div className='col-md-5'>
-                                            <div>Service</div>
-                                            <b>{offer.free_services}</b>
-                                        </div>
-                                        <div style={{ textAlign: 'center' }}>
-                                            Time: {new Date(offer.season_start).toLocaleDateString('vi-VN')} - {new Date(offer.season_end).toLocaleDateString('vi-VN')}
-                                        </div>
+            <div className='row offer_Hung' style={{ padding: '0 5%', justifyContent: 'center', "--bs-gutter-x": 0 }}>
+                                        {offers.map((offer, index) => (
+                                            <React.Fragment key={index}>
+                                                {/* Mùa + dịch vụ miễn phí */}
+                                                {offer.season && offer.free_services &&
+                                                    <div className='col-md-2' style={{ paddingBottom: '2%', marginRight: '2%' }}>
+                                                        <div className='chiecla1_hung' style={{
+                                                            backgroundImage: `url('/images/Hung/${offer.season.toLowerCase()}.jpg')`,
+            
+                                                            backgroundSize: 'cover',
+                                                            width: '100%',
+                                                            height: '200px'
+            
+                                                        }}>
+                                                            <div className='row container chiecla1_hung' style={{
+                                                                backgroundColor: 'rgba(0, 0, 0, 0.25)',
+                                                                color: 'white',
+                                                                height: '100%',
+                                                                paddingTop: '2%',
+                                                                textAlign: 'center'
+                                                            }}>
+                                                                <div >
+                                                                    <div><b>Season</b></div>
+                                                                    <b>{offer.season}</b>
+                                                                </div>
+                                                                <hr />
+                                                                <div>
+                                                                    <div><b>Service</b></div>
+                                                                    <b>{offer.free_services}</b>
+                                                                </div>
+                                                                <hr />
+                                                                <div style={{ textAlign: 'center' }}>
+                                                                    <b>Time</b>: <br /> {new Date(offer.season_start).toLocaleDateString('vi-VN')} - {new Date(offer.season_end).toLocaleDateString('vi-VN')}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+            
+                                                {/* Ưu đãi bill */}
+                                                {offer.total_bill_threshold && offer.discount_percent &&
+                                                    <div className='col-md-2' style={{ paddingBottom: '2%', marginRight: '2%' }}>
+                                                        <div style={{ width: '100%', height: '200px',
+                                                                textAlign: 'center' }}>
+                                                            <div className='row container chiecla1_hung' style={{
+                                                                backgroundColor: '#1f97c9',
+                                                                color: 'white',
+                                                                height: '100%',
+                                                                paddingTop: '2%'
+                                                            }}>
+                                                                <div ><div><b>Total Bill</b></div><b>{Math.floor(offer.total_bill_threshold).toLocaleString('vi-VN')} VND</b></div>
+                                                                <hr />
+                                                                <div ><div><b>Discount</b></div><b>{offer.discount_percent}%</b></div>
+                                                                <hr />
+                                                                <div style={{ textAlign: 'center' }}>
+                                                                    <b>Time</b><br /> {new Date(offer.discount_start).toLocaleDateString('vi-VN')} - {new Date(offer.discount_end).toLocaleDateString('vi-VN')}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+            
+                                                {/* Ưu đãi lưu trú */}
+                                                {offer.stay_duration_days && offer.gift_description &&
+                                                    <div className='col-md-2' style={{ paddingBottom: '2%', marginRight: '2%' }}>
+                                                        <div style={{ width: '100%', height: '200px',
+                                                                textAlign: 'center' }}>
+                                                            <div className='row container chiecla1_hung' style={{
+                                                                backgroundColor: '#1f97c9',
+                                                                color: 'white',
+                                                                height: '100%',
+                                                                paddingTop: '2%'
+                                                            }}>
+                                                                <div ><div><b>Total days</b></div><b>{offer.stay_duration_days} day</b></div>
+                                                                <hr />
+                                                                <div ><div><b>Souvenir</b></div><b>{offer.gift_description}</b></div>
+                                                                <hr />
+                                                                <div style={{ textAlign: 'center' }}>
+                                                                    <b>Time</b>: <br />{new Date(offer.gift_start).toLocaleDateString('vi-VN')} - {new Date(offer.gift_end).toLocaleDateString('vi-VN')}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+            
+                                                {/* Ưu đãi khác */}
+                                                {offer.other_package_description && offer.offer_type &&
+                                                    <div className='col-md-2' style={{ paddingBottom: '2%'}}>
+                                                        <div className='chiecla1_hung' style={{
+                                                            backgroundImage: "url('/images/Hung/Uudaikhac.jpg')",
+                                                            backgroundSize: 'cover',
+                                                            width: '100%',
+                                                            height: '200px'
+                                                        }}>
+                                                            <div className='row container chiecla1_hung' style={{
+                                                                backgroundColor: 'rgba(0, 0, 0, 0.25)',
+                                                                color: 'white',
+                                                                height: '100%',
+                                                                paddingTop: '2%',
+                                                                textAlign: 'center'
+                                                            }}>
+                                                                <div ><div><b>Condition</b></div><b>{offer.other_package_description}</b></div>
+                                                                <hr />
+                                                                <div ><div><b>Endow</b></div><b>{offer.offer_type}</b></div>
+                                                                <hr />
+                                                                <div style={{ textAlign: 'center'}}>
+                                                                    <b>Time</b>: <br /> {new Date(offer.other_offer_start).toLocaleDateString('vi-VN')} - {new Date(offer.other_offer_end).toLocaleDateString('vi-VN')}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </React.Fragment>
+                                        ))}
                                     </div>
-                                </div>
-                            </div>
-                        }
-
-                        {/* Ưu đãi bill */}
-                        {offer.total_bill_threshold && offer.discount_percent &&
-                            <div className='col-md-3' style={{ paddingBottom: '2%' }}>
-                                <div style={{ width: '100%', height: '200px' }}>
-                                    <div className='row container chiecla1_hung' style={{
-                                        backgroundColor: 'rgba(64, 190, 225, 0.54)',
-                                        color: 'white',
-                                        height: '100%',
-                                        paddingTop: '15%',
-                                        paddingLeft: '10%'
-                                    }}>
-                                        <div className='col-md-5'><div>Total Bill</div><b>{Math.floor(offer.total_bill_threshold).toLocaleString('vi-VN')} VND</b></div>
-                                        <div className='col-md-5'><div>Discount</div><b>{offer.discount_percent}%</b></div>
-                                        <div style={{ textAlign: 'center' }}>
-                                            Time: {new Date(offer.discount_start).toLocaleDateString('vi-VN')} - {new Date(offer.discount_end).toLocaleDateString('vi-VN')}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-
-                        {/* Ưu đãi lưu trú */}
-                        {offer.stay_duration_days && offer.gift_description &&
-                            <div className='col-md-3' style={{ paddingBottom: '2%' }}>
-                                <div style={{ width: '100%', height: '200px' }}>
-                                    <div className='row container chiecla1_hung' style={{
-                                        backgroundColor: 'rgba(64, 190, 225, 0.54)',
-                                        color: 'white',
-                                        height: '100%',
-                                        paddingTop: '15%',
-                                        paddingLeft: '10%'
-                                    }}>
-                                        <div className='col-md-5'><div>Total days</div><b>{offer.stay_duration_days} day</b></div>
-                                        <div className='col-md-5'><div>Souvenir</div><b>{offer.gift_description}</b></div>
-                                        <div style={{ textAlign: 'center' }}>
-                                            Time: {new Date(offer.gift_start).toLocaleDateString('vi-VN')} - {new Date(offer.gift_end).toLocaleDateString('vi-VN')}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-
-                        {/* Ưu đãi khác */}
-                        {offer.other_package_description && offer.offer_type &&
-                            <div className='col-md-3' style={{ paddingBottom: '2%' }}>
-                                <div className='chiecla1_hung' style={{
-                                    backgroundImage: "url('/images/Hung/Uudaikhac.jpg')",
-                                    backgroundSize: 'cover',
-                                    width: '100%',
-                                    height: '200px'
-                                }}>
-                                    <div className='row container chiecla1_hung' style={{
-                                        backgroundColor: 'rgba(0, 0, 0, 0.25)',
-                                        color: 'white',
-                                        height: '100%',
-                                        paddingTop: '15%',
-                                        paddingLeft: '10%'
-                                    }}>
-                                        <div className='col-md-5'><div>Condition</div><b>{offer.other_package_description}</b></div>
-                                        <div className='col-md-5'><div>Endow</div><b>{offer.offer_type}</b></div>
-                                        <div style={{ textAlign: 'center' }}>
-                                            Time: {new Date(offer.other_offer_start).toLocaleDateString('vi-VN')} - {new Date(offer.other_offer_end).toLocaleDateString('vi-VN')}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    </React.Fragment>
-                ))}
-            </div>
 
             <div className="container mt-5">
                 <h4 className="mb-4">Edit / Add Offer</h4>

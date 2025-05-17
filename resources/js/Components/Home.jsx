@@ -53,7 +53,7 @@ const Home = () => {
                             </p>
                         </div>
 
-                        <div className='row' style={{ padding: '0 5%', justifyContent: 'center', "--bs-gutter-x": 0 }}>
+                        <div className='row offer_Hung' style={{ padding: '0 5%', justifyContent: 'center', "--bs-gutter-x": 0 }}>
                             {offers.map((offer, index) => (
                                 <React.Fragment key={index}>
                                     {/* Mùa + dịch vụ miễn phí */}
@@ -75,17 +75,17 @@ const Home = () => {
                                                     textAlign: 'center'
                                                 }}>
                                                     <div >
-                                                        <div>Season</div>
+                                                        <div><b>Season</b></div>
                                                         <b>{offer.season}</b>
                                                     </div>
                                                     <hr />
                                                     <div>
-                                                        <div>Service</div>
+                                                        <div><b>Service</b></div>
                                                         <b>{offer.free_services}</b>
                                                     </div>
                                                     <hr />
                                                     <div style={{ textAlign: 'center' }}>
-                                                        Time: {new Date(offer.season_start).toLocaleDateString('vi-VN')} - {new Date(offer.season_end).toLocaleDateString('vi-VN')}
+                                                        <b>Time</b>: <br /> {new Date(offer.season_start).toLocaleDateString('vi-VN')} - {new Date(offer.season_end).toLocaleDateString('vi-VN')}
                                                     </div>
                                                 </div>
                                             </div>
@@ -103,12 +103,12 @@ const Home = () => {
                                                     height: '100%',
                                                     paddingTop: '2%'
                                                 }}>
-                                                    <div ><div>Total Bill</div><b>{Math.floor(offer.total_bill_threshold).toLocaleString('vi-VN')} VND</b></div>
+                                                    <div ><div><b>Total Bill</b></div><b>{Math.floor(offer.total_bill_threshold).toLocaleString('vi-VN')} VND</b></div>
                                                     <hr />
-                                                    <div ><div>Discount</div><b>{offer.discount_percent}%</b></div>
+                                                    <div ><div><b>Discount</b></div><b>{offer.discount_percent}%</b></div>
                                                     <hr />
                                                     <div style={{ textAlign: 'center' }}>
-                                                        Time: {new Date(offer.discount_start).toLocaleDateString('vi-VN')} - {new Date(offer.discount_end).toLocaleDateString('vi-VN')}
+                                                        <b>Time</b><br /> {new Date(offer.discount_start).toLocaleDateString('vi-VN')} - {new Date(offer.discount_end).toLocaleDateString('vi-VN')}
                                                     </div>
                                                 </div>
                                             </div>
@@ -126,12 +126,12 @@ const Home = () => {
                                                     height: '100%',
                                                     paddingTop: '2%'
                                                 }}>
-                                                    <div ><div>Total days</div><b>{offer.stay_duration_days} day</b></div>
+                                                    <div ><div><b>Total days</b></div><b>{offer.stay_duration_days} day</b></div>
                                                     <hr />
-                                                    <div ><div>Souvenir</div><b>{offer.gift_description}</b></div>
+                                                    <div ><div><b>Souvenir</b></div><b>{offer.gift_description}</b></div>
                                                     <hr />
                                                     <div style={{ textAlign: 'center' }}>
-                                                        Time: {new Date(offer.gift_start).toLocaleDateString('vi-VN')} - {new Date(offer.gift_end).toLocaleDateString('vi-VN')}
+                                                        <b>Time</b>: <br />{new Date(offer.gift_start).toLocaleDateString('vi-VN')} - {new Date(offer.gift_end).toLocaleDateString('vi-VN')}
                                                     </div>
                                                 </div>
                                             </div>
@@ -140,7 +140,7 @@ const Home = () => {
 
                                     {/* Ưu đãi khác */}
                                     {offer.other_package_description && offer.offer_type &&
-                                        <div className='col-md-2' style={{ paddingBottom: '2%' }}>
+                                        <div className='col-md-2' style={{ paddingBottom: '2%'}}>
                                             <div className='chiecla1_hung' style={{
                                                 backgroundImage: "url('/images/Hung/Uudaikhac.jpg')",
                                                 backgroundSize: 'cover',
@@ -154,12 +154,12 @@ const Home = () => {
                                                     paddingTop: '2%',
                                                     textAlign: 'center'
                                                 }}>
-                                                    <div ><div>Condition</div><b>{offer.other_package_description}</b></div>
+                                                    <div ><div><b>Condition</b></div><b>{offer.other_package_description}</b></div>
                                                     <hr />
-                                                    <div ><div>Endow</div><b>{offer.offer_type}</b></div>
+                                                    <div ><div><b>Endow</b></div><b>{offer.offer_type}</b></div>
                                                     <hr />
                                                     <div style={{ textAlign: 'center' }}>
-                                                        Time: {new Date(offer.other_offer_start).toLocaleDateString('vi-VN')} - {new Date(offer.other_offer_end).toLocaleDateString('vi-VN')}
+                                                        <b>Time</b>: <br /> {new Date(offer.other_offer_start).toLocaleDateString('vi-VN')} - {new Date(offer.other_offer_end).toLocaleDateString('vi-VN')}
                                                     </div>
                                                 </div>
                                             </div>
