@@ -29,7 +29,6 @@ const Reviews = ({ checkLogins }) => {
     { label: 'Reviews' }
   ];
 
-
   axios.defaults.withCredentials = true;
   axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 
@@ -40,7 +39,6 @@ const Reviews = ({ checkLogins }) => {
       email: user?.email || "",
     }));
   }, [user]);
-
 
   const fetchReviews = async (page = 1) => {
     try {
@@ -53,31 +51,29 @@ const Reviews = ({ checkLogins }) => {
 
       const paginated = response.data.reviews;
 
-      setReviews(paginated.data); // ✅ lấy mảng đánh giá
-      setLastPage(paginated.last_page); // ✅ lấy số trang cuối
+      setReviews(paginated.data);
+      setLastPage(paginated.last_page);
       setRatingsCount(response.data.ratingsCount || {});
       setTotalReviews(response.data.reviews.total);
     } catch (err) {
-      console.error("Lỗi khi tải đánh giá:", err);
+      console.error("Error loading reviews:", err);
     }
   };
-
 
   useEffect(() => {
     fetchReviews(currentPage);
   }, [currentPage, filterRating]);
 
-
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
 
     if (!reviewForm.rating || !reviewForm.comment) {
-      toast.error("Vui lòng chọn số sao và nhập nhận xét!");
+      toast.error("Please select a star rating and enter a comment!");
       return;
     }
 
     if (!token || token === "null" || token === "") {
-      toast.error("Token không hợp lệ, vui lòng đăng nhập lại!");
+      toast.error("Invalid token, please log in again!");
       return;
     }
 
@@ -99,7 +95,7 @@ const Reviews = ({ checkLogins }) => {
         }
       );
 
-      toast.success("Cảm ơn bạn đã gửi đánh giá!");
+      toast.success("Thank you for submitting your review!");
 
       setCurrentPage(lastPage);
       fetchReviews(lastPage);
@@ -111,8 +107,8 @@ const Reviews = ({ checkLogins }) => {
         comment: "",
       });
     } catch (err) {
-      console.error("Lỗi khi gửi đánh giá:", err);
-      toast.error("Không thể gửi đánh giá, vui lòng thử lại!");
+      console.error("Error submitting review:", err);
+      toast.error("Unable to submit review, please try again!");
     } finally {
       setLoading(false);
     }
@@ -134,9 +130,9 @@ const Reviews = ({ checkLogins }) => {
   };
 
   const maskEmail = (email) => {
-    if (!email) return "Khách hàng";
+    if (!email) return "Customer";
     const [user, domain] = email.split("@");
-    if (!domain) return "Khách hàng";
+    if (!domain) return "Customer";
 
     const visiblePart = user.slice(0, 3);
     return `${visiblePart}***@${domain}`;
@@ -147,19 +143,17 @@ const Reviews = ({ checkLogins }) => {
     setCurrentPage(1);
   };
 
-
-
   return (
     <>
       <Banner />
       <ToastContainer />
       <div className="container border p-4 rounded mt-4 mb-4">
         <Sitemapmini items={sitemap} />
-        <h3 Align="center">Đánh giá của khách hàng</h3>
+        <h3 align="center">Customer Reviews</h3>
 
         {user ? (
           <form onSubmit={handleReviewSubmit} className="border p-3 rounded mb-4">
-            <h5>Gửi đánh giá của bạn</h5>
+            <h5 className="text-center">Submit Your Review</h5>
 
             <input type="hidden" value={reviewForm.user_id} />
 
@@ -176,7 +170,7 @@ const Reviews = ({ checkLogins }) => {
               onChange={(e) => setReviewForm({ ...reviewForm, rating: e.target.value })}
               required
             >
-              <option value="">Chọn số sao</option>
+              <option value="">Select star rating</option>
               <option value="5">⭐⭐⭐⭐⭐</option>
               <option value="4">⭐⭐⭐⭐</option>
               <option value="3">⭐⭐⭐</option>
@@ -186,7 +180,7 @@ const Reviews = ({ checkLogins }) => {
 
             <textarea
               className="form-control mb-2"
-              placeholder="Chia sẻ trải nghiệm của bạn"
+              placeholder="Share your experience"
               value={reviewForm.comment}
               onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
               required
@@ -194,43 +188,53 @@ const Reviews = ({ checkLogins }) => {
             ></textarea>
 
             <button className="btn btn-primary w-100" type="submit" disabled={loading}>
-              {loading ? "Đang gửi..." : "Gửi đánh giá"}
+              {loading ? "Submitting..." : "Submit Review"}
             </button>
           </form>
         ) : (
-          <div className="alert alert-info" Align="center">
-            Vui lòng{" "}
+          <div className="alert alert-info" align="center">
+            Please{" "}
             <button
               onClick={checkLogins}
               className="btn btn-link p-0"
               style={{ textDecoration: "none" }}
             >
-              đăng nhập
+              log in
             </button>{" "}
-            để gửi đánh giá của bạn.
+            to submit your review.
           </div>
         )}
 
         <div>
-          <p className="text-center mb-6 text-gray-700">Tổng số đánh giá: <strong>{totalReviews}</strong></p>
+          <p className="text-center mb-6 text-gray-700">
+            Total reviews: <strong>{totalReviews}</strong>
+          </p>
         </div>
 
         <div className="mb-3">
-          <label className="me-2">Lọc theo số sao:</label>
+          <label className="me-2">Filter by star rating:</label>
           <SortStart
             selectedRating={filterRating}
             onChange={handleFilterRatingChange}
             ratingsCount={ratingsCount}
           />
-
         </div>
 
         {Array.isArray(reviews) && reviews.length > 0 ? (
           <>
             <div className="text-center">
               {reviews.map((review) => (
-                <div key={review.id} className="border rounded p-3 mb-3" style={{ height: "150px", overflow: "hidden", position: "relative", alignContent: "center" }}>
-                  <strong>{maskEmail(review.email) || "Khách hàng"}</strong> -{" "}
+                <div
+                  key={review.id}
+                  className="border rounded p-3 mb-3"
+                  style={{
+                    height: "150px",
+                    overflow: "hidden",
+                    position: "relative",
+                    alignContent: "center",
+                  }}
+                >
+                  <strong>{maskEmail(review.email) || "Customer"}</strong> -{" "}
                   {[...Array(5)].map((_, i) =>
                     i < review.rating ? (
                       <FaStar key={i} color="#F59E0B" />
@@ -246,7 +250,7 @@ const Reviews = ({ checkLogins }) => {
                           className="btn btn-link p-0 ms-2"
                           onClick={() => toggleComment(review.id)}
                         >
-                          Ẩn
+                          Hide
                         </button>
                       </>
                     ) : (
@@ -259,7 +263,7 @@ const Reviews = ({ checkLogins }) => {
                             className="btn btn-link p-0 ms-2"
                             onClick={() => toggleComment(review.id)}
                           >
-                            Xem thêm
+                            Read more
                           </button>
                         )}
                       </>
@@ -275,22 +279,22 @@ const Reviews = ({ checkLogins }) => {
                 onClick={handlePrev}
                 disabled={currentPage === 1}
               >
-                Trước
+                Previous
               </button>
               <span>
-                Trang {currentPage} / {lastPage}
+                Page {currentPage} / {lastPage}
               </span>
               <button
                 className="btn btn-primary"
                 onClick={handleNext}
                 disabled={currentPage === lastPage}
               >
-                Tiếp theo
+                Next
               </button>
             </div>
           </>
         ) : (
-          <p className="mb-4">Chưa có đánh giá nào.</p>
+          <p className="mb-4">No reviews yet.</p>
         )}
       </div>
     </>

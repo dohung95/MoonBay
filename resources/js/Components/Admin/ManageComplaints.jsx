@@ -17,7 +17,7 @@ const ManageComplaints = () => {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     
-    // Phân trang
+    // Pagination
     const [currentPage, setCurrentPage] = useState(1);
     const [lastPage, setLastPage] = useState(1);
     const [total, setTotal] = useState(0);
@@ -43,17 +43,17 @@ const ManageComplaints = () => {
 
             setComplaints(sorted);
             setStaffList(staffRes.data);
-            setTotalPages(complaintsRes.data.last_page); // paginate Laravel
+            setTotalPages(complaintsRes.data.last_page); // Laravel pagination
             setTotal(complaintsRes.data.total); 
             setLoading(false);
             setEditedComplaints({});
         } catch (err) {
-            console.error('Lỗi khi tải dữ liệu:', err);
+            console.error('Error loading data:', err);
             setLoading(false);
         }
     };
 
-    // Hàm tạo mảng số trang có dấu ...
+    // Function to create page number array with dots
     const getPageNumbers = () => {
         const delta = 2;
         const range = [];
@@ -101,16 +101,16 @@ const ManageComplaints = () => {
     };
 
     const handleSave = async (id) => {
-        if (!window.confirm('Bạn có chắc muốn lưu thay đổi?')) return;
+        if (!window.confirm('Are you sure you want to save changes?')) return;
 
         try {
             const updatedData = editedComplaints[id];
             if (!updatedData) return;
 
             await axios.put(`/api/admin/complaints/${id}`, updatedData);
-            toast.success('Lưu thay đổi thành công!');
+            toast.success('Changes saved successfully!');
 
-            // Cập nhật complaint đã lưu vào danh sách
+            // Update saved complaint in the list
             const updatedComplaints = complaints.map(c => {
                 if (c.id === id) {
                     return { ...c, ...updatedData };
@@ -135,52 +135,52 @@ const ManageComplaints = () => {
             });
 
         } catch (err) {
-            console.error('Lỗi khi lưu:', err);
-            toast.error('Lưu thay đổi thất bại!');
+            console.error('Error saving:', err);
+            toast.error('Failed to save changes!');
         }
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm('Bạn có chắc muốn xóa khiếu nại này không?')) return;
+        if (!window.confirm('Are you sure you want to delete this complaint?')) return;
 
         try {
             await axios.delete(`/api/admin/complaints/${id}`);
-            toast.success('Xóa khiếu nại thành công!');
+            toast.success('Complaint deleted successfully!');
             fetchData(currentPage);
         } catch (err) {
-            console.error('Lỗi khi xóa:', err);
-            toast.error('Xóa khiếu nại thất bại!');
+            console.error('Error deleting:', err);
+            toast.error('Failed to delete complaint!');
         }
     };
 
-    // Xử lý chuyển trang phân trang
+    // Handle pagination page change
     const goToPage = (page) => {
         if (page >= 1 && page <= lastPage) {
             setCurrentPage(page);
         }
     };
 
-    if (loading) return <div className="p-6 text-center">Đang tải dữ liệu...</div>;
+    if (loading) return <div className="p-6 text-center">Loading data...</div>;
 
     return (
         <div className="p-6 bg-white shadow rounded-xl">
             <ToastContainer />
-            <h2 className="text-2xl font-bold mb-4 pt-4" Align="center">Quản lý Khiếu nại</h2>
+            <h2 className="text-2xl font-bold mb-4 pt-4" Align="center">Manage Complaints</h2>
             <table className="table table-hover table-striped">
                 <thead className="bg-gray-100">
-                    <tr>
-                        <th className="px-4 py-2 border">ID</th>
-                        <th className="px-4 py-2 border">UserID</th>
-                        <th className="px-4 py-2 border">Tên</th>
-                        <th className="px-4 py-2 border">Email</th>
-                        <th className="px-4 py-2 border">Phone number</th>
-                        <th className="px-4 py-2 border">Loại khiếu nại</th>
-                        <th className="px-4 py-2 border">Mô tả</th>
-                        <th className="px-4 py-2 border">Liên hệ lại khách</th>
-                        <th className="px-4 py-2 border">Ngày tạo</th>
-                        <th className="px-4 py-2 border">Trạng thái</th>
-                        <th className="px-4 py-2 border">Người xử lý</th>
-                        <th className="px-4 py-2 border">Action</th>
+                    <tr className="text-center">
+                        <th className="px-2 py-2 border">ID</th>
+                        <th className="px-2 py-2 border">UserID</th>
+                        <th className="px-2 py-2 border">Name</th>
+                        <th className="px-2 py-2 border">Email</th>
+                        <th className="px-2 py-2 border">Phone number</th>
+                        <th className="px-2 py-2 border">Complaint Type</th>
+                        <th className="px-2 py-2 border">Description</th>
+                        <th className="px-2 py-2 border">Contact Preference</th>
+                        <th className="px-2 py-2 border">Created Date</th>
+                        <th className="px-2 py-2 border">Status</th>
+                        <th className="px-2 py-2 border">Handler</th>
+                        <th className="px-2 py-2 border">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -191,16 +191,16 @@ const ManageComplaints = () => {
 
                         return (
                             <tr key={c.id} className="text-center">
-                                <td className="px-4 py-2 border">{c.id}</td>
-                                <td className="px-4 py-2 border">{c.user_id}</td>
-                                <td className="px-4 py-2 border">{c.name}</td>
-                                <td className="px-4 py-2 border">{c.customer_email}</td>
-                                <td className="px-4 py-2 border">{c.customer_phone}</td>
-                                <td className="px-4 py-2 border">{c.complaint_type}</td>
-                                <td className="px-4 py-2 border">{c.description}</td>
-                                <td className="px-4 py-2 border">{c.contact_preference}</td>
-                                <td className="px-4 py-2 border">{new Date(c.created_at).toLocaleDateString()}</td>
-                                <td className="px-4 py-2 border">
+                                <td className="px-2 py-2 border">{c.id}</td>
+                                <td className="px-2 py-2 border">{c.user_id}</td>
+                                <td className="px-2 py-2 border">{c.name}</td>
+                                <td className="px-2 py-2 border">{c.customer_email}</td>
+                                <td className="px-2 py-2 border">{c.customer_phone}</td>
+                                <td className="px-2 py-2 border">{c.complaint_type}</td>
+                                <td className="px-2 py-2 border">{c.description}</td>
+                                <td className="px-2 py-2 border">{c.contact_preference}</td>
+                                <td className="px-2 py-2 border">{new Date(c.created_at).toLocaleDateString()}</td>
+                                <td className="px-2 py-2 border">
                                     <select
                                         value={status}
                                         onChange={e => handleChangeLocal(c.id, 'status', e.target.value)}
@@ -211,30 +211,30 @@ const ManageComplaints = () => {
                                         <option value="rejected">Rejected</option>
                                     </select>
                                 </td>
-                                <td className="px-4 py-2 border">
+                                <td className="px-2 py-2 border">
                                     <select
                                         value={handler_name}
                                         onChange={e => handleChangeLocal(c.id, 'handler_name', e.target.value)}
                                         className="border p-1 rounded"
                                     >
-                                        <option value="">-- Chọn nhân viên --</option>
+                                        <option value="">-- Select employee --</option>
                                         {staffList.map(staff => (
                                             <option key={staff.id} value={staff.name}>{staff.name}</option>
                                         ))}
                                     </select>
                                 </td>
-                                <td className="px-4 py-2 border space-x-2">
+                                <td className="px-2 py-2 border space-x-2">
                                     <button
                                         onClick={() => handleSave(c.id)}
-                                        className="btn btn-primary"
+                                        className="btn btn-primary m-1"
                                     >
-                                        Lưu
+                                        Save
                                     </button>
                                     <button
                                         onClick={() => handleDelete(c.id)}
                                         className="btn btn-danger"
                                     >
-                                        Xóa
+                                        Delete
                                     </button>
                                 </td>
                             </tr>
@@ -244,7 +244,7 @@ const ManageComplaints = () => {
             </table>
 
             <div className="text-center mt-2">
-                <p><strong>Tổng số khiếu nại: {total}</strong></p>
+                <p><strong>Total complaints: {total}</strong></p>
             </div>
 
             {/* Pagination controls */}

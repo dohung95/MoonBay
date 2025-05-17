@@ -20,7 +20,7 @@ const SortStart = ({ selectedRating, onChange, ratingsCount = {} }) => {
             <FaStar key={i} color="#FBBF24" />
           ))}
           <span className="ml-1">
-            ({ratingsCount[star] || 0} đánh giá)
+            ({ratingsCount[star] || 0} reviews)
           </span>
         </button>
       ))}

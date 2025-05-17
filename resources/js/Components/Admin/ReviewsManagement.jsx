@@ -35,21 +35,21 @@ const ReviewsManagement = () => {
             setTotalReviews(res.data.reviews.total);
             setRatingsCount(res.data.ratingsCount); // nếu có dùng
         } catch (error) {
-            console.error('Lỗi khi tải reviews:', error);
+            console.error('Error loading reviews:', error);
         } finally {
             setLoading(false);
         }
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa review này?')) {
+        if (window.confirm('Are you sure you want to delete this review?')) {
             try {
                 await axios.delete(`/api/reviews/${id}`);
-                toast.success("Xóa review thành công!");
+                toast.success("Review deleted successfully!");
                 fetchReviews(page, sortRating);
             } catch (error) {
-                console.error('Xóa thất bại:', error);
-                toast.error("Xóa review thất bại. Vui lòng thử lại.");
+                console.error('Deletion failed:', error);
+                toast.error("Failed to delete review. Please try again.");
             }
         }
     };
@@ -92,12 +92,12 @@ const ReviewsManagement = () => {
     return (
         <div className="p-8 bg-gray-100 min-h-screen">
             <ToastContainer />
-            <h1 className="text-3xl font-bold mb-6 text-center">Quản Lý Reviews</h1>
+            <h1 className="text-3xl font-bold mb-6 text-center">Manage Reviews</h1>
 
             {/* Dropdown chọn sort */}
             <div className="row">
                 <div className="col-md-6 mb-4">
-                    <label className="mr-2">Sắp xếp theo sao:</label>
+                    <label className="mr-2">Sort by rating:</label>
                     <select
                         value={sortRating}
                         onChange={handleSortChange}
@@ -110,14 +110,14 @@ const ReviewsManagement = () => {
                 </div>
 
                 <div className="col-md-6 mb-4">
-                    <label className="mr-2">Lọc theo sao:</label>
+                    <label className="mr-2">Filter by rating:</label>
                     <SortStart selectedRating={filterRating} onChange={handleFilterRatingChange} ratingsCount={ratingsCount} />
                 </div>
             </div>
 
 
             {loading ? (
-                <p>Đang tải dữ liệu...</p>
+                <p>Loading data...</p>
             ) : (
                 <>
                     <div className="overflow-x-auto">
@@ -158,7 +158,7 @@ const ReviewsManagement = () => {
                                                         onClick={() => toggleComment(review.id)}
                                                         className="btn btn-link ml-2 underline"
                                                     >
-                                                        Thu gọn
+                                                       Collapse
                                                     </button>
                                                 </>
                                             ) : (
@@ -171,7 +171,7 @@ const ReviewsManagement = () => {
                                                             onClick={() => toggleComment(review.id)}
                                                             className="btn btn-link ml-2 underline"
                                                         >
-                                                            Xem thêm
+                                                            Read more
                                                         </button>
                                                     )}
                                                 </>
@@ -193,7 +193,7 @@ const ReviewsManagement = () => {
                                                 onClick={() => handleDelete(review.id)}
                                                 className="btn btn-danger px-3 py-1 rounded hover:bg-red-600"
                                             >
-                                                Xóa
+                                                Delete
                                             </button>
                                         </td>
                                     </tr>
@@ -201,7 +201,7 @@ const ReviewsManagement = () => {
                                 {reviews.length === 0 && (
                                     <tr>
                                         <td colSpan="7" className="text-center py-4">
-                                            Không có review nào.
+                                        No reviews available.
                                         </td>
                                     </tr>
                                 )}
@@ -209,7 +209,7 @@ const ReviewsManagement = () => {
                         </table>
                     </div>
                     <div>
-                        <p className="text-center mb-6 text-gray-700">Tổng số đánh giá: <strong>{totalReviews}</strong></p>
+                        <p className="text-center mb-6 text-gray-700">Total reviews: <strong>{totalReviews}</strong></p>
                     </div>
                     <div className="mt-4 mb-4 flex justify-center space-x-4" align="center">
                         <button
@@ -220,7 +220,7 @@ const ReviewsManagement = () => {
                             Previous
                         </button>
                         <span className="flex items-center">
-                            &nbsp;Trang {page} / {lastPage} &nbsp;
+                            &nbsp;Page {page} / {lastPage} &nbsp;
                         </span>
                         <button
                             onClick={handleNext}
