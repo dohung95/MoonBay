@@ -6,8 +6,8 @@ import axios from "axios";
 import Banner from "./banner.jsx";
 import { useLocation } from "react-router-dom";
 import PopUp_deposit from "./PopUp_deposit.jsx";
-import PriceHolidayTet from "./PriceHolidayTet.jsx"; // Sửa đuôi .jsx thành .js nếu đúng
-import dayjs from 'dayjs'; // Thêm import dayjs
+import PriceHolidayTet from "./PriceHolidayTet.jsx";
+import dayjs from 'dayjs';
 
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
@@ -41,17 +41,25 @@ const Booking = ({ checkLogin, checkLogins }) => {
         }
         return Math.ceil(Math.abs(new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24));
     }
-    const maxCapacity =
-            roomTypes.length > 0
-                ? roomTypes.find((roomType) => roomType.name === formData.roomType)?.capacity || 0
-                : 0;
-    const Maxmember = () => {
-        return formData.room * maxCapacity;
-    }
-    // Tính thời gian hiện tại và ngày kế tiếp
-    const now = new Date();
 
-    // Sửa hàm formatDateTime để trả về định dạng đúng cho datetime-local
+    const calculateExactTotalPrice = (basePrice, checkin, checkout) => {
+        if (!checkin || !checkout || !dayjs(checkin).isValid() || !dayjs(checkout).isValid()) {
+            return 0;
+        }
+        const startDate = dayjs(checkin);
+        const endDate = dayjs(checkout);
+        let total = 0;
+        for (let date = startDate; date.isBefore(endDate); date = date.add(1, 'day')) {
+            const adjusted = PriceHolidayTet(basePrice, date.format('YYYY-MM-DD')) || basePrice;
+            total += adjusted;
+        }
+        return total;
+    };
+
+    const maxCapacity = roomTypes.length > 0 ? roomTypes.find((roomType) => roomType.name === formData.roomType)?.capacity || 0 : 0;
+    const Maxmember = () => formData.room * maxCapacity;
+
+    const now = new Date();
     const formatDateTime = (date) => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -60,33 +68,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
         const minutes = String(date.getMinutes()).padStart(2, '0');
         return `${year}-${month}-${day}T${hours}:${minutes}`;
     };
-
     const minCheckin = formatDateTime(now);
-
-    // Hàm tính giá trung bình mỗi đêm
-    const calculateAverageAdjustedPrice = (basePrice, checkin, checkout) => {
-        if (!checkin || !checkout || !dayjs(checkin).isValid() || !dayjs(checkout).isValid()) {
-            return basePrice;
-        }
-    
-        const startDate = dayjs(checkin);
-        const endDate = dayjs(checkout);
-    
-        if (endDate.isBefore(startDate) || endDate.isSame(startDate)) {
-            return basePrice;
-        }
-    
-        let totalPrice = 0;
-        let days = 0;
-    
-        for (let date = startDate; date.isBefore(endDate); date = date.add(1, 'day')) {
-            const adjustedPrice = PriceHolidayTet(basePrice, date.format('YYYY-MM-DD')) || basePrice;
-            totalPrice += adjustedPrice;
-            days++;
-        }
-    
-        return days > 0 ? Math.round(totalPrice / days) : basePrice;
-    };
 
     const handleChange = (event) => {
         const { id, value } = event.target;
@@ -101,15 +83,16 @@ const Booking = ({ checkLogin, checkLogins }) => {
             if (id === 'roomType' || id === 'checkin' || id === 'checkout') {
                 const selectedRoom = roomTypes.find((room) => room.name === (id === 'roomType' ? value : formData.roomType));
                 const basePrice = selectedRoom ? selectedRoom.price : 0;
-                const adjustedPrice = calculateAverageAdjustedPrice(
+
+                const totalExact = calculateExactTotalPrice(
                     basePrice,
                     id === 'checkin' ? value : formData.checkin,
                     id === 'checkout' ? value : formData.checkout
                 );
 
-                setSelectedRoomPrice(adjustedPrice);
-                updatedData.price = adjustedPrice.toString();
-                updatedData.Total_price = Total_price(adjustedPrice, updatedData.room).toString();
+                updatedData.Total_price = (totalExact * updatedData.room).toString();
+                setSelectedRoomPrice(basePrice);
+                updatedData.price = basePrice.toString();
 
                 if (id === 'roomType') {
                     const available = rooms.filter(r => r.type === value && r.status === 'available').length;
@@ -119,7 +102,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
                     );
                 }
             } else if (id === 'room') {
-                updatedData.Total_price = Total_price(selectedRoomPrice, value).toString();
+                updatedData.Total_price = (parseFloat(formData.Total_price) / parseInt(formData.room) * parseInt(value)).toString();
             }
 
             if (id === "member" && newValue > Maxmember(updatedData.room)) {
@@ -134,30 +117,6 @@ const Booking = ({ checkLogin, checkLogins }) => {
             return updatedData;
         });
     };
-
-    useEffect(() => {
-        const fetchRoomTypes = async () => {
-            try {
-                const [response, roomsRes] = await Promise.all([
-                    axios.get('/api/room-types'),
-                    axios.get('/api/rooms')
-                ]);
-                console.log('Room types:', response.data);
-                setRoomTypes(response.data.room_types || response.data);
-                setRooms(roomsRes.data || []);
-            } catch (error) {
-                console.error('Error fetching room types:', error);
-            }
-        };
-        fetchRoomTypes();
-    }, []);
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 1550);
-        return () => clearTimeout(timer);
-    }, []);
 
     const handleBooking = async (e) => {
         e.preventDefault();
@@ -271,7 +230,32 @@ const Booking = ({ checkLogin, checkLogins }) => {
         setIsPopUp_deposit(false);
     };
 
+    useEffect(() => {
+        const fetchRoomTypes = async () => {
+            try {
+                const [response, roomsRes] = await Promise.all([
+                    axios.get('/api/room-types'),
+                    axios.get('/api/rooms')
+                ]);
+                setRoomTypes(response.data.room_types || response.data);
+                setRooms(roomsRes.data || []);
+            } catch (error) {
+                console.error('Error fetching room types:', error);
+            }
+        };
+        fetchRoomTypes();
+    }, []);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 1550);
+        return () => clearTimeout(timer);
+    }, []);
+
     const location = useLocation();
+    const checkinRef = useRef(null);
+    const checkoutRef = useRef(null);
 
     useEffect(() => {
         if (location.hash) {
@@ -281,9 +265,6 @@ const Booking = ({ checkLogin, checkLogins }) => {
             }
         }
     }, [location]);
-
-    const checkinRef = useRef(null);
-    const checkoutRef = useRef(null);
 
     return (
         <>
@@ -298,12 +279,8 @@ const Booking = ({ checkLogin, checkLogins }) => {
                             <div className="spinner"></div>
                         </div>
                     ) : (
-                        <form
-                            className="p-4 rounded text-light shadow booking-form"
-                            style={{ backgroundColor: "rgba(33, 37, 41, 0.9)" }}
-                        >
+                        <form className="p-4 rounded text-light shadow booking-form" style={{ backgroundColor: "rgba(33, 37, 41, 0.9)" }}>
                             <h2 className="mb-4 text-center">Hotel Booking</h2>
-
                             <div className="row g-3">
                                 <div className="col-md-6">
                                     <label htmlFor="checkin" className="form-label">Check-in:</label>
@@ -311,109 +288,50 @@ const Booking = ({ checkLogin, checkLogins }) => {
                                 </div>
                                 <div className="col-md-6">
                                     <label htmlFor="checkout" className="form-label">Check-out:</label>
-                                    <input
-                                        ref={checkoutRef}
-                                        value={formData.checkout}
-                                        type="date"
-                                        id="checkout"
-                                        className="form-control"
-                                        onChange={handleChange}
-                                        min={
-                                            formData.checkin
-                                                ? formatDateTime(new Date(new Date(formData.checkin).setHours(new Date(formData.checkin).getHours() + 1)))
-                                                : minCheckin
-                                        }
-                                    />
+                                    <input ref={checkoutRef} value={formData.checkout} type="date" id="checkout" className="form-control" onChange={handleChange} min={formData.checkin ? formatDateTime(new Date(new Date(formData.checkin).setHours(new Date(formData.checkin).getHours() + 1))) : minCheckin} />
                                 </div>
                             </div>
-
                             <div className="row g-3 mt-3">
                                 <div className="col-md-6">
                                     <label htmlFor="room" className="form-label">Number of Rooms:</label>
-                                    <select
-                                        name="room"
-                                        id="room"
-                                        className="form-select"
-                                        value={formData.room}
-                                        onChange={handleChange}
-                                    >
-                                        <option value="1">1</option>
-                                        <option value="2">2</option>
-                                        <option value="3">3</option>
-                                        <option value="4">4</option>
-                                        <option value="5">5</option>
+                                    <select name="room" id="room" className="form-select" value={formData.room} onChange={handleChange}>
+                                        {[1,2,3,4,5].map(num => <option key={num} value={num}>{num}</option>)}
                                     </select>
                                 </div>
                                 <div className="col-md-6">
                                     <label htmlFor="roomType" className="form-label">Room Type:</label>
-                                    <select
-                                        id="roomType"
-                                        className="form-select"
-                                        value={formData.roomType}
-                                        onChange={handleChange}
-                                    >
+                                    <select id="roomType" className="form-select" value={formData.roomType} onChange={handleChange}>
                                         <option value="">Select room type</option>
                                         {roomTypes.map((roomType) => (
-                                            <option key={roomType.id} value={roomType.name}>
-                                                {roomType.name}
-                                            </option>
+                                            <option key={roomType.id} value={roomType.name}>{roomType.name}</option>
                                         ))}
                                     </select>
                                 </div>
                             </div>
-
                             <div className="row g-3 mt-3">
                                 <div className="col-md-6">
                                     <label htmlFor="children" className="form-label">Children Ages(0-11):</label>
-                                    <input
-                                        type="number"
-                                        id="children"
-                                        className="form-control"
-                                        min="0"
-                                        max="11"
-                                        onChange={handleChange}
-                                        placeholder="0"
-                                    />
+                                    <input type="number" id="children" className="form-control" min="0" max="11" onChange={handleChange} placeholder="0" />
                                 </div>
                                 <div className="col-md-6">
                                     <label htmlFor="member" className="form-label">Member:</label>
-                                    <input
-                                        type="number"
-                                        id="member"
-                                        className="form-control"
-                                        min={0}
-                                        max={formData.roomType ? roomTypes.find((roomType) => roomType.name === formData.roomType).capacity : 0}
-                                        onChange={handleChange}
-                                        placeholder="1"
-                                    />
+                                    <input type="number" id="member" className="form-control" min={0} max={maxCapacity} onChange={handleChange} placeholder="1" />
                                 </div>
                             </div>
                             <div className="row">
                                 <div className="view-price col-md-6">
                                     <p>Days: {CalculatorDays(formData.checkin, formData.checkout) || '0'}</p>
-                                    <p>
-                                        The {formData.roomType || 'room Type'}: {formatCurrency(selectedRoomPrice * 1000)}/night
-                                    </p>
+                                    <p>The {formData.roomType || 'room Type'}: {formatCurrency(selectedRoomPrice * 1000)}/night (base)</p>
                                 </div>
                                 <div className="view-price col-md-6">
                                     <p>Deposit (20%): {formatCurrency((parseFloat(formData.Total_price) * 0.2) * 1000)}</p>
-                                    <p>
-                                        Total Price:{' '}
-                                        {formatCurrency(
-                                            (parseFloat(formData.Total_price) * (CalculatorDays(formData.checkin, formData.checkout) || 0)) * 1000
-                                        )}
-                                    </p>
+                                    <p>Total Price: {formatCurrency(parseFloat(formData.Total_price) * 1000)}</p>
                                 </div>
                                 <div className="mt-4">
-                                    <button onClick={handleBooking} className="btn btn-warning w-100">
-                                        Book Now
-                                    </button>
+                                    <button type="submit" className="btn btn-warning w-100" onClick={handleBooking}>Book Now</button>
                                 </div>
                                 {isPopUp_deposit && (
-                                    <PopUp_deposit
-                                        onConfirm={handlePopupConfirm}
-                                        onClose={handlePopupClose}
-                                    />
+                                    <PopUp_deposit onConfirm={handlePopupConfirm} onClose={handlePopupClose} />
                                 )}
                             </div>
                         </form>

@@ -71,7 +71,7 @@ const PriceHolidayTet = (basePrice, dateStr) => {
 
     const allHolidays = [...new Set([...fixedHolidays, ...lunarHolidays])];
 
-    const isWeekend = dayOfWeek === 6 || dayOfWeek === 5;
+    const isWeekend = dayOfWeek === 5 || dayOfWeek === 6;
     const isHoliday = allHolidays.includes(date.format('YYYY-MM-DD'));
 
     // Kiểm tra ngày trước và sau ngày lễ

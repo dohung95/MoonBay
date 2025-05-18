@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useContext, useCallback } from "react";
-import '../../css/my_css/PopupBookNow.css'
+import '../../css/my_css/PopupBookNow.css';
 import { AuthContext } from "./AuthContext.jsx";
 import axios from "axios";
 import PopUp_deposit from "./PopUp_deposit.jsx";
 import debounce from 'lodash/debounce';
+import PriceHolidayTet from "./PriceHolidayTet.jsx";
+import dayjs from 'dayjs';
 
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
@@ -14,9 +16,6 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
     const [roomTypes, setRoomTypes] = useState([]);
     const [selectedRoomPrice, setSelectedRoomPrice] = useState(0);
     const [rooms, setRooms] = useState([]);
-    const Total_price = (price, room) => {
-        return parseFloat(price) * parseInt(room); // Đảm bảo tính toán với số
-    };
     const [formData, setFormData] = useState({
         checkin: '',
         checkout: '',
@@ -27,26 +26,62 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
         price: '0',
         total_price: '0',
     });
-    const [isPopUp_deposit, setIsPopUp_deposit] = useState(false); // State để quản lý popup
+    const [isPopUp_deposit, setIsPopUp_deposit] = useState(false);
+
     const CalculatorDays = (checkin, checkout) => {
         return Math.ceil(Math.abs(new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24));
     }
-    const maxCapacity =
-            roomTypes.length > 0
-                ? roomTypes.find((roomType) => roomType.name === formData.roomType)?.capacity || 0
-                : 0;
-    const Maxmember = () => {
-        return formData.room * maxCapacity;
-    }
 
-    // Reset formData khi popup đóng
+    const calculateExactTotalPrice = (basePrice, checkin, checkout) => {
+        if (!checkin || !checkout || !dayjs(checkin).isValid() || !dayjs(checkout).isValid()) return 0;
+
+        const startDate = dayjs(checkin);
+        const endDate = dayjs(checkout);
+        let total = 0;
+
+        for (let date = startDate; date.isBefore(endDate); date = date.add(1, 'day')) {
+            const adjusted = PriceHolidayTet(basePrice, date.format('YYYY-MM-DD')) || basePrice;
+            total += adjusted;
+        }
+        return total;
+    };
+
+    const Total_price = (basePrice, room, checkin, checkout) => {
+        const totalPerRoom = calculateExactTotalPrice(basePrice, checkin, checkout);
+        return totalPerRoom * parseInt(room);
+    };
+
+    const maxCapacity = roomTypes.find(rt => rt.name === formData.roomType)?.capacity || 0;
+    const Maxmember = () => formData.room * maxCapacity;
+
+    useEffect(() => {
+        const fetchRoomTypes = async () => {
+            try {
+                const [response, roomsRes] = await Promise.all([
+                    axios.get('/api/room_types'),
+                    axios.get('/api/rooms')
+                ]);
+
+                const roomData = Array.isArray(response.data) ? response.data :
+                    response.data.data || [];
+
+                setRoomTypes(roomData);
+                setRooms(roomsRes.data || []);
+            } catch (error) {
+                console.error("Failed to fetch room types:", error);
+                window.showNotification("Error loading room types", "error");
+            }
+        };
+        fetchRoomTypes();
+    }, []);
+
     useEffect(() => {
         if (!isPopupBookNow) {
             setFormData({
                 checkin: '',
                 checkout: '',
                 roomType: '',
-                room: 1, // Reset room về 1 khi đóng popup
+                room: 1,
                 children: 0,
                 member: 1,
                 price: '0',
@@ -56,32 +91,28 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
         }
     }, [isPopupBookNow]);
 
-    // Cập nhật roomType khi popup mở hoặc selectedRoomName thay đổi
     useEffect(() => {
         if (isPopupBookNow && selectedRoomName && roomTypes.length > 0) {
             const defaultRoom = roomTypes.find(room => room.name === selectedRoomName);
             if (defaultRoom) {
                 const price = defaultRoom.price;
-                const total = Total_price(price, formData.room);
-                setFormData((prevData) => ({
-                    ...prevData,
-                    roomType: defaultRoom.name.toString(),
+                const total = Total_price(price, formData.room, formData.checkin, formData.checkout);
+                setFormData(prev => ({
+                    ...prev,
+                    roomType: defaultRoom.name,
                     price: price.toString(),
-                    total_price: total,
+                    total_price: total.toString()
                 }));
                 setSelectedRoomPrice(price);
             }
         }
-    }, [isPopupBookNow, selectedRoomName, roomTypes, formData.room]);
+    }, [isPopupBookNow, selectedRoomName, roomTypes, formData.checkin, formData.checkout, formData.room]);
 
     const handleOverlayClick = (e) => {
         if (e.target.classList.contains("popup-overlay")) {
             closePopup();
         }
     };
-
-    // Tính thời gian hiện tại và ngày kế tiếp
-    const now = new Date();
 
     // Fetch room types from the API
     useEffect(() => {
@@ -123,19 +154,6 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
         fetchRoomTypes();
     }, []);
 
-    // Định dạng thời gian cho input datetime-local (YYYY-MM-DDThh:mm)
-    const formatDateTime = (date) => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        return `${day}-${month}-${year}T${hours}:${minutes}`;
-    };
-
-    // Giá trị min cho checkin (ngày kế tiếp)
-    const minCheckin = formatDateTime(now);
-
     const handleChange = useCallback(
         debounce((event) => {
             const { id, value } = event.target;
@@ -167,6 +185,18 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
         }, 300),
         [selectedRoomPrice, roomTypes, selectedRoomName]
     );
+
+    const formatDateTime = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
+    const now = new Date();
+    const minCheckin = formatDateTime(now);
 
     const handleBookNow = async (e) => {
         e.preventDefault();
@@ -270,61 +300,43 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
     return (
         <>
             {isPopupBookNow && (
-                <div className="popup-overlay" onClick={handleOverlayClick}>
+                <div className="popup-overlay" onClick={(e) => e.target.classList.contains("popup-overlay") && closePopup()}>
                     <div className="popup-content">
-                        <button className="close-popup-btn" style={{ color: 'black' }} onClick={closePopup}>
-                            ×
-                        </button>
+                        <button className="close-popup-btn" onClick={closePopup}>×</button>
                         <h2>Book Now</h2>
-                        <form action="/booking" >   {/* method="POST" */}
+                        <form>
                             <div className="mb-3">
                                 <label htmlFor="checkin" className="form-label">Check-in Date:</label>
-                                <input type="datetime-local" id="checkin" name="checkin" className="form-control" min={minCheckin} onChange={handleChange} required />
+                                <input type="datetime-local" id="checkin" className="form-control" min={minCheckin} onChange={handleChange} />
                             </div>
                             <div className="mb-3">
                                 <label htmlFor="checkout" className="form-label">Check-out Date:</label>
-                                <input type="datetime-local" id="checkout" name="checkout" className="form-control" onChange={handleChange}
-                                    min={
-                                        formData.checkin
-                                            ? formatDateTime(new Date(new Date(formData.checkin).setHours(new Date(formData.checkin).getHours() + 1)))
-                                            : minCheckin
-                                    }
-                                    required />
-                            </div>
-                            <div>
-                                <label htmlFor="roomType" className="form-label">Room Type:</label>
-                                <input type="text" id="roomType" name="roomType" className="form-control bold-placeholder" placeholder={formData.roomType} readOnly />
+                                <input type="datetime-local" id="checkout" className="form-control" onChange={handleChange} />
                             </div>
                             <div className="mb-3">
-                                <label htmlFor="room" className="form-label">Number of Rooms:</label>
-                                <select name="room" id="room" className="form-select" onChange={handleChange}>
-                                    <option value="1">1</option>
-                                    <option value="2">2</option>
-                                    <option value="3">3</option>
-                                    <option value="4">4</option>
-                                    <option value="5">5</option>
+                                <label>Room Type:</label>
+                                <input type="text" className="form-control" value={formData.roomType} readOnly />
+                            </div>
+                            <div className="mb-3">
+                                <label>Number of Rooms:</label>
+                                <select id="room" className="form-select" value={formData.room} onChange={handleChange}>
+                                    {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
                                 </select>
                             </div>
                             <div className="mb-3">
-                                <label htmlFor="children" className="form-label">Children Ages(0-11):</label>
-                                <input type="number" id="children" name="children" className="form-control" placeholder="0" min="0" max="11" onChange={handleChange} />
+                                <label>Children (0–11):</label>
+                                <input type="number" id="children" className="form-control" min="0" max="11" onChange={handleChange} />
                             </div>
                             <div className="mb-3">
-                                <label htmlFor="member" className="form-label">Member:</label>
-                                <input type="number" id="member" name="member" className="form-control" min={0}
-                                    max={formData.roomType ? roomTypes.find((roomType) => roomType.name === formData.roomType).capacity * formData.room : 0}
-                                    onChange={handleChange}
-                                    placeholder="1" />
+                                <label>Member:</label>
+                                <input type="number" id="member" className="form-control" min="1" max={Maxmember()} onChange={handleChange} />
                             </div>
+
                             <div className="view-price-popup info-row">
-                                <p className="info-item">
-                                    Days: {CalculatorDays(formData.checkin, formData.checkout) || '0'}
-                                </p>
-                                <p className="info-item">
-                                    The {selectedRoomName}: {formatCurrency(selectedRoomPrice * 1000)}/night
-                                </p>
-                                <p className="info-item">Deposit (20%): {formatCurrency((parseFloat(formData.total_price) * 0.2) * 1000)}</p>
-                                <p className="info-item" style={{ marginTop: '5px', marginBottom: '10px' }} >Total Price: {formatCurrency((parseFloat(formData.total_price) * (CalculatorDays(formData.checkin, formData.checkout) || 0)) * 1000)}</p>
+                                <p className="info-item">Days: {CalculatorDays(formData.checkin, formData.checkout) || '0'}</p>
+                                <p className="info-item">Base Price: {formatCurrency(selectedRoomPrice * 1000)}/night</p>
+                                <p className="info-item">Deposit (20%): {formatCurrency(parseFloat(formData.total_price) * 0.2 * 1000)}</p>
+                                <p className="info-item">Total Price: {formatCurrency(parseFloat(formData.total_price) * 1000)}</p>
                             </div>
                             <button onClick={handleBookNow} className="btn btn-primary w-100">Submit</button>
                             {isPopUp_deposit && (
@@ -339,5 +351,6 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
             )}
         </>
     );
-}
+};
+
 export default PopupBookNow;
