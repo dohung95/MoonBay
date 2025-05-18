@@ -13,7 +13,7 @@ const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 };
 
-const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
+const Booking = ({ checkLogin, checkLogins }) => {
     const { user } = useContext(AuthContext);
     const [isLoading, setIsLoading] = useState(true);
     const [roomTypes, setRoomTypes] = useState([]);
@@ -40,8 +40,15 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
             return 0;
         }
         return Math.ceil(Math.abs(new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24));
-    };
-
+    }
+    const maxCapacity =
+            roomTypes.length > 0
+                ? roomTypes.find((roomType) => roomType.name === formData.roomType)?.capacity || 0
+                : 0;
+    const Maxmember = () => {
+        return formData.room * maxCapacity;
+    }
+    // Tính thời gian hiện tại và ngày kế tiếp
     const now = new Date();
 
     // Sửa hàm formatDateTime để trả về định dạng đúng cho datetime-local
@@ -85,11 +92,6 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
         const { id, value } = event.target;
         const newValue = id === "member" ? parseInt(value) || 0 : value;
 
-        const maxCapacity =
-            roomTypes.length > 0
-                ? roomTypes.find((roomType) => roomType.name === formData.roomType)?.capacity || 0
-                : 0;
-
         setFormData((prevData) => {
             const updatedData = {
                 ...prevData,
@@ -120,8 +122,8 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
                 updatedData.Total_price = Total_price(selectedRoomPrice, value).toString();
             }
 
-            if (id === "member" && newValue > maxCapacity) {
-                window.showNotification(`Maximum capacity is ${maxCapacity}. Please reduce the number of members.`, "error");
+            if (id === "member" && newValue > Maxmember(updatedData.room)) {
+                window.showNotification(`Maximum capacity is ${Maxmember(updatedData.room)} member${Maxmember(updatedData.room) > 1 ? 's' : ''} for ${updatedData.room} room${updatedData.room > 1 ? 's' : ''}. Please reduce the number of members.`, "error");
             }
 
             const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available').length;
@@ -160,7 +162,7 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
     const handleBooking = async (e) => {
         e.preventDefault();
 
-        if (!user.id) {
+        if (!user) {
             checkLogin();
             return;
         }
@@ -193,7 +195,7 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
 
         if (parseInt(formData.member) > maxCapacity || parseInt(formData.member) <= 0) {
             window.showNotification(`Cannot book. Number of members (${formData.member}) exceeds room capacity (${maxCapacity}).`, "error");
-            return;
+            return; // Ngăn không mở popup nếu vượt quá capacity
         }
 
         const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available').length;
@@ -233,7 +235,7 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
 
                     const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available');
                     for (let i = 0; i < parseInt(formData.room) && i < availableRooms.length; i++) {
-                        await axios.put(`/api/rooms/${availableRooms[i].id}`, { status: '' });
+                        await axios.put(`/api/rooms/${availableRooms[i].id}`, { status: 'booked' });
                     }
 
                     setRooms(prevRooms => prevRooms.map(room =>
@@ -305,22 +307,14 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
                             <div className="row g-3">
                                 <div className="col-md-6">
                                     <label htmlFor="checkin" className="form-label">Check-in:</label>
-                                    <input
-                                        ref={checkinRef}
-                                        value={formData.checkin}
-                                        type="datetime-local"
-                                        id="checkin"
-                                        className="form-control"
-                                        onChange={handleChange}
-                                        min={minCheckin}
-                                    />
+                                    <input ref={checkinRef} value={formData.checkin} type="datetime-local" id="checkin" className="form-control" onChange={handleChange} min={minCheckin} />
                                 </div>
                                 <div className="col-md-6">
                                     <label htmlFor="checkout" className="form-label">Check-out:</label>
                                     <input
                                         ref={checkoutRef}
                                         value={formData.checkout}
-                                        type="datetime-local"
+                                        type="date"
                                         id="checkout"
                                         className="form-control"
                                         onChange={handleChange}
@@ -388,11 +382,7 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
                                         id="member"
                                         className="form-control"
                                         min={0}
-                                        max={
-                                            formData.roomType
-                                                ? roomTypes.find((roomType) => roomType.name === formData.roomType)?.capacity || 0
-                                                : 0
-                                        }
+                                        max={formData.roomType ? roomTypes.find((roomType) => roomType.name === formData.roomType).capacity : 0}
                                         onChange={handleChange}
                                         placeholder="1"
                                     />

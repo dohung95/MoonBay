@@ -44,6 +44,9 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             // \App\Http\Middleware\RememberTokenAuth::class
+            'throttle:api', // Giới hạn số lần gọi API
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            'bindings',
         ],
     ];
 

@@ -5,28 +5,38 @@ import Cookies from 'js-cookie';
 import "../../../css/css_of_staff/StaffUser.css";
 
 const StaffUser = () => {
-    const [dataUser, setdataUser] = useState([]);
+    const [dataUser, setDataUser] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [filteredUsers, setFilteredUsers] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 30;
+    const [pagination, setPagination] = useState({
+        currentPage: 1,
+        lastPage: 1,
+        perPage: 30,
+        total: 0,
+    });
     const { searchQuery } = useSearch(); // Lấy searchQuery từ Context
-
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentData = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
-
-    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+    const itemsPerPage = 20; // Đồng bộ với backend
 
     useEffect(() => {
         const fetchUsers = async () => {
+            setLoading(true);
             try {
                 const response = await axios.get('/api/dataUser', {
                     headers: { Authorization: `Bearer ${Cookies.get('auth_token')}` },
+                    params: {
+                        per_page: itemsPerPage,
+                        page: pagination.currentPage,
+                        search: searchQuery || undefined,
+                    },
                 });
-                setdataUser(response.data);
-                setFilteredUsers(response.data);
+                const { data, current_page, last_page, per_page, total } = response.data;
+                setDataUser(data || []);
+                setPagination({
+                    currentPage: current_page,
+                    lastPage: last_page,
+                    perPage: per_page,
+                    total: total,
+                });
                 setLoading(false);
             } catch (err) {
                 setError('Lỗi khi lấy danh sách người dùng');
@@ -35,31 +45,9 @@ const StaffUser = () => {
             }
         };
         fetchUsers();
-    }, []);
+    }, [pagination.currentPage, searchQuery]); // Chạy lại khi currentPage hoặc searchQuery thay đổi
 
-    useEffect(() => {
-        if (searchQuery) {
-            const filtered = dataUser.filter(user =>
-                user.name.toLowerCase().includes(searchQuery) ||
-                user.email.toLowerCase().includes(searchQuery) ||
-                (user.phone && user.phone.toLowerCase().includes(searchQuery))
-            );
-            setFilteredUsers(filtered);
-            setCurrentPage(1);
-        } else {
-            setFilteredUsers(dataUser); // Nếu không có tìm kiếm, hiển thị toàn bộ danh sách
-            setCurrentPage(1);
-        }
-    }, [searchQuery, dataUser]);
-
-    // Chỉnh sửa currentPage nếu vượt quá totalPages
-    useEffect(() => {
-        if (currentPage > totalPages && totalPages > 0) {
-            setCurrentPage(totalPages);
-        } else if (currentPage < 1) {
-            setCurrentPage(1);
-        }
-    }, [filteredUsers, currentPage, totalPages]);
+    const totalPages = pagination.lastPage;
 
     if (loading) return <div className="loading">Đang tải...</div>;
     if (error) return <div className="error">{error}</div>;
@@ -85,22 +73,24 @@ const StaffUser = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredUsers.length === 0 ? (
-                                    <p className="no-data">Không tìm thấy người dùng nào.</p>
-                                ) : currentData.map(user => (
+                                {dataUser.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="10" className="no-data">Không tìm thấy người dùng nào.</td>
+                                    </tr>
+                                ) : dataUser.map(user => (
                                     <tr key={user.id}>
                                         <td>{user.id}</td>
                                         <td>{user.name}</td>
                                         <td>{user.email}</td>
-                                        <td>{user.phone}</td>
+                                        <td>{user.phone || 'N/A'}</td>
                                         <td>{user.role}</td>
                                         <td><span className={`badge ${user.status === 'active' ? 'badge-success' : 'badge-danger'}`}>
                                             {user.status}
                                         </span></td>
-                                        <td>{user.email_verified_at}</td>
-                                        <td>{user.provider}</td>
-                                        <td>{user.created_at}</td>
-                                        <td>{user.updated_at}</td>
+                                        <td>{user.email_verified_at || 'N/A'}</td>
+                                        <td>{user.provider || 'N/A'}</td>
+                                        <td>{user.created_at || 'N/A'}</td>
+                                        <td>{user.updated_at || 'N/A'}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -111,29 +101,30 @@ const StaffUser = () => {
                 <div className="pagination-controls">
                     <button
                         className="btn btn-primary pagination-btn"
-                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
+                        onClick={() => setPagination(prev => ({ ...prev, currentPage: Math.max(prev.currentPage - 1, 1) }))}
+                        disabled={pagination.currentPage === 1}
                     >
                         <i className="fas fa-chevron-left"></i> Previous
                     </button>
                     <span className="pagination-page">
-                        Page {currentPage} / {totalPages}
+                        Page {pagination.currentPage} / {totalPages}
                     </span>
                     <input
                         type="number"
                         className="page-input"
-                        placeholder='1'
+                        placeholder="1"
+                        value={pagination.currentPage}
                         onChange={(e) => {
                             const pageNumber = Math.min(Math.max(parseInt(e.target.value, 10) || 1, 1), totalPages);
-                            setCurrentPage(pageNumber);
+                            setPagination(prev => ({ ...prev, currentPage: pageNumber }));
                         }}
                         min="1"
                         max={totalPages}
                     />
                     <button
                         className="btn btn-primary pagination-btn"
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages}
+                        onClick={() => setPagination(prev => ({ ...prev, currentPage: Math.min(prev.currentPage + 1, totalPages) }))}
+                        disabled={pagination.currentPage === totalPages}
                     >
                         Next <i className="fas fa-chevron-right"></i>
                     </button>
