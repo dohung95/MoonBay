@@ -138,7 +138,7 @@ const Booking = ({ checkLogin, checkLogins, isPopupBookNow }) => {
     const handleBooking = async (e) => {
         e.preventDefault();
 
-        if (!user.id) {
+        if (!user) {
             checkLogin();
             return;
         }

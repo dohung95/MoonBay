@@ -36,7 +36,7 @@ const Home = () => {
                             </div>
                         </div>
                         <div style={{ marginTop: '7%' }} className='custom-container'>
-                            <BookingForm />
+                            {/* <BookingForm /> */}
                         </div>
                     </div>
                 </div>
