@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\UserManager;
+use Illuminate\Support\Facades\Cache;
 
 class UserController extends Controller
 {
@@ -27,21 +28,40 @@ class UserController extends Controller
     }
 
     public function dataUser(Request $request)
-    {
-        try {
-            // Lấy danh sách người dùng với role = 'user'
-            $users = UserManager::where('role', 'user')
-                ->select('id', 'name', 'email', 'role', 'phone', 'email_verified_at', 'status', 'created_at', 'updated_at', 'provider') // Chỉ lấy các trường cần thiết
-                ->get();
+{
+    $perPage = $request->input('per_page', 20);
+    $page = $request->input('page', 1);
+    $search = $request->input('search');
 
-            return response()->json($users, 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Lỗi khi lấy danh sách người dùng',
-                'error' => $e->getMessage()
-            ], 500);
+    try {
+        $query = UserManager::where('role', 'user');
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+                ->orWhere('email', 'like', "%$search%")
+                ->orWhere('phone', 'like', "%$search%");
+            });
         }
+
+        $users = $query
+            ->select('id', 'name', 'email', 'role', 'phone', 'email_verified_at', 'status', 'created_at', 'updated_at', 'provider')
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json([
+            'data' => $users->items(),
+            'current_page' => $users->currentPage(),
+            'last_page' => $users->lastPage(),
+            'per_page' => $users->perPage(),
+            'total' => $users->total(),
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Lỗi khi lấy danh sách người dùng',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
     public function show_staff()
     {

@@ -16,14 +16,7 @@ class UserManager extends Authenticatable
      */
     protected $table = 'users';
     protected $fillable = [
-        'name',
-        'email',
-        'phone',
-        'password',
-        'role',
-        'status',
-        'avatar',
-        'provider',
+        'name', 'email', 'role', 'phone', 'email_verified_at', 'status', 'created_at', 'updated_at', 'provider', 'id','password','avatar',
     ];
 
     /**

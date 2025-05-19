@@ -92,11 +92,41 @@ class BookingController extends Controller
         return response()->json(['message' => 'Booking cancelled successfully'], 200);
     }
 
-    public function BookingList()
-    {
-        $bookings = Booking::all();
-        return response()->json(['bookings' => $bookings]);
+    public function bookingList(Request $request)
+{
+    try {
+        $perPage = $request->input('per_page', 30);
+        $page = $request->input('page', 1);
+        $search = $request->input('search');
+
+        $query = Booking::select('id', 'name', 'email', 'phone', 'room_type', 'number_of_rooms', 'children', 'member', 'checkin_date', 'checkout_date', 'total_price', 'created_at');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('room_type', 'like', "%{$search}%");
+            });
+        }
+
+        $bookings = $query->orderBy('created_at', 'desc')->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json([
+            'data' => $bookings->items(),
+            'current_page' => $bookings->currentPage(),
+            'last_page' => $bookings->lastPage(),
+            'per_page' => $bookings->perPage(),
+            'total' => $bookings->total(),
+        ], 200);
+    } catch (\Exception $e) {
+        \Log::error('Lỗi khi lấy danh sách đặt phòng: ' . $e->getMessage());
+        return response()->json([
+            'message' => 'Lỗi khi lấy danh sách đặt phòng',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
     public function booking_by_staff (Request $request)
     {
