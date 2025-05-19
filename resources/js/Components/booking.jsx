@@ -30,6 +30,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
         Total_price: '0',
     });
     const [isPopUp_deposit, setIsPopUp_deposit] = useState(false);
+    const [priceNotification, setPriceNotification] = useState('');
 
     const Total_price = (price, room) => {
         return parseFloat(price) * parseInt(room);
@@ -94,6 +95,43 @@ const Booking = ({ checkLogin, checkLogins }) => {
                 setSelectedRoomPrice(basePrice);
                 updatedData.price = basePrice.toString();
 
+                // hàm thông báo ngày lễ cuối tuần tăng giá
+               const checkinDate = id === 'checkin' ? value : formData.checkin;
+                const checkoutDate = id === 'checkout' ? value : formData.checkout;
+                let notification = '';
+
+                if (checkinDate && checkoutDate && dayjs(checkinDate).isValid() && dayjs(checkoutDate).isValid()) {
+                    const startDate = dayjs(checkinDate);
+                    const endDate = dayjs(checkoutDate);
+                    const specialDays = [];
+
+                    for (let date = startDate; date.isBefore(endDate); date = date.add(1, 'day')) {
+                        const adjustedPrice = PriceHolidayTet(basePrice, date.format('YYYY-MM-DD'));
+                        const isBasePrice = adjustedPrice === basePrice;
+                        if (!isBasePrice) { // Chỉ thêm nếu giá điều chỉnh khác giá cơ bản
+                            const isWeekend = [5, 6].includes(date.day()); // Thứ Sáu (5) hoặc Thứ Bảy (6)
+                            const isHoliday = adjustedPrice / basePrice === 1.5; // Tăng 50% cho ngày lễ/liền kề
+                            if (isWeekend || isHoliday) { // Chỉ thêm ngày là cuối tuần hoặc ngày lễ
+                                specialDays.push({
+                                    date: date.format('DD/MM/YYYY'),
+                                    isWeekend,
+                                    isHoliday,
+                                    price: adjustedPrice,
+                                });
+                            }
+                        }
+                    }
+
+                    if (specialDays.length > 0) {
+                        notification = specialDays.map(day => {
+                            const type = day.isWeekend && day.isHoliday ? 'Weekend & Holiday' : (day.isWeekend ? 'Weekend' : 'Holiday');
+                            return `${day.date} (${type}): Price is ${formatCurrency(day.price * 1000)}/night`;
+                        }).join('\n');
+                    }
+                }
+
+                setPriceNotification(notification);
+
                 if (id === 'roomType') {
                     const available = rooms.filter(r => r.type === value && r.status === 'available').length;
                     window.showNotification(
@@ -132,7 +170,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
             return;
         }
 
-        if (!formData.checkin || !formData.checkout || !formData.roomType) {
+        if (!formData.checkin || !formData.checkout || !formData.roomType || !formData.member) {
             window.showNotification("Please fill in all required fields.", "error");
             return;
         }
@@ -153,16 +191,9 @@ const Booking = ({ checkLogin, checkLogins }) => {
             return;
         }
 
-        const maxCapacity = roomTypes.length > 0
-            ? roomTypes.find((roomType) => roomType.name === formData.roomType)?.capacity || 0
-            : 0;
-
-        if (parseInt(formData.member) > maxCapacity || parseInt(formData.member) <= 0) {
-            window.showNotification(
-                `Cannot book. Number of members (${formData.member}) exceeds room capacity (${maxCapacity}).`,
-                "error"
-            );
-            return;
+        if (parseInt(formData.member) > Maxmember(formData.room) || parseInt(formData.member) <= 0) {
+            window.showNotification(`Cannot book. Number of members (${formData.member}) exceeds room capacity (${Maxmember(formData.room)}).`, "error");
+            return; // Ngăn không mở popup nếu vượt quá capacity
         }
 
         const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available').length;
@@ -213,6 +244,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
                         price: '0',
                         Total_price: '0',
                     });
+                    setPriceNotification('');
                     setSelectedRoomPrice(0);
                     if (checkinRef.current) checkinRef.current.value = '';
                     if (checkoutRef.current) checkoutRef.current.value = '';
@@ -305,15 +337,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
                             <div className="row g-3">
                                 <div className="col-md-6">
                                     <label htmlFor="checkin" className="form-label">Check-in:</label>
-                                    <input
-                                        ref={checkinRef}
-                                        value={formData.checkin}
-                                        type="datetime-local"
-                                        id="checkin"
-                                        className="form-control"
-                                        onChange={handleChange}
-                                        min={minCheckin}
-                                    />
+                                    <input ref={checkinRef} value={formData.checkin} type="date" id="checkin" className="form-control" onChange={handleChange} min={minCheckin} />
                                 </div>
                                 <div className="col-md-6">
                                     <label htmlFor="checkout" className="form-label">Check-out:</label>
@@ -331,16 +355,8 @@ const Booking = ({ checkLogin, checkLogins }) => {
                             <div className="row g-3 mt-3">
                                 <div className="col-md-6">
                                     <label htmlFor="room" className="form-label">Number of Rooms:</label>
-                                    <select
-                                        name="room"
-                                        id="room"
-                                        className="form-select"
-                                        value={formData.room}
-                                        onChange={handleChange}
-                                    >
-                                        {[1, 2, 3, 4, 5].map(num => (
-                                            <option key={num} value={num}>{num}</option>
-                                        ))}
+                                    <select name="room" id="room" className="form-select" value={formData.room} onChange={handleChange}>
+                                        {[1, 2, 3, 4, 5].map(num => <option key={num} value={num}>{num}</option>)}
                                     </select>
                                 </div>
                                 <div className="col-md-6">
@@ -361,35 +377,22 @@ const Booking = ({ checkLogin, checkLogins }) => {
                             <div className="row g-3 mt-3">
                                 <div className="col-md-6">
                                     <label htmlFor="children" className="form-label">Children Ages(0-11):</label>
-                                    <input
-                                        type="number"
-                                        id="children"
-                                        className="form-control"
-                                        min="0"
-                                        max="11"
-                                        value={formData.children}
-                                        onChange={handleChange}
-                                        placeholder="0"
-                                    />
+                                    <input type="number" id="children" className="form-control" min="0" max="11" onChange={handleChange} placeholder="0" value={formData.children} />
                                 </div>
                                 <div className="col-md-6">
                                     <label htmlFor="member" className="form-label">Member:</label>
-                                    <input
-                                        type="number"
-                                        id="member"
-                                        className="form-control"
-                                        min="0"
-                                        max={maxCapacity}
-                                        value={formData.member}
-                                        onChange={handleChange}
-                                        placeholder="1"
-                                    />
+                                    <input type="number" id="member" className="form-control" min={0} max={Maxmember(formData.room)} onChange={handleChange} placeholder="1" />
                                 </div>
                             </div>
                             <div className="row">
                                 <div className="view-price col-md-6">
                                     <p>Days: {CalculatorDays(formData.checkin, formData.checkout) || '0'}</p>
                                     <p>The {formData.roomType || 'room Type'}: {formatCurrency(selectedRoomPrice * 1000)}/night (base)</p>
+                                    {priceNotification && (
+                                        <p className="price-notification">
+                                            {priceNotification}
+                                        </p>
+                                    )}
                                 </div>
                                 <div className="view-price col-md-6">
                                     <p>Deposit (20%): {formatCurrency((parseFloat(formData.Total_price) * 0.2) * 1000)}</p>
