@@ -135,7 +135,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
                 if (id === 'roomType') {
                     const available = rooms.filter(r => r.type === value && r.status === 'available').length;
                     window.showNotification(
-                        available ? `${available} room${available > 1 ? 's' : ''} available (preliminary check)` : 'No rooms available, please choose another room type or call hotline',
+                        available ? `${available} room${available > 1 ? 's' : ''} available` : 'No rooms available, please choose another room type or call hotline',
                         available ? 'success' : 'error'
                     );
                 }
