@@ -242,7 +242,6 @@ const ManageBookings = () => {
     return `
       <div style="text-align: left;">
         <strong>Name:</strong> ${booking.name}<br>
-        <strong>Email:</strong> ${booking.email}<br>
         <strong>Phone:</strong> ${booking.phone}<br>
         <strong>Check-in:</strong> ${format(booking.checkin_date, 'yyyy-MM-dd HH:mm:ss')}<br>
         <strong>Check-out:</strong> ${format(booking.checkout_date, 'yyyy-MM-dd HH:mm:ss')}
