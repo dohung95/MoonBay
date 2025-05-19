@@ -87,7 +87,7 @@ Route::put('/room_list/{id}', [RoomInfoController::class, 'update']);
 Route::delete('/room_list/{id}', [RoomInfoController::class, 'destroy']);
 
 Route::get('/booking_manager', [BookingManagerController::class, 'index']);
-
+Route::put('/booking_manager/{id}', [BookingManagerController::class, 'update']);
 Route::delete('/users_manager/{id}', [UserController::class, 'destroy']);
 Route::delete('/staff_manager/{id}', [UserController::class, 'destroy']);
 

@@ -89,7 +89,6 @@ const UserManagement = () => {
                                 <table className="table table-hover table-bordered align-middle">
                                     <thead className="table-primary">
                                         <tr>
-                                            <th scope="col" className="text-center">No.</th>
                                             <th scope="col" className="text-center">ID</th>
                                             <th scope="col" className="text-center">Name</th>
                                             <th scope="col" className="text-center">Email</th>
@@ -104,7 +103,6 @@ const UserManagement = () => {
                                         {users.length > 0 ? (
                                             users.map((user, index) => (
                                                 <tr key={user.id} className="hover-row">
-                                                    <td className="text-center">{(currentPage - 1) * 10 + index + 1}</td>
                                                     <td className="text-center">{user.id}</td>
                                                     <td className="text-center">{user.name}</td>
                                                     <td className="text-center">{user.email}</td>
