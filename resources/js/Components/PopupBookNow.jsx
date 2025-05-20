@@ -6,6 +6,7 @@ import PopUp_deposit from "./PopUp_deposit.jsx";
 import debounce from 'lodash/debounce';
 import PriceHolidayTet from "./PriceHolidayTet.jsx";
 import dayjs from 'dayjs';
+import QRPayment from "./QRPayment.jsx";
 
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
@@ -28,7 +29,10 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
     });
     const [isPopUp_deposit, setIsPopUp_deposit] = useState(false);
     const [priceNotification, setPriceNotification] = useState('');
-
+    const [paymentOption, setPaymentOption] = useState('deposit'); // New state for payment option: 'deposit' or 'full'
+    const [isPaymentPopupOpen, setIsPaymentPopupOpen] = useState(false);
+    const [bookingAmount, setBookingAmount] = useState(0);
+    
     const CalculatorDays = (checkin, checkout) => {
         return Math.ceil(Math.abs(new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24));
     }
@@ -52,7 +56,9 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
         return totalPerRoom * parseInt(room);
     };
 
-    const maxCapacity = roomTypes.find(rt => rt.name === formData.roomType)?.capacity || 0;
+    const maxCapacity = roomTypes.length > 0 
+        ? roomTypes.find(rt => rt.name === formData.roomType)?.capacity || 0 
+        : 0;
     const Maxmember = () => formData.room * maxCapacity;
 
     useEffect(() => {
@@ -281,56 +287,76 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
         }
 
         window.showNotification(`${availableRooms} room${availableRooms > 1 ? 's' : ''} available for booking.`, "success");
+        
+        const maxAmount = 9999999999999999.99;
+        const totalAmount = parseFloat(formData.Total_price);
+        const depositAmount = totalAmount * 0.2;
+        const amountToPay = paymentOption === 'deposit' ? depositAmount : totalAmount;
+
+        if (amountToPay > maxAmount) {
+            window.showNotification("The payment amount exceeds the allowed limit. Please reduce the number of rooms or contact support.", "error");
+            return;
+        }
+        setBookingAmount(amountToPay);
         setIsPopUp_deposit(true);
+
     };
 
-    const handlePopupConfirm = async (confirmed) => {
+    const handlePopupConfirm = (confirmed) => {
         if (confirmed) {
-            // cmt đoạn này lại sau khi có component thanh toán 
-            try {
-                const response = await axios.post('/api/booking', {
-                    user_id: user.id,
-                    name: user.name,
-                    email: user.email,
-                    phone: user.phone,
-                    room_type: formData.roomType,
-                    number_of_rooms: formData.room,
-                    children: formData.children,
-                    member: formData.member,
-                    checkin_date: formData.checkin,
-                    checkout_date: formData.checkout,
-                    price: formData.price,
-                    total_price: formData.total_price,
-                });
-
-                if (response.status === 201) {
-                    const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available');
-                    for (let i = 0; i < parseInt(formData.room) && i < availableRooms.length; i++) {
-                        await axios.put(`/api/rooms/${availableRooms[i].id}`, { status: "booked" })
-                            .then(() => console.log(`Updated room ${availableRooms[i].id} status to booked`))
-                            .catch(err => console.error(`Error updating room ${availableRooms[i].id}:`, err));
-                    }
-
-                    // Cập nhật state rooms cục bộ
-                    setRooms(prev => prev.map(room =>
-                        availableRooms.some(ar => ar.id === room.id) ? { ...room, status: null } : room
-                    ));
-
-                    closePopup();
-                    setIsPopUp_deposit(false);
-                    setPriceNotification(''); 
-                    window.showNotification("Booking created successfully!", "success");
-                }
-            } catch (error) {
-                console.error('Error creating booking:', error.response || error);
-                window.showNotification("Failed to create booking", "error");
-                setTimeout(() => {
-                    window.showNotification("Pls add the phone number if you don't have", "error");
-                }, 4000);
-            }
-            //----------------------------------------------------------------------------------
+            setIsPopUp_deposit(false);
+            setIsPaymentPopupOpen(true);
+        } else {
+            setIsPopUp_deposit(false);
         }
-        setIsPopUp_deposit(false);
+    };
+
+    const handlePaymentConfirm = async (confirmed) => {
+        if (confirmed) confirmed.preventDefault();
+
+        try {
+            const response = await axios.post('/api/booking', {
+                user_id: user.id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                room_type: formData.roomType,
+                number_of_rooms: formData.room,
+                children: formData.children,
+                member: formData.member,
+                checkin_date: formData.checkin,
+                checkout_date: formData.checkout,
+                price: formData.price,
+                total_price: formData.total_price,
+            });
+
+            if (response.status === 201) {
+                const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available');
+                for (let i = 0; i < parseInt(formData.room) && i < availableRooms.length; i++) {
+                    await axios.put(`/api/rooms/${availableRooms[i].id}`, { status: "booked" })
+                        .then(() => console.log(`Updated room ${availableRooms[i].id} status to booked`))
+                        .catch(err => console.error(`Error updating room ${availableRooms[i].id}:`, err));
+                }
+
+                // Cập nhật state rooms cục bộ
+                setRooms(prev => prev.map(room =>
+                    availableRooms.some(ar => ar.id === room.id) ? { ...room, status: null } : room
+                ));
+
+                closePopup();
+                setIsPopUp_deposit(false);
+                setPriceNotification(''); 
+                window.showNotification("Booking created successfully!", "success");
+            }
+        } catch (error) {
+            console.error('Error creating booking:', error.response || error);
+            window.showNotification("Failed to create booking", "error");
+            setTimeout(() => {
+                window.showNotification("Pls add the phone number if you don't have", "error");
+            }, 4000);
+        } finally {
+            setIsPaymentPopupOpen(false);
+        }
     };
 
     const handlePopupClose = () => {
@@ -394,6 +420,14 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                                 <PopUp_deposit
                                     onConfirm={handlePopupConfirm}
                                     onClose={handlePopupClose}
+                                />
+                            )}
+                            {isPaymentPopupOpen && (
+                                <QRPayment
+                                    amount={bookingAmount}
+                                    onClose={() => setIsPaymentPopupOpen(false)}
+                                    onConfirm={handlePaymentConfirm}
+                                    isDeposit={paymentOption === 'deposit'}
                                 />
                             )}
                         </form>
