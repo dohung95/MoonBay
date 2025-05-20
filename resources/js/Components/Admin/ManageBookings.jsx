@@ -36,6 +36,7 @@ const ManageBookings = () => {
           allRooms = [...allRooms, ...data.map(item => ({
             id: item.id,
             room_number: item.room_number,
+            status: item.status, // Lưu trạng thái phòng
           }))];
           if (page >= last_page) break;
           page++;
@@ -224,6 +225,13 @@ const ManageBookings = () => {
   // Check if a room is booked on a specific day and return booking info
   const isRoomBooked = (room, day) => {
     const targetDate = startOfDay(new Date(currentDate.getFullYear(), currentDate.getMonth(), day));
+    
+    // Ưu tiên kiểm tra trạng thái maintenance
+    if (room.status === 'maintenance') {
+      return { booking: null, status: 'maintenance' };
+    }
+
+    // Kiểm tra đặt phòng
     const booking = bookings.find(booking => {
       if (booking.room_id !== room.id) return false;
       const checkin = startOfDay(booking.checkin_date);
@@ -232,12 +240,18 @@ const ManageBookings = () => {
                        (isSameDay(targetDate, checkout) || isBefore(targetDate, checkout));
       return isBooked;
     });
-    console.log(`Room ${room.room_number}, Day ${day}, Booking:`, booking);
-    return booking;
+
+    return {
+      booking,
+      status: booking ? 'booked' : 'available'
+    };
   };
 
   // Format booking info for tooltip
-  const formatBookingInfo = (booking) => {
+  const formatBookingInfo = (booking, status) => {
+    if (status === 'maintenance') {
+      return `<div style="text-align: left;">Room under maintenance</div>`;
+    }
     if (!booking) return '';
     return `
       <div style="text-align: left;">
@@ -294,21 +308,25 @@ const ManageBookings = () => {
                         {room.room_number}
                       </td>
                       {days.map(day => {
-                        const booking = isRoomBooked(room, day);
+                        const { booking, status } = isRoomBooked(room, day);
+                        const cellClass = 
+                          status === 'maintenance' ? 'bg-danger text-white' :
+                          status === 'booked' ? 'bg-warning text-dark' :
+                          'bg-white';
                         return (
                           <td
                             key={`room-${room.id}-day-${day}`}
-                            className={`text-center align-middle ${booking ? 'bg-danger text-white' : 'bg-white'}`}
-                            style={{ height: '30px', fontSize: '0.7rem', cursor: booking ? 'pointer' : 'default' }}
+                            className={`text-center align-middle ${cellClass}`}
+                            style={{ height: '30px', fontSize: '0.7rem', cursor: status === 'booked' ? 'pointer' : 'default' }}
                             data-column={day}
                             onMouseEnter={() => handleMouseEnter(day.toString())}
                             onMouseLeave={() => handleMouseLeave(day.toString())}
-                            onClick={() => handleCellClick(booking)}
-                            data-bs-toggle={booking ? 'tooltip' : ''}
+                            onClick={() => status === 'booked' && handleCellClick(booking)}
+                            data-bs-toggle={status === 'booked' || status === 'maintenance' ? 'tooltip' : ''}
                             data-bs-html="true"
-                            data-bs-title={booking ? formatBookingInfo(booking) : ''}
+                            data-bs-title={formatBookingInfo(booking, status)}
                           >
-                            {booking ? '' : ''}
+                            {status === 'maintenance' ? 'M' : status === 'booked' ? 'B' : ''}
                           </td>
                         );
                       })}
