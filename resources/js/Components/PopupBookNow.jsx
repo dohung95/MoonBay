@@ -32,7 +32,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
     const [paymentOption, setPaymentOption] = useState('deposit'); // New state for payment option: 'deposit' or 'full'
     const [isPaymentPopupOpen, setIsPaymentPopupOpen] = useState(false);
     const [bookingAmount, setBookingAmount] = useState(0);
-    
+
     const CalculatorDays = (checkin, checkout) => {
         return Math.ceil(Math.abs(new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24));
     }
@@ -274,6 +274,12 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
 
         if (parseInt(formData.member) > Maxmember(formData.room) || parseInt(formData.member) <= 0) {
             window.showNotification(`Cannot book. Number of members (${formData.member}) exceeds room capacity (${Maxmember(formData.room)}).`, "error");
+            return;
+        }
+
+        const daysDifference = CalculatorDays(formData.checkin, formData.checkout);
+        if (daysDifference > 30) {
+            window.showNotification("Booking is limited to a maximum of 30 days as per regulations.", "error");
             return;
         }
 

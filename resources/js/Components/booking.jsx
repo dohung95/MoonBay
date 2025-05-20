@@ -139,6 +139,8 @@ const Booking = ({ checkLogin, checkLogins }) => {
                     const checkin = id === 'checkin' ? value : formData.checkin;
                     const checkout = id === 'checkout' ? value : formData.checkout;
                     const roomType = id === 'roomType' ? value : formData.roomType;
+                    const selectedRoom = roomTypes.find(room => room.name === value);
+                    const totalCapacity = selectedRoom.capacity; 
 
                     if (roomType && checkin && checkout && dayjs(checkin).isValid() && dayjs(checkout).isValid()) {
                         axios.get('/api/available_rooms', {
@@ -152,9 +154,9 @@ const Booking = ({ checkLogin, checkLogins }) => {
                                 const available = response.data.available_rooms;
                                 window.showNotification(
                                     available > 0
-                                        ? `${available} room${available > 1 ? 's' : ''} available`
+                                        ? `${available} room${available > 1 ? 's' : ''} available and This room type has a capacity of ${selectedRoom.capacity} adults plus 2 children, total ${totalCapacity} guests.`
                                         : 'No rooms available, please choose another room type or call hotline',
-                                    available > 0 ? 'success' : 'error'
+                                    available > 0 ? 'success' : 'error' 
                                 );
                             })
                             .catch(error => {
@@ -187,7 +189,6 @@ const Booking = ({ checkLogin, checkLogins }) => {
             return updatedData;
         });
     };
-
     const handlePaymentOptionChange = (e) => {
         setPaymentOption(e.target.value);
     };
@@ -224,6 +225,12 @@ const Booking = ({ checkLogin, checkLogins }) => {
 
         if (parseInt(formData.member) > Maxmember(formData.room) || parseInt(formData.member) <= 0) {
             window.showNotification(`The number of guests (${formData.member}) exceeds the capacity (${Maxmember(formData.room)}).`, "error");
+            return;
+        }
+
+        const daysDifference = CalculatorDays(formData.checkin, formData.checkout);
+        if (daysDifference > 30) {
+            window.showNotification("Booking is limited to a maximum of 30 days as per regulations.", "error");
             return;
         }
 
