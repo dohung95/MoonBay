@@ -71,10 +71,6 @@ class AuthController extends Controller
             $user = Auth::user();
             Log::info('User authenticated', ['user_id' => $user->id]);
 
-            // Tạo token API bằng Sanctum
-            $token = $user->createToken('auth_token')->plainTextToken;
-            Log::info('Token generated', ['user_id' => $user->id, 'token' => $token]);
-
             // Tìm user theo email
             $user = User::where('email', $validated['email'])->first();
             if (!$user) {
@@ -90,11 +86,11 @@ class AuthController extends Controller
             }
             Log::info('Password verified');
 
-            // Tạo token mới và lưu vào remember_token
-            $token = Str::random(60);
-            $user->remember_token = $token;
-            $user->save();
-            Log::info('Token generated and saved', ['user_id' => $user->id, 'token' => $token]);
+            // Tái tạo session để bảo mật
+            $request->session()->regenerate();
+
+            // Tạo token Sanctum
+            $token = $user->createToken('auth_token')->plainTextToken;
 
             // Trả về thông tin user và token
             return response()->json([
@@ -144,25 +140,31 @@ class AuthController extends Controller
 
     public function update(Request $request, $id)
     {
-
-        $user = User::findOrFail($id);
-
         try {
+
+            // Lấy token từ header Authorization
+            $token = $request->bearerToken();
+            \Log::info('UpdateUser - Bearer token:', ['token' => $token]);
+
+            $user = $request->user(); // Lấy user đã xác thực qua Sanctum
+            \Log::info('UpdateUser - Authenticated user:', ['user_id' => $user ? $user->id : null]);
+
             // Lấy token từ header Authorization
             $token = $request->bearerToken();
             if (!$token) {
                 return response()->json(['message' => 'Token not provided'], 401);
             }
 
-            // Tìm user dựa trên token trong cột remember_token
-            $user = User::where('remember_token', $token)->first();
+            // Kiểm tra xem user có quyền cập nhật thông tin không
             if (!$user) {
-                return response()->json(['message' => 'Invalid token'], 401);
+                return response()->json(['message' => 'Unauthorized'], 403);
+                Log::warning('Update user - Unauthorized: user not found');
             }
 
-            // Kiểm tra xem user có quyền cập nhật thông tin không
-            if ($user->id != $id) {
-                return response()->json(['message' => 'Unauthorized'], 403);
+            // Chỉ cho phép user tự sửa thông tin của mình
+            if ((string)$user->id !== (string)$id) {
+                Log::warning('Update user - Forbidden: user id mismatch', ['user_id' => $user->id, 'request_id' => $id]);
+                return response()->json(['message' => 'Forbidden'], 403);
             }
 
             $validated = $request->validate([
@@ -197,22 +199,14 @@ class AuthController extends Controller
 
     public function changePassword(Request $request, $id)
     {
-        // Lấy token từ header
-        $token = $request->bearerToken();
-
-        if (!$token) {
-            return response()->json(['message' => 'Unauthenticated'], 401);
-        }
-
-        // Tìm user dựa trên remember_token
-        $user = User::where('remember_token', $token)->first();
+        $user = $request->user(); // Lấy user đã xác thực qua Sanctum
+        \Log::info('ChangePassword - user:', ['user_id' => $user ? $user->id : null]);
+        \Log::info('ChangePassword - request:', $request->all());
 
         if (!$user) {
-            \Log::warning('Invalid token', ['token' => $token]);
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
 
-        // Kiểm tra user có quyền truy cập
         if ($user->id != $id) {
             \Log::warning('ChangePassword - Unauthorized access attempt', ['id' => $id, 'user_id' => $user->id]);
             return response()->json(['message' => 'Unauthorized'], 403);
@@ -299,6 +293,10 @@ class AuthController extends Controller
                 $user->save();
             }
 
+            // Tạo token Sanctum cho user
+        $token = $user->createToken('auth_token')->plainTextToken;
+        \Log::info('GoogleCallback - Sanctum token:', ['token' => $token]);
+
             $userData = [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -315,7 +313,7 @@ class AuthController extends Controller
 
             // Redirect về frontend với token và user trong query string
             $redirectUrl = 'http://localhost:8000/auth/callback?' . http_build_query([
-                'token' => $user->remember_token,
+                'token' => $token,
                 'user' => json_encode($userData),
             ]);
 
@@ -331,16 +329,21 @@ class AuthController extends Controller
 
     public function getUser(Request $request)
 {
-    $token = $request->header('Authorization');
-    $token = str_replace('Bearer ', '', $token);
-
-    $user = User::where('remember_token', $token)->first();
+    $user = $request->user(); // Lấy user đã xác thực qua Sanctum
 
     if (!$user) {
         return response()->json(['message' => 'Unauthorized'], 401);
     }
 
-    return response()->json(['email' => $user->email]);
+    return response()->json([
+        'id' => $user->id,
+        'name' => $user->name,
+        'email' => $user->email,
+        'avatar' => $user->avatar,
+        'phone' => $user->phone,
+        'role' => $user->role,
+        'status' => $user->status,
+    ]);
 }
 
 

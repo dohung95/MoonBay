@@ -48,9 +48,7 @@ const Navbar = ({ openLoginPopup }) => {
 
     return (
         <nav
-            className={`navbar navbar-expand-lg sticky-top ${isVisible ? 'visible' : 'hidden'} ${
-                isAtTop ? 'navbar-transparent' : 'navbar-colored'
-            }`}
+            className={`navbar navbar-expand-lg sticky-top ${isVisible ? 'visible' : 'hidden'} ${isAtTop ? 'navbar-transparent' : 'navbar-colored'}`}
             style={{ transition: 'top 0.3s', top: isVisible ? '0' : '-80px' }}
         >
             <div className="container">

@@ -34,7 +34,43 @@ export const AuthProvider = ({ children }) => {
                 delete axios.defaults.headers.common['Authorization'];
             }
         }
-        setLoading(false);
+
+        try {
+            // Kiểm tra xem user đã đăng nhập chưa bằng cách gọi API /user
+            const fetchUser = async () => {
+                const response = await axios.get('/user', { withCredentials: true });
+                if (response.data) {
+                    setUser({
+                        ...response.data,
+                        // avatar: response.data.avatar,
+                    });
+                } else {
+                    // Nếu không có user từ API, thử lấy từ cookie
+                    const userCookie = Cookies.get('user');
+                    if (userCookie) {
+                        setUser(JSON.parse(userCookie));
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Error parsing stored user:", error);
+            // Nếu có lỗi, xóa cookie và reset state
+            Cookies.remove('user');
+            Cookies.remove('auth_token');
+            setUser(null);
+            setToken('');
+            delete axios.defaults.headers.common['Authorization'];
+            // Nếu lỗi, thử lấy từ cookie
+            const userCookie = Cookies.get('user');
+            if (userCookie) {
+                setUser(JSON.parse(userCookie));
+            } else {
+                setUser(null);
+            }
+        } finally {
+            setLoading(false);
+        };
+        
     }, []);
 
     const login = (userData, authToken) => {

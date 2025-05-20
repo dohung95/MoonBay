@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +19,10 @@ Route::get('/{any}', function () {
     return view('app');
 })->where('any', '.*');
 
+
+Route::middleware('web')->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
+});
 
 Route::get('/test-mail', function() {
     Mail::raw('Test email from Laravel', function($message) {

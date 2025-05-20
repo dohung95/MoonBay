@@ -47,9 +47,9 @@ Route::get('/google/login', [AuthController::class, 'redirectToGoogle'])->name('
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('google.callback');
 // dangerous
 
-Route::apiResource('users', AuthController::class);
 Route::get('/users/{id}/bookings', [BookingController::class, 'getUserBookings']);
-Route::post('/users/{id}/change-password', [AuthController::class, 'changePassword']);
+Route::middleware('auth:sanctum')->put('/users/{id}', [AuthController::class, 'update']);
+Route::middleware('auth:sanctum')->post('/users/{id}/change-password', [AuthController::class, 'changePassword']);
 Route::delete('/bookings/{id}', [BookingController::class, 'destroy']);
 
 Route::post('/register', [AuthController::class, 'register']);

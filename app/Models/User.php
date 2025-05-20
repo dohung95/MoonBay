@@ -26,6 +26,11 @@ class User extends Authenticatable
         'phone',
         'password',
         'remember_token',
+        'avatar', 
+        'role',
+        'status',   
+        // 'customer_status',
+        // 'special_notes',
     ];
     
 
@@ -57,6 +62,24 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+    
+    // Thêm relationship với bookings
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class);
+    }
+    
+    // Thêm relationship với stayHistory
+    public function stayHistory()
+    {
+        return $this->hasMany(StayHistory::class);
+    }
+    
+    // Thêm relationship với customerNotes
+    public function customerNotes()
+    {
+        return $this->hasMany(StaffCustomerNote::class, 'user_id');
     }
 }
 

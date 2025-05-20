@@ -117,7 +117,6 @@ const Account = () => {
         }
 
         try {
-            // console.log('Token being sent:', token); // Debug token
             await axios.get('/sanctum/csrf-cookie', {
                 withCredentials: true,
             });
@@ -127,9 +126,9 @@ const Account = () => {
                 passwordData,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`, // Sử dụng remember_token
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
+                        Authorization: `Bearer ${token}`,
                     },
                     withCredentials: true,
                 }
