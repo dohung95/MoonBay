@@ -153,7 +153,4 @@ Route::put('/admin/complaints/{id}', [ComplaintsController::class, 'update']);
 Route::delete('/admin/complaints/{id}', [ComplaintsController::class, 'destroy']);
 
 //QRPayment
-// Route::middleware(RememberTokenAuth::class)->group(function () {
-//     Route::post('/payments', [PaymentController::class, 'createPayment']);
-//     Route::get('/payments/{payment_id}', [PaymentController::class, 'getPayment']);
-// });
+Route::middleware([RememberTokenAuth::class])->post('/payments', [PaymentController::class, 'store']);
