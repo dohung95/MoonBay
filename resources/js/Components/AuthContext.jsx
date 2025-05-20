@@ -66,14 +66,20 @@ export const AuthProvider = ({ children }) => {
     };
 
     const updateUser = (updatedUser) => {
-        const user = {
-            ...updatedUser,
-            avatar: updatedUser.avatar || '/images/Dat/avatar/default.png',
-        };
-        setUser(user);
+        if (!updatedUser) {
+            throw new Error('Updated user data is undefined');
+        }
 
-        // Cập nhật cookie với thời gian sống 30 ngày
-        Cookies.set('user', JSON.stringify(user), { expires: 30 }); // 30 ngày
+        setUser((prevUser) => {
+            const newUser = {
+                ...prevUser,
+                ...updatedUser,
+                avatar: updatedUser.avatar !== undefined ? (updatedUser.avatar || '/images/Dat/avatar/default.png') : prevUser?.avatar,
+            };
+            // Cập nhật cookie với giá trị mới nhất
+            Cookies.set('user', JSON.stringify(newUser), { expires: 30 });
+            return newUser;
+        });
     };
 
     const isAdmin = () => {

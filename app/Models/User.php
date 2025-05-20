@@ -28,7 +28,8 @@ class User extends Authenticatable
         'remember_token',
         'avatar', 
         'role',
-        'status',   
+        'status', 
+        'provider', 
         // 'customer_status',
         // 'special_notes',
     ];
