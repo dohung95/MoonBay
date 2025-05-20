@@ -1,130 +1,414 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { format, getDaysInMonth, addMonths, subMonths, startOfDay, isSameDay, isAfter, isBefore } from 'date-fns';
+import { enUS } from 'date-fns/locale';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { Modal, Tooltip } from 'bootstrap';
+import '../../../css/css_of_admin/ManageBooking.css';
 
 const ManageBookings = () => {
+  const [currentDate, setCurrentDate] = useState(new Date(2025, 4, 1)); // May 2025
+  const [rooms, setRooms] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [formData, setFormData] = useState({});
+  const tableRef = useRef(null);
+  const modalRef = useRef(null);
+  const modalInstanceRef = useRef(null);
 
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  // Fetch all rooms from paginated API
+  useEffect(() => {
+    const fetchRooms = async () => {
+      setIsLoading(true);
+      setError(null);
+      let allRooms = [];
+      let page = 1;
+      const perPage = 10;
 
+      try {
+        while (true) {
+          const response = await axios.get('http://localhost:8000/api/room_list', {
+            params: { per_page: perPage, page },
+          });
+          const { data, last_page } = response.data;
+          allRooms = [...allRooms, ...data.map(item => ({
+            id: item.id,
+            room_number: item.room_number,
+            status: item.status, // Lưu trạng thái phòng
+          }))];
+          if (page >= last_page) break;
+          page++;
+        }
+        setRooms(allRooms);
+      } catch (error) {
+        console.error('Error fetching room list:', error);
+        setError('Failed to load room list');
+        setRooms([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRooms();
+  }, []);
+
+  // Fetch bookings for the current month
   useEffect(() => {
     const fetchBookings = async () => {
+      setIsLoading(true);
+      setError(null);
+      let allBookings = [];
+      let page = 1;
+      const perPage = 30;
+
+      const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0, 23, 59, 59);
+
       try {
-        const response = await axios.get('http://localhost:8000/api/booking_manager');
-        if (Array.isArray(response.data)) {
-          setBookings(response.data);
-        } else {
-          setBookings([]);
+        while (true) {
+          const response = await axios.get('http://localhost:8000/api/booking_manager', {
+            params: {
+              per_page: perPage,
+              page,
+              checkin_date: format(startOfMonth, 'yyyy-MM-dd HH:mm:ss'),
+              checkout_date: format(endOfMonth, 'yyyy-MM-dd HH:mm:ss'),
+            },
+          });
+          const data = response.data;
+          if (!Array.isArray(data)) {
+            console.error('Expected data to be an array, received:', data);
+            throw new Error('Invalid API response: data is not an array');
+          }
+          allBookings = [...allBookings, ...data.map(booking => ({
+            ...booking,
+            checkin_date: new Date(booking.checkin_date),
+            checkout_date: new Date(booking.checkout_date),
+          }))];
+          if (data.length < perPage) break;
+          page++;
         }
-      } catch (err) {
-        console.error(err);
-        setError('Failed to load booking data.');
+        console.log('Bookings:', allBookings);
+        setBookings(allBookings);
+      } catch (error) {
+        console.error('Error fetching bookings:', error);
+        setError('Failed to load bookings');
         setBookings([]);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchBookings();
-  }, []);
+  }, [currentDate]);
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-GB');
+  // Initialize Bootstrap tooltips and modal
+  useEffect(() => {
+    if (tableRef.current) {
+      const tooltipTriggerList = tableRef.current.querySelectorAll('[data-bs-toggle="tooltip"]');
+      tooltipTriggerList.forEach(tooltipTriggerEl => {
+        new Tooltip(tooltipTriggerEl);
+      });
+    }
+    if (modalRef.current && !modalInstanceRef.current) {
+      modalInstanceRef.current = new Modal(modalRef.current, { backdrop: 'static' });
+    }
+    return () => {
+      if (modalInstanceRef.current) {
+        modalInstanceRef.current.dispose();
+        modalInstanceRef.current = null;
+      }
+    };
+  }, [bookings, rooms]);
+
+  // Handle cell click to open edit modal
+  const handleCellClick = (booking) => {
+    if (booking) {
+      setSelectedBooking(booking);
+      setFormData({
+        checkin_date: format(booking.checkin_date, 'yyyy-MM-dd'),
+        checkout_date: format(booking.checkout_date, 'yyyy-MM-dd'),
+      });
+      if (modalInstanceRef.current) {
+        modalInstanceRef.current.show();
+      }
+    }
   };
 
-  const formatCurrency = (value) => {
-    const number = Number(value);
-    return isNaN(number)
-      ? '₫0'
-      : number.toLocaleString('en-US', { style: 'currency', currency: 'VND' });
+  // Handle form input change
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Pagination logic
-  const totalPages = Math.ceil(bookings.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentBookings = bookings.slice(startIndex, startIndex + itemsPerPage);
+  // Handle form submission to update booking
+  const handleUpdateBooking = async (e) => {
+    e.preventDefault();
+    if (!selectedBooking) return;
 
-  const goToPage = (page) => {
-    if (page < 1 || page > totalPages) return;
-    setCurrentPage(page);
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Extract original time components
+      const originalCheckin = new Date(selectedBooking.checkin_date);
+      const originalCheckout = new Date(selectedBooking.checkout_date);
+      
+      // Parse new dates from formData
+      const newCheckinDate = new Date(formData.checkin_date);
+      const newCheckoutDate = new Date(formData.checkout_date);
+      
+      // Combine new dates with original times
+      newCheckinDate.setHours(
+        originalCheckin.getHours(),
+        originalCheckin.getMinutes(),
+        originalCheckin.getSeconds()
+      );
+      newCheckoutDate.setHours(
+        originalCheckout.getHours(),
+        originalCheckout.getMinutes(),
+        originalCheckout.getSeconds()
+      );
+
+      const response = await axios.put(`http://localhost:8000/api/booking_manager/${selectedBooking.id}`, {
+        checkin_date: format(newCheckinDate, 'yyyy-MM-dd HH:mm:ss'),
+        checkout_date: format(newCheckoutDate, 'yyyy-MM-dd HH:mm:ss'),
+      });
+      setBookings(prev =>
+        prev.map(b => (b.id === selectedBooking.id ? {
+          ...b,
+          ...response.data,
+          checkin_date: new Date(response.data.checkin_date),
+          checkout_date: new Date(response.data.checkout_date),
+        } : b))
+      );
+      if (modalInstanceRef.current) {
+        modalInstanceRef.current.hide();
+      }
+      setSelectedBooking(null);
+      setFormData({});
+    } catch (error) {
+      console.error('Error updating booking:', error);
+      setError('Failed to update booking');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Navigate to previous/next month
+  const prevMonth = () => {
+    setCurrentDate(subMonths(currentDate, 1));
+  };
+
+  const nextMonth = () => {
+    setCurrentDate(addMonths(currentDate, 1));
+  };
+
+  // Handle hover to highlight column
+  const handleMouseEnter = (column) => {
+    if (column !== '0') {
+      document.querySelectorAll(`[data-column="${column}"]`).forEach(el => {
+        el.classList.add('highlight-column');
+      });
+    }
+  };
+
+  const handleMouseLeave = (column) => {
+    if (column !== '0') {
+      document.querySelectorAll(`[data-column="${column}"]`).forEach(el => {
+        el.classList.remove('highlight-column');
+      });
+    }
+  };
+
+  // Check if a room is booked on a specific day and return booking info
+  const isRoomBooked = (room, day) => {
+    const targetDate = startOfDay(new Date(currentDate.getFullYear(), currentDate.getMonth(), day));
+    
+    // Ưu tiên kiểm tra trạng thái maintenance
+    if (room.status === 'maintenance') {
+      return { booking: null, status: 'maintenance' };
+    }
+
+    // Kiểm tra đặt phòng
+    const booking = bookings.find(booking => {
+      if (booking.room_id !== room.id) return false;
+      const checkin = startOfDay(booking.checkin_date);
+      const checkout = startOfDay(booking.checkout_date);
+      const isBooked = (isSameDay(targetDate, checkin) || isAfter(targetDate, checkin)) &&
+                       (isSameDay(targetDate, checkout) || isBefore(targetDate, checkout));
+      return isBooked;
+    });
+
+    return {
+      booking,
+      status: booking ? 'booked' : 'available'
+    };
+  };
+
+  // Format booking info for tooltip
+  const formatBookingInfo = (booking, status) => {
+    if (status === 'maintenance') {
+      return `<div style="text-align: left;">Room under maintenance</div>`;
+    }
+    if (!booking) return '';
+    return `
+      <div style="text-align: left;">
+        <strong>Name:</strong> ${booking.name}<br>
+        <strong>Phone:</strong> ${booking.phone}<br>
+        <strong>Check-in:</strong> ${format(booking.checkin_date, 'yyyy-MM-dd HH:mm:ss')}<br>
+        <strong>Check-out:</strong> ${format(booking.checkout_date, 'yyyy-MM-dd HH:mm:ss')}
+      </div>
+    `;
+  };
+
+  // Render calendar table
+  const renderCalendar = () => {
+    const daysInMonth = getDaysInMonth(currentDate);
+    const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+    return (
+      <div className="table-container">
+        {error && <div className="alert alert-danger">{error}</div>}
+        {isLoading ? (
+          <div className="text-center">Loading...</div>
+        ) : (
+          <>
+            <table ref={tableRef} className="table table-bordered table-sm w-100" style={{ tableLayout: 'fixed' }}>
+              <thead className="table-light">
+                <tr>
+                  <th scope="col" className="text-center align-middle" style={{ width: '80px', fontSize: '0.8rem' }} data-column="0">
+                    Room
+                  </th>
+                  {days.map(day => (
+                    <th
+                      key={day}
+                      scope="col"
+                      className="text-center align-middle"
+                      style={{ width: `calc((100% - 80px) / ${days.length})`, fontSize: '0.8rem' }}
+                      data-column={day}
+                      onMouseEnter={() => handleMouseEnter(day.toString())}
+                      onMouseLeave={() => handleMouseLeave(day.toString())}
+                    >
+                      {day}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rooms.length > 0 ? (
+                  rooms.map(room => (
+                    <tr key={`room-${room.id}`}>
+                      <td
+                        className="text-center align-middle fw-bold"
+                        style={{ width: '80px', fontSize: '0.8rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                        data-column="0"
+                      >
+                        {room.room_number}
+                      </td>
+                      {days.map(day => {
+                        const { booking, status } = isRoomBooked(room, day);
+                        const cellClass = 
+                          status === 'maintenance' ? 'bg-danger text-white' :
+                          status === 'booked' ? 'bg-warning text-dark' :
+                          'bg-white';
+                        return (
+                          <td
+                            key={`room-${room.id}-day-${day}`}
+                            className={`text-center align-middle ${cellClass}`}
+                            style={{ height: '30px', fontSize: '0.7rem', cursor: status === 'booked' ? 'pointer' : 'default' }}
+                            data-column={day}
+                            onMouseEnter={() => handleMouseEnter(day.toString())}
+                            onMouseLeave={() => handleMouseLeave(day.toString())}
+                            onClick={() => status === 'booked' && handleCellClick(booking)}
+                            data-bs-toggle={status === 'booked' || status === 'maintenance' ? 'tooltip' : ''}
+                            data-bs-html="true"
+                            data-bs-title={formatBookingInfo(booking, status)}
+                          >
+                            {status === 'maintenance' ? 'M' : status === 'booked' ? 'B' : ''}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={days.length + 1} className="text-center">
+                      No rooms available
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+
+            {/* Edit Booking Modal */}
+            <div
+              className="modal fade"
+              id="editBookingModal"
+              tabIndex="-1"
+              aria-labelledby="editBookingModalLabel"
+              aria-hidden="true"
+              ref={modalRef}
+            >
+              <div className="modal-dialog">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title" id="editBookingModalLabel">Edit Booking Dates</h5>
+                    <button type="button" className="btn-close" onClick={() => modalInstanceRef.current.hide()} aria-label="Close"></button>
+                  </div>
+                  <div className="modal-body">
+                    {selectedBooking && (
+                      <form onSubmit={handleUpdateBooking}>
+                        <div className="mb-3">
+                          <label htmlFor="checkin_date" className="form-label">Check-in Date</label>
+                          <input
+                            type="date"
+                            className="form-control"
+                            id="checkin_date"
+                            name="checkin_date"
+                            value={formData.checkin_date || ''}
+                            onChange={handleInputChange}
+                            required
+                          />
+                        </div>
+                        <div className="mb-3">
+                          <label htmlFor="checkout_date" className="form-label">Check-out Date</label>
+                          <input
+                            type="date"
+                            className="form-control"
+                            id="checkout_date"
+                            name="checkout_date"
+                            value={formData.checkout_date || ''}
+                            onChange={handleInputChange}
+                            required
+                          />
+                        </div>
+                        <button type="submit" className="btn btn-primary" disabled={isLoading}>
+                          {isLoading ? 'Updating...' : 'Update Dates'}
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    );
   };
 
   return (
-    <div className="container mt-5">
-      <h2 className="mb-4 text-center text-primary">Booking List</h2>
-      {error && <div className="alert alert-danger">{error}</div>}
-
-      <div className="table-responsive">
-        <table className="table table-hover table-bordered table-striped">
-          <thead className="table-dark text-center">
-            <tr>
-              <th>ID</th>
-              <th>User ID</th>
-              <th>Name</th>
-              <th>Room Type</th>
-              <th>Rooms</th>
-              <th>Children</th>
-              <th>Members</th>
-              <th>Check-in</th>
-              <th>Check-out</th>
-              <th>Price</th>
-              <th>Total Price</th>
-              <th>Created</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentBookings.length > 0 ? (
-              currentBookings.map((booking) => (
-                <tr key={booking.id}>
-                  <td>{booking.id}</td>
-                  <td>{booking.user_id}</td>
-                  <td>{booking.name}</td>
-                  <td>{booking.room_type}</td>
-                  <td className="text-center">{booking.number_of_rooms}</td>
-                  <td className="text-center">{booking.children}</td>
-                  <td className="text-center">{booking.member}</td>
-                  <td>{formatDate(booking.checkin_date)}</td>
-                  <td>{formatDate(booking.checkout_date)}</td>
-                  <td className="text-end">{formatCurrency(booking.price)}</td>
-                  <td className="text-end fw-bold text-primary">{formatCurrency(booking.total_price)}</td>
-                  <td>{formatDate(booking.created_at)}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="12" className="text-center text-muted">No bookings available.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+    <div className="container my-4 booking-show">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <button onClick={prevMonth} className="btn btn-primary btn-sm">Previous Month</button>
+        <h1 className="h3 fw-bold">
+          {format(currentDate, 'MMMM yyyy', { locale: enUS })}
+        </h1>
+        <button onClick={nextMonth} className="btn btn-primary btn-sm">Next Month</button>
       </div>
-
-      {/* Pagination controls */}
-      {totalPages > 1 && (
-        <nav aria-label="Page navigation example">
-          <ul className="pagination justify-content-center">
-            <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-              <button className="page-link" onClick={() => goToPage(currentPage - 1)}>Prev</button>
-            </li>
-
-            {[...Array(totalPages)].map((_, idx) => {
-              const page = idx + 1;
-              return (
-                <li key={page} className={`page-item ${currentPage === page ? 'active' : ''}`}>
-                  <button className="page-link" onClick={() => goToPage(page)}>{page}</button>
-                </li>
-              );
-            })}
-
-            <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-              <button className="page-link" onClick={() => goToPage(currentPage + 1)}>Next</button>
-            </li>
-          </ul>
-        </nav>
-      )}
+      {renderCalendar()}
     </div>
   );
 };

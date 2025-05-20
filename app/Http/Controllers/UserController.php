@@ -96,11 +96,11 @@ class UserController extends Controller
         $user = UserManager::findOrFail($id);
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $id,
+            'name' => 'nullable|string|max:255',
+            'email' => 'nullable|email|unique:users,email,' . $id,
             'phone' => 'nullable|string|max:20',
-            'role' => 'required|string|in:staff,admin,manager',
-            'status' => 'required|string|in:active,inactive,suspended',
+            'role' => 'nullable|string|in:staff,admin,manager',
+            'status' => 'required|string|in:active,inactive,banned',
         ]);
 
         $user->update($validated);

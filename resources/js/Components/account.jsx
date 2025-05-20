@@ -5,9 +5,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../css/my_css/account.css';
 import Banner from './banner';
 
-
-
-
 const Account = () => {
     const { user, token, updateUser } = useContext(AuthContext);
     const [bookings, setBookings] = useState([]);
@@ -26,6 +23,21 @@ const Account = () => {
         new_password_confirmation: '',
     });
     const [latestBooking, setLatestBooking] = useState(null);
+
+    // Function to format date to DD/MM/YYYY
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    };
+
+    // Function to format number with commas
+    const formatNumber = (number) => {
+        return Math.round(number).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    };
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -165,7 +177,6 @@ const Account = () => {
                 const checkinDate = new Date(booking.checkin_date);
                 const now = new Date();
 
-                // Đảm bảo so sánh thời gian đầy đủ
                 if (now >= checkinDate) {
                     window.showNotification('Cannot cancel booking. Check-in time has passed or is due.', 'error');
                     return;
@@ -189,7 +200,6 @@ const Account = () => {
     if (loading) return <div className="container_account"><p className="text-center text-black mt-5">Loading...</p></div>;
     if (error) return <div className="container_account"><p className="text-center text-black mt-5">{error}</p></div>;
 
-    // Kiểm tra xem người dùng có đăng nhập bằng Google không
     const isLocalAccount = user.provider !== 'google';
 
     return (
@@ -270,7 +280,7 @@ const Account = () => {
                             {bookings.length > 0 ? (
                                 <div className="bookings-container">
                                     {bookings.map((booking) => {
-                                        const checkinDate = new Date(booking.checkin_date + 'Z');
+                                        const checkinDate = new Date(booking.checkin_date);
                                         const now = new Date();
                                         const canCancel = checkinDate > now;
                                         return (
@@ -280,10 +290,10 @@ const Account = () => {
                                                     <div className="card-text">
                                                         <div className="info-row">
                                                             <span className="info-item">
-                                                                <strong>Check-in:</strong> <span className="text-muted">{booking.checkin_date}</span>
+                                                                <strong>Check-in:</strong> <span className="text-muted">{formatDate(booking.checkin_date)}</span>
                                                             </span>
                                                             <span className="info-item">
-                                                                <strong>Check-out:</strong> <span className="text-muted">{booking.checkout_date}</span>
+                                                                <strong>Check-out:</strong> <span className="text-muted">{formatDate(booking.checkout_date)}</span>
                                                             </span>
                                                             <span className="info-item">
                                                                 <strong>Number of rooms:</strong> <span className="text-muted">{booking.number_of_rooms}</span>
@@ -302,15 +312,15 @@ const Account = () => {
                                                                 <strong>Days:</strong> <span className="text-muted">{Math.ceil(Math.abs(new Date(booking.checkout_date) - new Date(booking.checkin_date)) / (1000 * 60 * 60 * 24) + 1)}</span>
                                                             </span>
                                                             <span className='info-item'>
-                                                                <strong>Price:</strong> <span className="text-muted">{booking.price} VNĐ/night</span>
+                                                                <strong>Price:</strong> <span className="text-muted">{formatNumber(booking.price)} VNĐ/night</span>
                                                             </span>
                                                             <span className="info-item">  
-                                                                <strong>Deposit:</strong> <span className="text-muted">{(parseFloat(booking.total_price) * 0.2).toFixed(2)} VNĐ % of total price</span>
+                                                                <strong>Deposit:</strong> <span className="text-muted">{formatNumber(parseFloat(booking.total_price) * 0.2)} VNĐ % of total price</span>
                                                             </span>
                                                         </div>
                                                         <div className="info-row">
                                                             <span className="info-item">
-                                                                <strong>Total Cost:</strong> <span className="text-muted">{booking.total_price} VNĐ</span>
+                                                                <strong>Total Cost:</strong> <span className="text-muted">{formatNumber(booking.total_price)} VNĐ</span>
                                                             </span>
                                                         </div>
                                                     </div>
@@ -336,8 +346,6 @@ const Account = () => {
             </div>
         </>
     );
-
-
 };
 
 export default Account;

@@ -152,13 +152,11 @@ const RoomListManagement = () => {
                             <table className="table table-striped table-hover table-bordered align-middle">
                                 <thead className="table-dark">
                                     <tr>
-                                        <th scope="col" className="text-center">No.</th>
                                         <th scope="col" className="text-center">ID</th>
                                         <th scope="col" className="text-center">Room Number</th>
                                         <th scope="col" className="text-center">Type</th>
                                         <th scope="col" className="text-center">Price (VND)</th>
                                         <th scope="col" className="text-center">Status</th>
-                                        <th scope="col" className="text-center">Created At</th>
                                         <th scope="col" className="text-center">Actions</th>
                                     </tr>
                                 </thead>
@@ -166,9 +164,6 @@ const RoomListManagement = () => {
                                     {rooms.length > 0 ? (
                                         rooms.map((room, index) => (
                                             <tr key={room.id}>
-                                                <td className="text-center">
-                                                    {(currentPage - 1) * 10 + index + 1}
-                                                </td>
                                                 <td className="text-center">{room.id}</td>
                                                 <td className="text-center">{room.room_number}</td>
                                                 <td className="text-center">{room.type}</td>
@@ -186,11 +181,6 @@ const RoomListManagement = () => {
                                                     >
                                                         {room.status}
                                                     </span>
-                                                </td>
-                                                <td className="text-center">
-                                                    {room.created_at
-                                                        ? new Date(room.created_at).toLocaleDateString('vi-VN')
-                                                        : 'N/A'}
                                                 </td>
                                                 <td className="text-center">
                                                     <button
@@ -307,7 +297,6 @@ const RoomListManagement = () => {
                                         onChange={handleInputChange}
                                     >
                                         <option value="available">Available</option>
-                                        <option value="booked">Booked</option>
                                         <option value="maintenance">Maintenance</option>
                                     </select>
                                 </div>
@@ -381,7 +370,6 @@ const RoomListManagement = () => {
                                         onChange={handleInputChange}
                                     >
                                         <option value="available">Available</option>
-                                        <option value="booked">Booked</option>
                                         <option value="maintenance">Maintenance</option>
                                     </select>
                                 </div>

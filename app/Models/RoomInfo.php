@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Booking;
+
 
 class RoomInfo extends Model
 {
@@ -21,4 +23,12 @@ class RoomInfo extends Model
         'created_at',
         'updated_at',
     ];
+
+    /**
+     * Mối quan hệ: RoomInfo có nhiều BookingRoom
+     */
+    public function bookingRooms()
+    {
+        return $this->hasMany(Booking::class, 'room_id');
+    }
 }
