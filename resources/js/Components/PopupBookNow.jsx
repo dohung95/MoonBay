@@ -59,7 +59,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
     const maxCapacity = roomTypes.length > 0 
         ? roomTypes.find(rt => rt.name === formData.roomType)?.capacity || 0 
         : 0;
-    const Maxmember = () => formData.room * maxCapacity;
+    const Maxmember = () => formData.room * (maxCapacity + 2);
 
     useEffect(() => {
         const fetchRoomTypes = async () => {
@@ -218,10 +218,15 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                 window.showNotification(`Only ${availableRooms} room${availableRooms > 1 ? 's' : ''} available`, "error");
             }
 
-            if (id === "member" && newValue > Maxmember(formData.room)) {
-                window.showNotification(`Maximum capacity is ${Maxmember(formData.room)} member${Maxmember(formData.room) > 1 ? 's' : ''} for ${formData.room} room${formData.room > 1 ? 's' : ''}. Please reduce the number of members.`, "error");
+            // Kiểm tra giới hạn tổng số khách
+            const totalGuests = parseInt(formData.member) + parseInt(formData.children || 0);
+            if ((id === "member" || id === "children") && totalGuests > Maxmember()) {
+                window.showNotification(
+                    `Maximum capacity is ${Maxmember()} guests for ${updatedData.room} room${updatedData.room > 1 ? 's' : ''}. Please reduce the number of guests.`,
+                    "error"
+                );
             }
-
+            
             if (id === 'roomType') {
                 const selectedRoom = roomTypes.find((room) => room.id === parseInt(value));
                 const price = selectedRoom ? selectedRoom.price : 0;

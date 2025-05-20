@@ -62,7 +62,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
     };
 
     const maxCapacity = roomTypes.length > 0 ? roomTypes.find((roomType) => roomType.name === formData.roomType)?.capacity || 0 : 0;
-    const Maxmember = () => formData.room * maxCapacity;
+    const Maxmember = () => formData.room * (maxCapacity + 2); // 2 children
 
     const now = new Date();
     const formatDateTime = (date) => {
@@ -140,7 +140,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
                     const checkout = id === 'checkout' ? value : formData.checkout;
                     const roomType = id === 'roomType' ? value : formData.roomType;
                     const selectedRoom = roomTypes.find(room => room.name === value);
-                    const totalCapacity = selectedRoom.capacity; 
+                    const totalCapacity = selectedRoom.capacity + 2;
 
                     if (roomType && checkin && checkout && dayjs(checkin).isValid() && dayjs(checkout).isValid()) {
                         axios.get('/api/available_rooms', {
@@ -156,7 +156,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
                                     available > 0
                                         ? `${available} room${available > 1 ? 's' : ''} available and This room type has a capacity of ${selectedRoom.capacity} adults plus 2 children, total ${totalCapacity} guests.`
                                         : 'No rooms available, please choose another room type or call hotline',
-                                    available > 0 ? 'success' : 'error' 
+                                    available > 0 ? 'success' : 'error'
                                 );
                             })
                             .catch(error => {
@@ -235,6 +235,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
         }
 
         const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available').length;
+        console.log("Available rooms:", availableRooms);
         if (availableRooms < 1) {
             window.showNotification("No rooms available to book.", "error");
             return;
@@ -372,21 +373,38 @@ const Booking = ({ checkLogin, checkLogins }) => {
     useEffect(() => {
         const fetchRooms = async () => {
             try {
-                const response = await axios.get('/api/rooms');
-                const roomsData = response.data || [];
-                setRooms(roomsData);
-                const types = [...new Set(roomsData.map(room => room.type))].map(type => ({
-                    name: type,
-                    price: roomsData.find(room => room.type === type).price,
-                    capacity: roomsData.find(room => room.type === type).capacity || 2,
-                }));
+                const response = await axios.get('/api/room-types');
+                const roomsData = response.data.room_types || [];
+                setRoomTypes(roomsData);
+
+                const types = [...new Set(roomsData.map(room => room.name))].map(name => {
+                    const room = roomsData.find(room => room.name === name);
+                    return {
+                        name: name,
+                        price: room ? room.price : "0.00",
+                        capacity: room ? room.capacity : 2,
+                    };
+                });
                 setRoomTypes(types);
             } catch (error) {
                 console.error('Error fetching rooms:', error);
                 window.showNotification("Unable to load room data.", "error");
             }
         };
+
+        const fetchAvailableRooms = async () => {
+            try {
+                const response = await axios.get('/api/rooms');
+                const availableRooms = response.data || []; 
+                setRooms(availableRooms);
+            } catch (error) {
+                console.error('Error fetching available rooms:', error.response?.data || error);
+                window.showNotification("Unable to load available room data.", "error");
+            }
+        };
+
         fetchRooms();
+        fetchAvailableRooms(); // Gọi API lấy phòng trống
     }, []);
 
     useEffect(() => {
@@ -496,18 +514,18 @@ const Booking = ({ checkLogin, checkLogins }) => {
                                         </div>
                                         <div className="row">
                                             <div className="col-md-6" align="right">
-                                            Pay Full Amount
+                                                Pay Full Amount
                                             </div>
                                             <div className="col-md-2" align="left">
-                                            <label className="me-3">
-                                                <input
-                                                    type="radio"
-                                                    name="paymentOption"
-                                                    value="full"
-                                                    checked={paymentOption === 'full'}
-                                                    onChange={handlePaymentOptionChange}
-                                                /> 
-                                            </label>
+                                                <label className="me-3">
+                                                    <input
+                                                        type="radio"
+                                                        name="paymentOption"
+                                                        value="full"
+                                                        checked={paymentOption === 'full'}
+                                                        onChange={handlePaymentOptionChange}
+                                                    />
+                                                </label>
                                             </div>
                                         </div>
                                     </div>
