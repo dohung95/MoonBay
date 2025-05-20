@@ -19,11 +19,14 @@
     padding: 20px;
     border-radius: 15px;
     /* Bo góc */
-    width: 400px;
-    max-width: 90%;
+    width: 50%;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
     /* Bóng mờ */
     position: relative;
+}
+
+.book-now-form .row{
+    height: 100px;
 }
 
 /* Nút đóng popup */
@@ -40,5 +43,19 @@
 .bold-placeholder::placeholder {
     font-weight: bold;
     color: #000; /* hoặc màu đậm hơn #555 */
-  }
+}
+
+.text-warning {
+    color: #ffc107; /* Bootstrap warning color */
+    white-space: pre-line;
+    max-height: 80px; /* Limit height */
+    overflow-y: auto; /* Add vertical scroll if needed */
+    margin: 0; /* Remove default margin */
+    padding: 5px; /* Add some padding */
+    font-size: 0.9rem; /* Smaller font size */
+}
   
+.text-warning::-webkit-scrollbar {
+  display: none;
+}
+

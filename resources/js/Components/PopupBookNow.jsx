@@ -27,6 +27,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
         total_price: '0',
     });
     const [isPopUp_deposit, setIsPopUp_deposit] = useState(false);
+    const [priceNotification, setPriceNotification] = useState('');
 
     const CalculatorDays = (checkin, checkout) => {
         return Math.ceil(Math.abs(new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24));
@@ -88,6 +89,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                 total_price: '0',
             });
             setSelectedRoomPrice(0);
+            setPriceNotification('');
         }
     }, [isPopupBookNow]);
 
@@ -107,12 +109,6 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
             }
         }
     }, [isPopupBookNow, selectedRoomName, roomTypes, formData.checkin, formData.checkout, formData.room]);
-
-    const handleOverlayClick = (e) => {
-        if (e.target.classList.contains("popup-overlay")) {
-            closePopup();
-        }
-    };
 
     // Fetch room types from the API
     useEffect(() => {
@@ -159,10 +155,49 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
             const { id, value } = event.target;
             const newValue = id === "member" ? parseInt(value) || 0 : value;
 
-            setFormData((prevData) => ({
-                ...prevData,
-                [id]: value,
-            }));
+            setFormData((prevData) => {
+                const updatedData = { ...prevData, [id]: value };
+
+                const basePrice = selectedRoomPrice || 0;
+                const checkinDate = updatedData.checkin;
+                const checkoutDate = updatedData.checkout;
+
+                // Kiểm tra ngày hợp lệ
+                if (checkinDate && checkoutDate && dayjs(checkinDate).isValid() && dayjs(checkoutDate).isValid()) {
+                    // Xử lý thông báo giá ngày lễ/cuối tuần
+                    let notification = '';
+                    const startDate = dayjs(checkinDate);
+                    const endDate = dayjs(checkoutDate);
+                    const specialDays = [];
+
+                    for (let date = startDate; date.isBefore(endDate); date = date.add(1, 'day')) {
+                        const adjustedPrice = PriceHolidayTet(basePrice, date.format('YYYY-MM-DD'));
+                        if (adjustedPrice !== basePrice) {
+                            const isWeekend = [5, 6].includes(date.day());
+                            const isHoliday = adjustedPrice / basePrice === 1.5;
+                            if (isWeekend || isHoliday) {
+                                specialDays.push({
+                                    date: date.format('DD/MM/YYYY'),
+                                    type: isWeekend && isHoliday ? 'Weekend & Holiday' : (isWeekend ? 'Weekend' : 'Holiday'),
+                                    price: adjustedPrice,
+                                });
+                            }
+                        }
+                    }
+
+                    if (specialDays.length > 0) {
+                        notification = specialDays.map(day =>
+                            `${day.date} (${day.type}): Price is ${formatCurrency(day.price * 1000)}/night`
+                        ).join('\n');
+                    }
+
+                    setPriceNotification(notification);
+                }
+
+                return updatedData; // Trả về state cập nhật
+            });
+
+
 
             if (id === 'room') {
                 const total = Total_price(selectedRoomPrice, value).toString();
@@ -171,7 +206,12 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                     total_price: total,
                 }));
             }
-            
+
+            const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available').length;
+            if (id === "room" && newValue > availableRooms) {
+                window.showNotification(`Only ${availableRooms} room${availableRooms > 1 ? 's' : ''} available`, "error");
+            }
+
             if (id === "member" && newValue > Maxmember(formData.room)) {
                 window.showNotification(`Maximum capacity is ${Maxmember(formData.room)} member${Maxmember(formData.room) > 1 ? 's' : ''} for ${formData.room} room${formData.room > 1 ? 's' : ''}. Please reduce the number of members.`, "error");
             }
@@ -202,7 +242,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
         e.preventDefault();
 
         // Kiểm tra các trường bắt buộc
-        if (!formData.checkin || !formData.checkout) {
+        if (!formData.checkin || !formData.checkout || !formData.member) {
             window.showNotification("Please fill in all required fields.", "error");
             return;
         }
@@ -264,12 +304,10 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                 });
 
                 if (response.status === 201) {
-                    window.showNotification("Booking created successfully!", "success");
-
                     const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available');
                     for (let i = 0; i < parseInt(formData.room) && i < availableRooms.length; i++) {
                         await axios.put(`/api/rooms/${availableRooms[i].id}`, { status: "booked" })
-                            .then(() => console.log(`Updated room ${availableRooms[i].id} status to null`))
+                            .then(() => console.log(`Updated room ${availableRooms[i].id} status to booked`))
                             .catch(err => console.error(`Error updating room ${availableRooms[i].id}:`, err));
                     }
 
@@ -280,6 +318,8 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
 
                     closePopup();
                     setIsPopUp_deposit(false);
+                    setPriceNotification(''); 
+                    window.showNotification("Booking created successfully!", "success");
                 }
             } catch (error) {
                 console.error('Error creating booking:', error.response || error);
@@ -295,46 +335,57 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
 
     const handlePopupClose = () => {
         setIsPopUp_deposit(false);
+        setPriceNotification('');
     };
 
     return (
         <>
             {isPopupBookNow && (
-                <div className="popup-overlay" onClick={(e) => e.target.classList.contains("popup-overlay") && closePopup()}>
+                <div className="popup-overlay" onClick={(e) => e.target.classList.contains("popup-overlay") && closePopup() && setPriceNotification('')}>
                     <div className="popup-content">
                         <button className="close-popup-btn" onClick={closePopup}>×</button>
                         <h2>Book Now</h2>
-                        <form>
-                            <div className="mb-3">
-                                <label htmlFor="checkin" className="form-label">Check-in Date:</label>
-                                <input type="datetime-local" id="checkin" className="form-control" min={minCheckin} onChange={handleChange} />
+                        <form className="book-now-form">
+                            <div className="row">
+                                <div className="col-md-6">
+                                    <label htmlFor="checkin" className="form-label">Check-in Date:</label>
+                                    <input type="date" id="checkin" className="form-control" min={minCheckin} onChange={handleChange} />
+                                </div>
+                                <div className="col-md-6">
+                                    <label htmlFor="checkout" className="form-label">Check-out Date:</label>
+                                    <input type="date" id="checkout" className="form-control" onChange={handleChange} />
+                                </div>
                             </div>
-                            <div className="mb-3">
-                                <label htmlFor="checkout" className="form-label">Check-out Date:</label>
-                                <input type="datetime-local" id="checkout" className="form-control" onChange={handleChange} />
+                            <div className="row">
+                                <div className="col-md-6">
+                                    <label htmlFor="roomType">Room Type:</label>
+                                    <input type="text" id="roomType" className="form-control" value={formData.roomType} readOnly />
+                                </div>
+                                <div className="col-md-6">
+                                    <label>Number of Rooms:</label>
+                                    <select name="room" id="room" className="form-select" onChange={handleChange}>
+                                        {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
+                                    </select>
+                                </div>
                             </div>
-                            <div className="mb-3">
-                                <label>Room Type:</label>
-                                <input type="text" className="form-control" value={formData.roomType} readOnly />
+                            <div className="row">
+                                <div className="col-md-6">
+                                    <label>Children (0–11):</label>
+                                    <input type="number" id="children" className="form-control" min="0" max="11" onChange={handleChange} placeholder="0" value={formData.children} />
+                                </div>
+                                <div className="col-md-6">
+                                    <label>Member:</label>
+                                    <input type="number" id="member" className="form-control" min="1" max={Maxmember()} onChange={handleChange} placeholder="1" />
+                                </div>
                             </div>
-                            <div className="mb-3">
-                                <label>Number of Rooms:</label>
-                                <select id="room" className="form-select" value={formData.room} onChange={handleChange}>
-                                    {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
-                                </select>
-                            </div>
-                            <div className="mb-3">
-                                <label>Children (0–11):</label>
-                                <input type="number" id="children" className="form-control" min="0" max="11" onChange={handleChange} />
-                            </div>
-                            <div className="mb-3">
-                                <label>Member:</label>
-                                <input type="number" id="member" className="form-control" min="1" max={Maxmember()} onChange={handleChange} />
-                            </div>
-
                             <div className="view-price-popup info-row">
                                 <p className="info-item">Days: {CalculatorDays(formData.checkin, formData.checkout) || '0'}</p>
                                 <p className="info-item">Base Price: {formatCurrency(selectedRoomPrice * 1000)}/night</p>
+                                {priceNotification && (
+                                    <p className="text-warning" style={{ whiteSpace: 'pre-line' }}>
+                                        {priceNotification}
+                                    </p>
+                                )}
                                 <p className="info-item">Deposit (20%): {formatCurrency(parseFloat(formData.total_price) * 0.2 * 1000)}</p>
                                 <p className="info-item">Total Price: {formatCurrency(parseFloat(formData.total_price) * 1000)}</p>
                             </div>

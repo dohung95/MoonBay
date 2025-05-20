@@ -9,6 +9,9 @@ const UserManagement = () => {
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [lastPage, setLastPage] = useState(1);
+    const [showModal, setShowModal] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [newStatus, setNewStatus] = useState('');
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -38,18 +41,26 @@ const UserManagement = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this user?')) {
-            try {
-                await axios.delete(`http://localhost:8000/api/users_manager/${id}`);
-                setUsers(users.filter(user => user.id !== id));
-                toast.success('User deleted successfully');
-                if (users.length === 1 && currentPage > 1) {
-                    setCurrentPage(currentPage - 1);
-                }
-            } catch (err) {
-                toast.error('Failed to delete user. Please try again later.');
-            }
+    const handleEdit = (user) => {
+        setSelectedUser(user);
+        setNewStatus(user.status);
+        setShowModal(true);
+    };
+
+    const handleUpdateStatus = async () => {
+        if (!selectedUser || !newStatus) return;
+
+        try {
+            await axios.put(`http://localhost:8000/api/users_manager/${selectedUser.id}`, {
+                status: newStatus,
+            });
+            setUsers(users.map(user =>
+                user.id === selectedUser.id ? { ...user, status: newStatus } : user
+            ));
+            setShowModal(false);
+            toast.success('User status updated successfully');
+        } catch (err) {
+            toast.error('Failed to update user status. Please try again later.');
         }
     };
 
@@ -89,7 +100,6 @@ const UserManagement = () => {
                                 <table className="table table-hover table-bordered align-middle">
                                     <thead className="table-primary">
                                         <tr>
-                                            <th scope="col" className="text-center">No.</th>
                                             <th scope="col" className="text-center">ID</th>
                                             <th scope="col" className="text-center">Name</th>
                                             <th scope="col" className="text-center">Email</th>
@@ -104,7 +114,6 @@ const UserManagement = () => {
                                         {users.length > 0 ? (
                                             users.map((user, index) => (
                                                 <tr key={user.id} className="hover-row">
-                                                    <td className="text-center">{(currentPage - 1) * 10 + index + 1}</td>
                                                     <td className="text-center">{user.id}</td>
                                                     <td className="text-center">{user.name}</td>
                                                     <td className="text-center">{user.email}</td>
@@ -136,18 +145,18 @@ const UserManagement = () => {
                                                     </td>
                                                     <td className="text-center">
                                                         <button
-                                                            onClick={() => handleDelete(user.id)}
-                                                            className="btn btn-danger btn-sm"
-                                                            title="Delete User"
+                                                            onClick={() => handleEdit(user)}
+                                                            className="btn btn-primary btn-sm"
+                                                            title="Edit User Status"
                                                         >
-                                                            <i className="bi bi-trash-fill"></i>
+                                                            <i className="bi bi-pencil-fill"></i>
                                                         </button>
                                                     </td>
                                                 </tr>
                                             ))
                                         ) : (
                                             <tr>
-                                                <td colSpan="9" className="text-center text-muted py-3">
+                                                <td colSpan="8" className="text-center text-muted py-3">
                                                     No customers available.
                                                 </td>
                                             </tr>
@@ -155,6 +164,54 @@ const UserManagement = () => {
                                     </tbody>
                                 </table>
                             </div>
+
+                            {/* Modal for Editing Status */}
+                            {showModal && selectedUser && (
+                                <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                                    <div className="modal-dialog modal-dialog-centered">
+                                        <div className="modal-content">
+                                            <div className="modal-header">
+                                                <h5 className="modal-title">Update User Status</h5>
+                                                <button
+                                                    type="button"
+                                                    className="btn-close"
+                                                    onClick={() => setShowModal(false)}
+                                                ></button>
+                                            </div>
+                                            <div className="modal-body">
+                                                <div className="mb-3">
+                                                    <label className="form-label">Status for {selectedUser.name}</label>
+                                                    <select
+                                                        className="form-select"
+                                                        value={newStatus}
+                                                        onChange={(e) => setNewStatus(e.target.value)}
+                                                    >
+                                                        <option value="active">Active</option>
+                                                        <option value="inactive">Inactive</option>
+                                                        <option value="banned">Banned</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div className="modal-footer">
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-secondary"
+                                                    onClick={() => setShowModal(false)}
+                                                >
+                                                    Cancel
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-primary"
+                                                    onClick={handleUpdateStatus}
+                                                >
+                                                    Save
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Phân trang */}
                             <nav aria-label="Page navigation">

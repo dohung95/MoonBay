@@ -17,8 +17,8 @@ const Booking = ({ checkLogin, checkLogins }) => {
     const { user } = useContext(AuthContext);
     const [isLoading, setIsLoading] = useState(true);
     const [roomTypes, setRoomTypes] = useState([]);
-    const [selectedRoomPrice, setSelectedRoomPrice] = useState(0);
     const [rooms, setRooms] = useState([]);
+    const [selectedRoomPrice, setSelectedRoomPrice] = useState(0);
     const [formData, setFormData] = useState({
         checkin: '',
         checkout: '',
@@ -30,6 +30,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
         Total_price: '0',
     });
     const [isPopUp_deposit, setIsPopUp_deposit] = useState(false);
+    const [priceNotification, setPriceNotification] = useState('');
 
     const Total_price = (price, room) => {
         return parseFloat(price) * parseInt(room);
@@ -40,7 +41,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
             return 0;
         }
         return Math.ceil(Math.abs(new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24));
-    }
+    };
 
     const calculateExactTotalPrice = (basePrice, checkin, checkout) => {
         if (!checkin || !checkout || !dayjs(checkin).isValid() || !dayjs(checkout).isValid()) {
@@ -81,8 +82,8 @@ const Booking = ({ checkLogin, checkLogins }) => {
             };
 
             if (id === 'roomType' || id === 'checkin' || id === 'checkout') {
-                const selectedRoom = roomTypes.find((room) => room.name === (id === 'roomType' ? value : formData.roomType));
-                const basePrice = selectedRoom ? selectedRoom.price : 0;
+                const selectedRoomType = roomTypes.find((roomType) => roomType.name === (id === 'roomType' ? value : formData.roomType));
+                const basePrice = selectedRoomType ? selectedRoomType.price : 0;
 
                 const totalExact = calculateExactTotalPrice(
                     basePrice,
@@ -93,6 +94,43 @@ const Booking = ({ checkLogin, checkLogins }) => {
                 updatedData.Total_price = (totalExact * updatedData.room).toString();
                 setSelectedRoomPrice(basePrice);
                 updatedData.price = basePrice.toString();
+
+                // hàm thông báo ngày lễ cuối tuần tăng giá
+               const checkinDate = id === 'checkin' ? value : formData.checkin;
+                const checkoutDate = id === 'checkout' ? value : formData.checkout;
+                let notification = '';
+
+                if (checkinDate && checkoutDate && dayjs(checkinDate).isValid() && dayjs(checkoutDate).isValid()) {
+                    const startDate = dayjs(checkinDate);
+                    const endDate = dayjs(checkoutDate);
+                    const specialDays = [];
+
+                    for (let date = startDate; date.isBefore(endDate); date = date.add(1, 'day')) {
+                        const adjustedPrice = PriceHolidayTet(basePrice, date.format('YYYY-MM-DD'));
+                        const isBasePrice = adjustedPrice === basePrice;
+                        if (!isBasePrice) { // Chỉ thêm nếu giá điều chỉnh khác giá cơ bản
+                            const isWeekend = [5, 6].includes(date.day()); // Thứ Sáu (5) hoặc Thứ Bảy (6)
+                            const isHoliday = adjustedPrice / basePrice === 1.5; // Tăng 50% cho ngày lễ/liền kề
+                            if (isWeekend || isHoliday) { // Chỉ thêm ngày là cuối tuần hoặc ngày lễ
+                                specialDays.push({
+                                    date: date.format('DD/MM/YYYY'),
+                                    isWeekend,
+                                    isHoliday,
+                                    price: adjustedPrice,
+                                });
+                            }
+                        }
+                    }
+
+                    if (specialDays.length > 0) {
+                        notification = specialDays.map(day => {
+                            const type = day.isWeekend && day.isHoliday ? 'Weekend & Holiday' : (day.isWeekend ? 'Weekend' : 'Holiday');
+                            return `${day.date} (${type}): Price is ${formatCurrency(day.price * 1000)}/night`;
+                        }).join('\n');
+                    }
+                }
+
+                setPriceNotification(notification);
 
                 if (id === 'roomType') {
                     const available = rooms.filter(r => r.type === value && r.status === 'available').length;
@@ -105,13 +143,19 @@ const Booking = ({ checkLogin, checkLogins }) => {
                 updatedData.Total_price = (parseFloat(formData.Total_price) / parseInt(formData.room) * parseInt(value)).toString();
             }
 
-            if (id === "member" && newValue > Maxmember(updatedData.room)) {
-                window.showNotification(`Maximum capacity is ${Maxmember(updatedData.room)} member${Maxmember(updatedData.room) > 1 ? 's' : ''} for ${updatedData.room} room${updatedData.room > 1 ? 's' : ''}. Please reduce the number of members.`, "error");
+            if (id === "member" && newValue > Maxmember()) {
+                window.showNotification(
+                    `Maximum capacity is ${Maxmember()} member${Maxmember() > 1 ? 's' : ''} for ${updatedData.room} room${updatedData.room > 1 ? 's' : ''}. Please reduce the number of members.`,
+                    "error"
+                );
             }
 
             const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available').length;
             if (id === "room" && newValue > availableRooms) {
-                window.showNotification(`Only ${availableRooms} room${availableRooms > 1 ? 's' : ''} available`, "error");
+                window.showNotification(
+                    `Only ${availableRooms} room${availableRooms > 1 ? 's' : ''} available (preliminary check)`,
+                    "error"
+                );
             }
 
             return updatedData;
@@ -126,7 +170,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
             return;
         }
 
-        if (!formData.checkin || !formData.checkout || !formData.roomType) {
+        if (!formData.checkin || !formData.checkout || !formData.roomType || !formData.member) {
             window.showNotification("Please fill in all required fields.", "error");
             return;
         }
@@ -147,13 +191,8 @@ const Booking = ({ checkLogin, checkLogins }) => {
             return;
         }
 
-        const maxCapacity =
-            roomTypes.length > 0
-                ? roomTypes.find((roomType) => roomType.name === formData.roomType)?.capacity || 0
-                : 0;
-
-        if (parseInt(formData.member) > maxCapacity || parseInt(formData.member) <= 0) {
-            window.showNotification(`Cannot book. Number of members (${formData.member}) exceeds room capacity (${maxCapacity}).`, "error");
+        if (parseInt(formData.member) > Maxmember(formData.room) || parseInt(formData.member) <= 0) {
+            window.showNotification(`Cannot book. Number of members (${formData.member}) exceeds room capacity (${Maxmember(formData.room)}).`, "error");
             return; // Ngăn không mở popup nếu vượt quá capacity
         }
 
@@ -162,7 +201,10 @@ const Booking = ({ checkLogin, checkLogins }) => {
             window.showNotification("No rooms available for booking.", "error");
             return;
         } else if (availableRooms < parseInt(formData.room)) {
-            window.showNotification(`Only ${availableRooms} room${availableRooms > 1 ? 's' : ''} available, but you selected ${formData.room}.`, "error");
+            window.showNotification(
+                `Only ${availableRooms} room${availableRooms > 1 ? 's' : ''} available, but you selected ${formData.room}.`,
+                "error"
+            );
             return;
         }
 
@@ -172,8 +214,9 @@ const Booking = ({ checkLogin, checkLogins }) => {
     const handlePopupConfirm = async (confirmed) => {
         if (confirmed) {
             try {
-                const selectedRoom = roomTypes.find((room) => room.name === formData.roomType);
-                const roomTypeId = selectedRoom ? selectedRoom.id : null;
+                const selectedRoomType = roomTypes.find((roomType) => roomType.name === formData.roomType);
+                const roomPrice = selectedRoomType ? selectedRoomType.price : 0;
+
                 const response = await axios.post('/api/booking', {
                     user_id: user.id,
                     name: user.name,
@@ -183,24 +226,14 @@ const Booking = ({ checkLogin, checkLogins }) => {
                     number_of_rooms: formData.room,
                     children: formData.children,
                     member: formData.member,
-                    price: selectedRoomPrice,
-                    total_price: Total_price(selectedRoomPrice, formData.room) * CalculatorDays(formData.checkin, formData.checkout),
+                    price: roomPrice,
+                    total_price: Total_price(roomPrice, formData.room) * CalculatorDays(formData.checkin, formData.checkout),
                     checkin_date: formData.checkin,
                     checkout_date: formData.checkout,
                 });
 
                 if (response.status === 201) {
                     window.showNotification("Booking created successfully!", "success");
-
-                    const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available');
-                    for (let i = 0; i < parseInt(formData.room) && i < availableRooms.length; i++) {
-                        await axios.put(`/api/rooms/${availableRooms[i].id}`, { status: 'booked' });
-                    }
-
-                    setRooms(prevRooms => prevRooms.map(room =>
-                        availableRooms.some(ar => ar.id === room.id) ? { ...room, status: '' } : room
-                    ));
-
                     setFormData({
                         checkin: '',
                         checkout: '',
@@ -211,16 +244,31 @@ const Booking = ({ checkLogin, checkLogins }) => {
                         price: '0',
                         Total_price: '0',
                     });
+                    setPriceNotification('');
                     setSelectedRoomPrice(0);
                     if (checkinRef.current) checkinRef.current.value = '';
                     if (checkoutRef.current) checkoutRef.current.value = '';
                 }
             } catch (error) {
                 console.error('Error creating booking:', error.response || error);
-                window.showNotification("Failed to create booking", "error");
-                setTimeout(() => {
-                    window.showNotification("Please add the phone number if you don't have", "error");
-                }, 4000);
+                if (error.response?.status === 422) {
+                    window.showNotification(
+                        error.response.data.message || "Not enough available rooms for the selected dates.",
+                        "error"
+                    );
+                } else {
+                    const errorMessage = error.response?.data?.error
+                        ? `Failed to create booking: ${error.response.data.error}`
+                        : "Failed to create booking. Please try again or contact support.";
+                    window.showNotification(errorMessage, "error");
+
+                    // Chỉ hiển thị thông báo phone nếu lỗi liên quan
+                    if (error.response?.data?.errors?.phone) {
+                        setTimeout(() => {
+                            window.showNotification("Please provide a valid phone number.", "error");
+                        }, 3000);
+                    }
+                }
             }
         }
         setIsPopUp_deposit(false);
@@ -231,19 +279,24 @@ const Booking = ({ checkLogin, checkLogins }) => {
     };
 
     useEffect(() => {
-        const fetchRoomTypes = async () => {
+        const fetchRooms = async () => {
             try {
-                const [response, roomsRes] = await Promise.all([
-                    axios.get('/api/room-types'),
-                    axios.get('/api/rooms')
-                ]);
-                setRoomTypes(response.data.room_types || response.data);
-                setRooms(roomsRes.data || []);
+                const response = await axios.get('/api/rooms');
+                const roomsData = response.data || [];
+                setRooms(roomsData);
+                // Tạo danh sách roomTypes từ rooms
+                const types = [...new Set(roomsData.map(room => room.type))].map(type => ({
+                    name: type,
+                    price: roomsData.find(room => room.type === type).price,
+                    capacity: roomsData.find(room => room.type === type).capacity || 2,
+                }));
+                setRoomTypes(types);
             } catch (error) {
-                console.error('Error fetching room types:', error);
+                console.error('Error fetching rooms:', error);
+                window.showNotification("Failed to load room data.", "error");
             }
         };
-        fetchRoomTypes();
+        fetchRooms();
     }, []);
 
     useEffect(() => {
@@ -284,26 +337,39 @@ const Booking = ({ checkLogin, checkLogins }) => {
                             <div className="row g-3">
                                 <div className="col-md-6">
                                     <label htmlFor="checkin" className="form-label">Check-in:</label>
-                                    <input ref={checkinRef} value={formData.checkin} type="datetime-local" id="checkin" className="form-control" onChange={handleChange} min={minCheckin} />
+                                    <input ref={checkinRef} value={formData.checkin} type="date" id="checkin" className="form-control" onChange={handleChange} min={minCheckin} />
                                 </div>
                                 <div className="col-md-6">
                                     <label htmlFor="checkout" className="form-label">Check-out:</label>
-                                    <input ref={checkoutRef} value={formData.checkout} type="date" id="checkout" className="form-control" onChange={handleChange} min={formData.checkin ? formatDateTime(new Date(new Date(formData.checkin).setHours(new Date(formData.checkin).getHours() + 1))) : minCheckin} />
+                                    <input
+                                        ref={checkoutRef}
+                                        value={formData.checkout}
+                                        type="datetime-local" // Đổi thành datetime-local để đồng bộ
+                                        id="checkout"
+                                        className="form-control"
+                                        onChange={handleChange}
+                                        min={formData.checkin ? formatDateTime(new Date(new Date(formData.checkin).setHours(new Date(formData.checkin).getHours() + 1))) : minCheckin}
+                                    />
                                 </div>
                             </div>
                             <div className="row g-3 mt-3">
                                 <div className="col-md-6">
                                     <label htmlFor="room" className="form-label">Number of Rooms:</label>
                                     <select name="room" id="room" className="form-select" value={formData.room} onChange={handleChange}>
-                                        {[1,2,3,4,5].map(num => <option key={num} value={num}>{num}</option>)}
+                                        {[1, 2, 3, 4, 5].map(num => <option key={num} value={num}>{num}</option>)}
                                     </select>
                                 </div>
                                 <div className="col-md-6">
                                     <label htmlFor="roomType" className="form-label">Room Type:</label>
-                                    <select id="roomType" className="form-select" value={formData.roomType} onChange={handleChange}>
+                                    <select
+                                        id="roomType"
+                                        className="form-select"
+                                        value={formData.roomType}
+                                        onChange={handleChange}
+                                    >
                                         <option value="">Select room type</option>
                                         {roomTypes.map((roomType) => (
-                                            <option key={roomType.id} value={roomType.name}>{roomType.name}</option>
+                                            <option key={roomType.name} value={roomType.name}>{roomType.name}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -311,24 +377,35 @@ const Booking = ({ checkLogin, checkLogins }) => {
                             <div className="row g-3 mt-3">
                                 <div className="col-md-6">
                                     <label htmlFor="children" className="form-label">Children Ages(0-11):</label>
-                                    <input type="number" id="children" className="form-control" min="0" max="11" onChange={handleChange} placeholder="0" />
+                                    <input type="number" id="children" className="form-control" min="0" max="11" onChange={handleChange} placeholder="0" value={formData.children} />
                                 </div>
                                 <div className="col-md-6">
                                     <label htmlFor="member" className="form-label">Member:</label>
-                                    <input type="number" id="member" className="form-control" min={0} max={maxCapacity} onChange={handleChange} placeholder="1" />
+                                    <input type="number" id="member" className="form-control" min={0} max={Maxmember(formData.room)} onChange={handleChange} placeholder="1" />
                                 </div>
                             </div>
                             <div className="row">
                                 <div className="view-price col-md-6">
                                     <p>Days: {CalculatorDays(formData.checkin, formData.checkout) || '0'}</p>
                                     <p>The {formData.roomType || 'room Type'}: {formatCurrency(selectedRoomPrice * 1000)}/night (base)</p>
+                                    {priceNotification && (
+                                        <p className="price-notification">
+                                            {priceNotification}
+                                        </p>
+                                    )}
                                 </div>
                                 <div className="view-price col-md-6">
                                     <p>Deposit (20%): {formatCurrency((parseFloat(formData.Total_price) * 0.2) * 1000)}</p>
                                     <p>Total Price: {formatCurrency(parseFloat(formData.Total_price) * 1000)}</p>
                                 </div>
                                 <div className="mt-4">
-                                    <button type="submit" className="btn btn-warning w-100" onClick={handleBooking}>Book Now</button>
+                                    <button
+                                        type="submit"
+                                        className="btn btn-warning w-100"
+                                        onClick={handleBooking}
+                                    >
+                                        Book Now
+                                    </button>
                                 </div>
                                 {isPopUp_deposit && (
                                     <PopUp_deposit onConfirm={handlePopupConfirm} onClose={handlePopupClose} />

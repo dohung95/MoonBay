@@ -153,3 +153,17 @@
     margin-top: 20px !important;
     margin-bottom: 0px !important;
 }
+
+.price-notification {
+    color: #ffc107; /* Bootstrap warning color */
+    white-space: pre-line;
+    max-height: 80px; /* Limit height */
+    overflow-y: auto; /* Add vertical scroll if needed */
+    margin: 0; /* Remove default margin */
+    padding: 5px; /* Add some padding */
+    font-size: 0.9rem; /* Smaller font size */
+}
+
+.price-notification::-webkit-scrollbar {
+  display: none;
+}
