@@ -26,8 +26,10 @@ class BookingController extends Controller
                 'member' => 'required|integer|min:1',
                 'price' => 'required|numeric',
                 'total_price' => 'required|numeric',
+                'deposit_paid' => 'required|numeric|min:0', // Thêm trường deposit_paid
                 'checkin_date' => 'required|date',
                 'checkout_date' => 'required|date|after:checkin_date',
+                'status' => 'required|string|in:pending_payment,confirmed,cancelled', // Thêm trường status
             ]);
 
             // Kiểm tra xem room_type có tồn tại trong bảng rooms không
@@ -83,15 +85,17 @@ class BookingController extends Controller
                         'member' => $validatedData['member'],
                         'price' => $validatedData['price'],
                         'total_price' => $totalPricePerRoom,
+                        'deposit_paid' => $validatedData['deposit_paid'], // Lưu số tiền đặt cọc
                         'checkin_date' => $validatedData['checkin_date'],
                         'checkout_date' => $validatedData['checkout_date'],
                         'room_id' => $room->id,
+                        'status' => $validatedData['status'], // Lưu trạng thái
                     ]);
                     $bookings[] = $booking;
                 }
 
-                // Cập nhật trạng thái phòng
-    
+                // Cập nhật trạng thái phòng (nếu cần)
+                // Ví dụ: $freeRooms->each->update(['status' => 'booked']);
             });
 
             // Ghi log các room_id được gán
@@ -100,7 +104,7 @@ class BookingController extends Controller
             return response()->json([
                 'message' => 'Booking created successfully!',
                 'bookings' => $bookings,
-                'room_ids' => $assignedRoomIds, // Thêm room_ids vào phản hồi
+                'room_ids' => $assignedRoomIds,
             ], 201);
         } catch (\Exception $e) {
             Log::error('Booking Error:', ['error' => $e->getMessage()]);

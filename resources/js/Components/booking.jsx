@@ -34,6 +34,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
     const [isPaymentPopupOpen, setIsPaymentPopupOpen] = useState(false);
     const [bookingAmount, setBookingAmount] = useState(0);
     const [priceNotification, setPriceNotification] = useState('');
+    const [paymentOption, setPaymentOption] = useState('deposit'); // New state for payment option: 'deposit' or 'full'
 
     const Total_price = (price, room) => {
         return parseFloat(price) * parseInt(room);
@@ -98,8 +99,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
                 setSelectedRoomPrice(basePrice);
                 updatedData.price = basePrice.toString();
 
-                // hàm thông báo ngày lễ cuối tuần tăng giá
-               const checkinDate = id === 'checkin' ? value : formData.checkin;
+                const checkinDate = id === 'checkin' ? value : formData.checkin;
                 const checkoutDate = id === 'checkout' ? value : formData.checkout;
                 let notification = '';
 
@@ -188,6 +188,10 @@ const Booking = ({ checkLogin, checkLogins }) => {
         });
     };
 
+    const handlePaymentOptionChange = (e) => {
+        setPaymentOption(e.target.value);
+    };
+
     const handleBooking = async (e) => {
         e.preventDefault();
 
@@ -236,12 +240,15 @@ const Booking = ({ checkLogin, checkLogins }) => {
         }
 
         const maxAmount = 9999999999999999.99;
-        const calculatedAmount = parseFloat(formData.Total_price);
-        if (calculatedAmount > maxAmount) {
-            window.showNotification("The total amount exceeds the allowed limit. Please reduce the number of rooms or contact support.", "error");
+        const totalAmount = parseFloat(formData.Total_price);
+        const depositAmount = totalAmount * 0.2;
+        const amountToPay = paymentOption === 'deposit' ? depositAmount : totalAmount;
+
+        if (amountToPay > maxAmount) {
+            window.showNotification("The payment amount exceeds the allowed limit. Please reduce the number of rooms or contact support.", "error");
             return;
         }
-        setBookingAmount(calculatedAmount);
+        setBookingAmount(amountToPay);
         setIsPopUp_deposit(true);
     };
 
@@ -259,7 +266,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
     };
 
     const handlePaymentConfirm = async (e) => {
-        if (e) e.preventDefault(); // Ngăn reload trang
+        if (e) e.preventDefault();
 
         if (!token) {
             window.showNotification("Token not found. Please log in again.", "error");
@@ -268,22 +275,27 @@ const Booking = ({ checkLogin, checkLogins }) => {
         }
 
         try {
-
-            // Gửi yêu cầu thanh toán
+            const isDeposit = paymentOption === 'deposit';
             const paymentResponse = await axios.post('/api/payments', {
                 amount: bookingAmount,
                 method: 'bank_transfer',
                 bank_account_receiver: '9567899995',
-                payment_info: 'Thanh toan dat phong',
-                status: 'paid'
+                payment_info: isDeposit ? 'Deposit for room booking' : 'Payment for room booking',
+                status: 'pending',
+                is_deposit: isDeposit,
+                total_amount: parseFloat(formData.Total_price),
             }, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
 
-            // Nếu thanh toán được ghi nhận, tiếp tục tạo booking
             if (paymentResponse.status === 201) {
+                const message = isDeposit
+                    ? "Deposit recorded successfully. Please pay the remaining amount upon check-in."
+                    : "Payment recorded successfully. Your booking is fully paid!";
+                window.showNotification(message, "success");
+
                 try {
                     const selectedRoomType = roomTypes.find((roomType) => roomType.name === formData.roomType);
                     const roomPrice = selectedRoomType ? selectedRoomType.price : 0;
@@ -297,9 +309,11 @@ const Booking = ({ checkLogin, checkLogins }) => {
                         children: parseInt(formData.children),
                         member: parseInt(formData.member),
                         price: parseFloat(roomPrice),
-                        total_price: parseFloat(Total_price(roomPrice, formData.room) * CalculatorDays(formData.checkin, formData.checkout)), // Nhân 1000 để khớp VND
+                        total_price: parseFloat(formData.Total_price),
+                        deposit_paid: isDeposit ? bookingAmount : 0,
                         checkin_date: formData.checkin,
-                        checkout_date: formData.checkout
+                        checkout_date: formData.checkout,
+                        status: isDeposit ? 'pending_payment' : 'confirmed',
                     };
 
                     const bookingResponse = await axios.post('/api/booking', bookingData);
@@ -316,6 +330,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
                             price: '0',
                             Total_price: '0',
                         });
+                        setPaymentOption('deposit'); // Reset to default
                         setPriceNotification('');
                         setSelectedRoomPrice(0);
                         if (checkinRef.current) checkinRef.current.value = '';
@@ -323,9 +338,9 @@ const Booking = ({ checkLogin, checkLogins }) => {
                     }
                 } catch (bookingError) {
                     console.error('Error creating booking:', bookingError.response?.data || bookingError);
-                    const errorMessage = bookingError.response?.沖縄データ?.message || 
-                        (bookingError.response?.data?.errors ? 
-                            Object.values(bookingError.response.data.errors).flat().join(', ') : 
+                    const errorMessage = bookingError.response?.data?.message ||
+                        (bookingError.response?.data?.errors ?
+                            Object.values(bookingError.response.data.errors).flat().join(', ') :
                             "Booking failed. Please try again or contact support.");
                     window.showNotification(errorMessage, "error");
 
@@ -390,11 +405,11 @@ const Booking = ({ checkLogin, checkLogins }) => {
     return (
         <>
             <Banner title="Booking Now" description="Book your stay with us" />
-            <div className="bg" id="booknow">
+            <div className="bg" id="booknow" align="center">
                 <video autoPlay muted loop playsInline preload="auto" className="background-video video-container">
                     <source src="/images/Dat/rooms/background.mp4" type="video/mp4" />
                 </video>
-                <div className="container container-dat">
+                <div className="container-dat" style={{ paddingTop: "7%" }}>
                     {isLoading ? (
                         <div className="loading-container">
                             <div className="spinner"></div>
@@ -420,7 +435,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
                                     />
                                 </div>
                             </div>
-                            <div className="row g-3 mt-3">
+                            <div className="row g-3 mt-1">
                                 <div className="col-md-6">
                                     <label htmlFor="room" className="form-label">Number of Rooms:</label>
                                     <select name="room" id="room" className="form-select" value={formData.room} onChange={handleChange}>
@@ -442,7 +457,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
                                     </select>
                                 </div>
                             </div>
-                            <div className="row g-3 mt-3">
+                            <div className="row g-3 mt-1">
                                 <div className="col-md-6">
                                     <label htmlFor="children" className="form-label">Children Ages(0-11):</label>
                                     <input type="number" id="children" className="form-control" min="0" max="11" onChange={handleChange} placeholder="0" value={formData.children} />
@@ -450,6 +465,45 @@ const Booking = ({ checkLogin, checkLogins }) => {
                                 <div className="col-md-6">
                                     <label htmlFor="member" className="form-label">Member:</label>
                                     <input type="number" id="member" className="form-control" min={0} max={Maxmember(formData.room)} onChange={handleChange} placeholder="1" />
+                                </div>
+                            </div>
+                            <div className="row g-3 mt-1">
+                                <div className="col-md-12">
+                                    <label className="form-label"><b>Payment Option:</b></label>
+                                    <div >
+                                        <div className="row">
+                                            <div className="col-md-6" align="right">
+                                                Pay Deposit (20%)
+                                            </div>
+                                            <div className="col-md-2" align="left">
+                                                <label className="me-3">
+                                                    <input
+                                                        type="radio"
+                                                        name="paymentOption"
+                                                        value="deposit"
+                                                        checked={paymentOption === 'deposit'}
+                                                        onChange={handlePaymentOptionChange}
+                                                    />
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div className="row">
+                                            <div className="col-md-6" align="right">
+                                            Pay Full Amount
+                                            </div>
+                                            <div className="col-md-2" align="left">
+                                            <label className="me-3">
+                                                <input
+                                                    type="radio"
+                                                    name="paymentOption"
+                                                    value="full"
+                                                    checked={paymentOption === 'full'}
+                                                    onChange={handlePaymentOptionChange}
+                                                /> 
+                                            </label>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div className="row">
@@ -463,8 +517,12 @@ const Booking = ({ checkLogin, checkLogins }) => {
                                     )}
                                 </div>
                                 <div className="view-price col-md-6">
-                                    <p>Deposit (20%): {formatCurrency((parseFloat(formData.Total_price) * 0.2) )}</p>
-                                    <p>Total Price: {formatCurrency(parseFloat(formData.Total_price) )}</p>
+                                    <p>Deposit (20%): {formatCurrency((parseFloat(formData.Total_price) * 0.2))}</p>
+                                    <p>Total Price: {formatCurrency(parseFloat(formData.Total_price))}</p>
+                                    {paymentOption === 'deposit' && (
+                                        <p>Remaining (Due on Check-in): {formatCurrency(parseFloat(formData.Total_price) * 0.8)}</p>
+                                    )}
+                                    <p>Amount to Pay Now: {formatCurrency(paymentOption === 'deposit' ? parseFloat(formData.Total_price) * 0.2 : parseFloat(formData.Total_price))}</p>
                                 </div>
                                 <div className="mt-4">
                                     <button
@@ -483,6 +541,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
                                         amount={bookingAmount}
                                         onClose={() => setIsPaymentPopupOpen(false)}
                                         onConfirm={handlePaymentConfirm}
+                                        isDeposit={paymentOption === 'deposit'}
                                     />
                                 )}
                             </div>
