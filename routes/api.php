@@ -19,6 +19,8 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Middleware\RememberTokenAuth;
 use App\Http\Controllers\ComplaintsController;
 
+use App\Http\Controllers\PaymentController;
+
 
 
 /*
@@ -149,3 +151,9 @@ Route::get('/admin/employees', [ComplaintsController::class, 'getStaffList']);
 Route::get('/admin/complaints', [ComplaintsController::class, 'indexAdmin']);
 Route::put('/admin/complaints/{id}', [ComplaintsController::class, 'update']);
 Route::delete('/admin/complaints/{id}', [ComplaintsController::class, 'destroy']);
+
+//QRPayment
+// Route::middleware(RememberTokenAuth::class)->group(function () {
+//     Route::post('/payments', [PaymentController::class, 'createPayment']);
+//     Route::get('/payments/{payment_id}', [PaymentController::class, 'getPayment']);
+// });
