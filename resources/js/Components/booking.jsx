@@ -96,7 +96,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
                 updatedData.price = basePrice.toString();
 
                 // hàm thông báo ngày lễ cuối tuần tăng giá
-               const checkinDate = id === 'checkin' ? value : formData.checkin;
+                const checkinDate = id === 'checkin' ? value : formData.checkin;
                 const checkoutDate = id === 'checkout' ? value : formData.checkout;
                 let notification = '';
 
@@ -133,11 +133,34 @@ const Booking = ({ checkLogin, checkLogins }) => {
                 setPriceNotification(notification);
 
                 if (id === 'roomType') {
-                    const available = rooms.filter(r => r.type === value && r.status === 'available').length;
-                    window.showNotification(
-                        available ? `${available} room${available > 1 ? 's' : ''} available` : 'No rooms available, please choose another room type or call hotline',
-                        available ? 'success' : 'error'
-                    );
+                    const checkin = id === 'checkin' ? value : formData.checkin;
+                    const checkout = id === 'checkout' ? value : formData.checkout;
+                    const roomType = id === 'roomType' ? value : formData.roomType;
+
+                    if (roomType && checkin && checkout && dayjs(checkin).isValid() && dayjs(checkout).isValid()) {
+                        axios.get('/api/available_rooms', {
+                            params: {
+                                room_type: roomType,
+                                checkin_date: checkin,
+                                checkout_date: checkout,
+                            },
+                        })
+                            .then(response => {
+                                const available = response.data.available_rooms;
+                                window.showNotification(
+                                    available > 0
+                                        ? `${available} room${available > 1 ? 's' : ''} available`
+                                        : 'No rooms available, please choose another room type or call hotline',
+                                    available > 0 ? 'success' : 'error'
+                                );
+                            })
+                            .catch(error => {
+                                console.error('Error checking available rooms:', error);
+                                window.showNotification('Failed to check room availability.', 'error');
+                            });
+                    } else {
+                        window.showNotification('Please select check-in and check-out dates to check availability.', 'error');
+                    }
                 }
             } else if (id === 'room') {
                 updatedData.Total_price = (parseFloat(formData.Total_price) / parseInt(formData.room) * parseInt(value)).toString();

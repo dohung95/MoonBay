@@ -287,4 +287,52 @@ class BookingController extends Controller
             return response()->json(['message' => 'Failed to create booking.', 'error' => $e->getMessage()], 500);
         }
     }
+    public function checkAvailableRooms(Request $request)
+{
+    try {
+        // Xác thực dữ liệu đầu vào
+        $validatedData = $request->validate([
+            'room_type' => 'required|string',
+            'checkin_date' => 'required|date',
+            'checkout_date' => 'required|date|after:checkin_date',
+        ]);
+
+        // Kiểm tra xem room_type có tồn tại không
+        $roomTypeExists = RoomInfo::where('type', $validatedData['room_type'])->exists();
+        if (!$roomTypeExists) {
+            return response()->json([
+                'message' => 'Invalid room type.',
+            ], 422);
+        }
+
+        // Lấy danh sách phòng thuộc room_type và trạng thái available
+        $availableRooms = RoomInfo::where('type', $validatedData['room_type'])
+            ->where('status', 'available')
+            ->pluck('id')
+            ->toArray();
+
+        // Kiểm tra các phòng đã được đặt trong khoảng thời gian yêu cầu
+        $checkinDate = Carbon::parse($validatedData['checkin_date']);
+        $checkoutDate = Carbon::parse($validatedData['checkout_date']);
+
+        $bookedRoomIds = Booking::where(function ($query) use ($checkinDate, $checkoutDate) {
+            $query->where('checkin_date', '<=', $checkoutDate)
+                  ->where('checkout_date', '>=', $checkinDate);
+        })->pluck('room_id')->toArray();
+
+        // Lọc các phòng không bị đặt
+        $freeRooms = array_diff($availableRooms, $bookedRoomIds);
+
+        // Trả về số lượng phòng trống
+        return response()->json([
+            'available_rooms' => count($freeRooms),
+        ], 200);
+    } catch (\Exception $e) {
+        Log::error('Check Available Rooms Error:', ['error' => $e->getMessage()]);
+        return response()->json([
+            'message' => 'Failed to retrieve available rooms.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
 }
