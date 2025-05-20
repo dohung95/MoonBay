@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\PaymentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,3 +26,6 @@ Route::get('/test-mail', function() {
     });
     return 'Email đã được gửi!';
 });
+
+// Route::get('/payment/{payment_id}', [PaymentController::class, 'showPaymentPage'])->name('payment.show');
+// Route::post('/payment/{payment_id}/process', [PaymentController::class, 'processPayment'])->name('payment.process');

@@ -79,21 +79,12 @@ public function indexAdmin(Request $request)
         'comment' => 'required|string',
     ]);
 
-    Log::info('Dữ liệu nhận được:', [
+    Review::create([
         'user_id' => $user->id,
         'email' => $user->email,
         'rating' => $validated['rating'],
         'comment' => $validated['comment'],
     ]);
-
-    $review = Review::create([
-        'user_id' => $user->id,
-        'email' => $user->email,
-        'rating' => $validated['rating'],
-        'comment' => $validated['comment'],
-    ]);
-
-    Log::info('Đánh giá đã lưu:', ['review_id' => $review->id]);
 
     return response()->json(['message' => 'Review added successfully']);
 }

@@ -1,8 +1,8 @@
 import '../../css/home.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import BookingForm from './BookingForm';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const Home = () => {
     const [offers, setOffers] = useState([]);
@@ -35,8 +35,21 @@ const Home = () => {
                                 <img src="/images/fog-low.png" alt="" />
                             </div>
                         </div>
-                        <div style={{ marginTop: '7%' }} className='custom-container'>
-                            <BookingForm />
+                        <div style={{ marginTop: '1%' }} className='custom-container'>
+                            <div className="cta-wrapper" align="center" style={{ color: 'white' }}>
+                                <Link to="/booking#booknow" smooth="true" duration={500} style={{ textDecoration: 'none', color: 'white' }} >
+                                <button className="cta" >
+                                    <span>Book Now</span>
+                                    <svg width="15px" height="10px" viewBox="0 0 13 10">
+                                        <path d="M1,5 L11,5"></path>
+                                        <polyline points="8 1 12 5 8 9"></polyline>
+                                    </svg>
+                                </button>
+                            </Link>
+                                
+                            </div>
+
+
                         </div>
                     </div>
                 </div>
@@ -95,8 +108,10 @@ const Home = () => {
                                     {/* Ưu đãi bill */}
                                     {offer.total_bill_threshold && offer.discount_percent &&
                                         <div className='col-md-2' style={{ paddingBottom: '2%', marginRight: '2%' }}>
-                                            <div style={{ width: '100%', height: '200px',
-                                                    textAlign: 'center' }}>
+                                            <div style={{
+                                                width: '100%', height: '200px',
+                                                textAlign: 'center'
+                                            }}>
                                                 <div className='row container chiecla1_hung' style={{
                                                     backgroundColor: '#1f97c9',
                                                     color: 'white',
@@ -118,8 +133,10 @@ const Home = () => {
                                     {/* Ưu đãi lưu trú */}
                                     {offer.stay_duration_days && offer.gift_description &&
                                         <div className='col-md-2' style={{ paddingBottom: '2%', marginRight: '2%' }}>
-                                            <div style={{ width: '100%', height: '200px',
-                                                    textAlign: 'center' }}>
+                                            <div style={{
+                                                width: '100%', height: '200px',
+                                                textAlign: 'center'
+                                            }}>
                                                 <div className='row container chiecla1_hung' style={{
                                                     backgroundColor: '#1f97c9',
                                                     color: 'white',
@@ -140,7 +157,7 @@ const Home = () => {
 
                                     {/* Ưu đãi khác */}
                                     {offer.other_package_description && offer.offer_type &&
-                                        <div className='col-md-2' style={{ paddingBottom: '2%'}}>
+                                        <div className='col-md-2' style={{ paddingBottom: '2%' }}>
                                             <div className='chiecla1_hung' style={{
                                                 backgroundImage: "url('/images/Hung/Uudaikhac.jpg')",
                                                 backgroundSize: 'cover',

@@ -156,7 +156,6 @@ const EmployeeListManagement = () => {
                             <table className="table table-striped table-hover table-bordered align-middle">
                                 <thead className="table-dark">
                                     <tr>
-                                        <th scope="col" className="text-center">No.</th>
                                         <th scope="col" className="text-center">ID</th>
                                         <th scope="col" className="text-center">Name</th>
                                         <th scope="col" className="text-center">Email</th>
@@ -171,9 +170,6 @@ const EmployeeListManagement = () => {
                                     {users.length > 0 ? (
                                         users.map((user, index) => (
                                             <tr key={user.id}>
-                                                <td className="text-center">
-                                                    {(currentPage - 1) * 10 + index + 1}
-                                                </td>
                                                 <td className="text-center">{user.id}</td>
                                                 <td className="text-center">{user.name}</td>
                                                 <td className="text-center">{user.email}</td>

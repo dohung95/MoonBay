@@ -326,7 +326,18 @@ class AuthController extends Controller
         return response()->json(['message' => 'Unauthorized'], 401);
     }
 
-    return response()->json(['email' => $user->email]);
+    return response()->json([
+        'id' => $user->id,
+        'name' => $user->name,
+        'email' => $user->email,
+        'avatar' => $user->avatar,
+        'phone' => $user->phone,
+        'role' => $user->role,
+        'status' => $user->status,
+        'provider' => $user->provider,
+        'created_at' => $user->created_at,
+        'updated_at' => $user->updated_at,
+    ]);
 }
 
 

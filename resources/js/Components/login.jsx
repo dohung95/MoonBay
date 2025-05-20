@@ -1,15 +1,16 @@
-import React, { useState, useContext, useEffect } from 'react'; // Thêm useContext
-import { Link } from 'react-router-dom'; // Thêm Link nếu dùng thẻ <a> với onClick
-import axios from 'axios'; // Thêm axios
+import React, { useState, useContext, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import '../../css/my_css/login.css';
-import { AuthContext } from './AuthContext.jsx'; // Thêm AuthContext
-import { useNavigate, useLocation } from 'react-router-dom';
+import { AuthContext } from './AuthContext.jsx';
+import Cookies from 'js-cookie';
 
 const Login = ({ isPopupLogin, closePopup, openRegisterPopup, openForgotPassword }) => {
-    const [email, setEmail] = useState(''); // Thêm state email
-    const [password, setPassword] = useState(''); // Thêm state password
+    const [email, setEmail] = useState(''); 
+    const [password, setPassword] = useState(''); 
     const [errors, setErrors] = useState({});
-    const { login, setUser } = useContext(AuthContext); // Lấy login từ AuthContext
+    const [loading, setLoading] = useState(false);
+    const { login, setUser } = useContext(AuthContext); 
     const navigate = useNavigate();
 
     const handleOverlayClick = (e) => {
@@ -36,7 +37,13 @@ const Login = ({ isPopupLogin, closePopup, openRegisterPopup, openForgotPassword
 
         setErrors(newErrors);
 
-        if (!isValid) return;
+        if (!isValid) {
+            setErrors(newErrors);
+            return;
+        }
+
+        setErrors({});
+        setLoading(true);
 
         try {
             const response = await axios.post("/api/login", {
@@ -64,11 +71,15 @@ const Login = ({ isPopupLogin, closePopup, openRegisterPopup, openForgotPassword
                 ...newErrors,
                 general: "Email or password is incorrect.",
             });
+            window.showNotification("Login failed. Please try again.", "error");
+        } finally {
+            setLoading(false);
         }
     };
 
     // Xử lý query string từ redirect Google
     const handleGoogleLogin = async () => {
+        setLoading(true);
         try {
             const response = await axios.get('/api/google/login');
             if (response.status === 200 && response.data.url) {
@@ -76,7 +87,8 @@ const Login = ({ isPopupLogin, closePopup, openRegisterPopup, openForgotPassword
             }
         } catch (error) {
             console.error('Google login error:', error.response || error);
-            window.showNotification('Failed to initiate Google login: ' + (error.response?.data?.message || error.message), 'error');
+            console.error('Failed to initiate Google login:' + (error.response?.data?.message || error.message), error);
+            window.showNotification('Failed to initiate Google login: ', 'error');
         }
     };
 
@@ -88,20 +100,24 @@ const Login = ({ isPopupLogin, closePopup, openRegisterPopup, openForgotPassword
                         <button className="close-popup-btn" style={{ color: 'black' }} onClick={closePopup}>&times;</button>
                         <h2>Login</h2>
 
-                        <form onSubmit={handleSubmit}> {/* Thêm onSubmit */}
+                        <form onSubmit={handleSubmit}>
                             <div className="input-container">
                                 <input
                                     type="email"
+                                    id='email'
                                     className="form-input"
                                     placeholder=" "
                                     onChange={(e) => setEmail(e.target.value)}
+                                    disabled={loading}
                                 />
                                 <label className="form-input-label">Email</label>
                             </div>
-                            {errors.email && <div className="error-message">{errors.email}</div>} {/* Hiển thị lỗi email */}
+                            {errors.email && <div className="error-message">{errors.email}</div>}
                             <div className="input-container">
                                 <input
                                     type="password"
+                                    id='password'
+                                    disabled={loading}
                                     className="form-input"
                                     placeholder=" "
                                     onChange={(e) => setPassword(e.target.value)}
@@ -117,7 +133,12 @@ const Login = ({ isPopupLogin, closePopup, openRegisterPopup, openForgotPassword
                                     <Link onClick={openRegisterPopup}>Register</Link>
                                 </p>
                             </div>
-                            <button type="submit" className="form-btn">Login</button>
+                            <button
+                                type="submit" className="btn btn-primary w-100"
+                                disabled={loading}
+                            >
+                                {loading ? 'Logging in...' : 'Login'}
+                            </button>
                         </form>
 
                         <hr />

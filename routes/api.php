@@ -19,6 +19,8 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Middleware\RememberTokenAuth;
 use App\Http\Controllers\ComplaintsController;
 
+use App\Http\Controllers\PaymentController;
+
 
 
 /*
@@ -49,6 +51,7 @@ Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallbac
 
 Route::apiResource('users', AuthController::class);
 Route::get('/users/{id}/bookings', [BookingController::class, 'getUserBookings']);
+Route::put('/users/{id}', [AuthController::class, 'update']);
 Route::post('/users/{id}/change-password', [AuthController::class, 'changePassword']);
 Route::delete('/bookings/{id}', [BookingController::class, 'destroy']);
 
@@ -56,7 +59,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/ForgotPassword', [AuthController::class, 'ForgotPassword']);
 Route::post('/booking', [BookingController::class, 'booking']);
-
+Route::get('/available_rooms', [BookingController::class, 'checkAvailableRooms']);
 Route::post('/contact', [App\Http\Controllers\ContactController::class, 'send']);
 
 Route::post('/follow-email', [FollowEmailController::class, 'store']);
@@ -87,8 +90,8 @@ Route::put('/room_list/{id}', [RoomInfoController::class, 'update']);
 Route::delete('/room_list/{id}', [RoomInfoController::class, 'destroy']);
 
 Route::get('/booking_manager', [BookingManagerController::class, 'index']);
-
-Route::delete('/users_manager/{id}', [UserController::class, 'destroy']);
+Route::put('/booking_manager/{id}', [BookingManagerController::class, 'update']);
+Route::put('/users_manager/{id}', [UserController::class, 'update']);
 Route::delete('/staff_manager/{id}', [UserController::class, 'destroy']);
 
 Route::get('/special-offers', [SpecialOfferController::class, 'index']);
@@ -149,3 +152,6 @@ Route::get('/admin/employees', [ComplaintsController::class, 'getStaffList']);
 Route::get('/admin/complaints', [ComplaintsController::class, 'indexAdmin']);
 Route::put('/admin/complaints/{id}', [ComplaintsController::class, 'update']);
 Route::delete('/admin/complaints/{id}', [ComplaintsController::class, 'destroy']);
+
+//QRPayment
+Route::middleware([RememberTokenAuth::class])->post('/payments', [PaymentController::class, 'store']);
