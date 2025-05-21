@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BookingManager;
 use Illuminate\Http\Request;
 
+
 class BookingManagerController extends Controller
 {
     public function index()
@@ -27,5 +28,4 @@ class BookingManagerController extends Controller
 
         return response()->json($booking);
     }
-    
 }

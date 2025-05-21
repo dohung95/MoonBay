@@ -36,7 +36,7 @@ class Booking extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
-
+    
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -46,5 +46,4 @@ class Booking extends Model
     {
         return $this->belongsTo(RoomInfo::class, 'room_id');
     }
-
 }

@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\Booking;
+use App\Models\RoomInfo;
 use App\Models\User;
 use Carbon\Carbon;
-use App\Models\RoomInfo;
 use Illuminate\Support\Facades\DB;
 
 class BookingController extends Controller
@@ -96,7 +96,6 @@ class BookingController extends Controller
 
                 // Cập nhật trạng thái phòng (nếu cần)
                 // Ví dụ: $freeRooms->each->update(['status' => 'booked']);
-                
             });
 
             // Ghi log các room_id được gán
@@ -105,7 +104,7 @@ class BookingController extends Controller
             return response()->json([
                 'message' => 'Booking created successfully!',
                 'bookings' => $bookings,
-                'room_ids' => $assignedRoomIds, // Thêm room_ids vào phản hồi
+                'room_ids' => $assignedRoomIds,
             ], 201);
         } catch (\Exception $e) {
             Log::error('Booking Error:', ['error' => $e->getMessage()]);
@@ -115,15 +114,12 @@ class BookingController extends Controller
 
     public function getUserBookings($id)
     {
-        // Lấy danh sách booking của user dựa trên user_id
         $bookings = Booking::where('user_id', $id)->get();
 
-        // Nếu không có booking, trả về danh sách rỗng
         if ($bookings->isEmpty()) {
             return response()->json(['message' => 'No bookings found', 'bookings' => []], 200);
         }
 
-        // Trả về danh sách booking
         return response()->json(['bookings' => $bookings], 200);
     }
 
@@ -170,42 +166,42 @@ class BookingController extends Controller
     }
 
     public function bookingList(Request $request)
-{
-    try {
-        $perPage = $request->input('per_page', 30);
-        $page = $request->input('page', 1);
-        $search = $request->input('search');
+    {
+        try {
+            $perPage = $request->input('per_page', 30);
+            $page = $request->input('page', 1);
+            $search = $request->input('search');
 
-        $query = Booking::select('id', 'name', 'email', 'phone', 'room_type', 'number_of_rooms', 'children', 'member', 'checkin_date', 'checkout_date', 'total_price', 'created_at', 'room_id');
+            $query = Booking::select('id', 'name', 'email', 'phone', 'room_type', 'number_of_rooms', 'children', 'member', 'checkin_date', 'checkout_date', 'total_price', 'created_at', 'room_id');
 
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('room_type', 'like', "%{$search}%");
-            });
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('phone', 'like', "%{$search}%")
+                      ->orWhere('room_type', 'like', "%{$search}%");
+                });
+            }
+
+            $bookings = $query->orderBy('created_at', 'desc')->paginate($perPage, ['*'], 'page', $page);
+
+            return response()->json([
+                'data' => $bookings->items(),
+                'current_page' => $bookings->currentPage(),
+                'last_page' => $bookings->lastPage(),
+                'per_page' => $bookings->perPage(),
+                'total' => $bookings->total(),
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Lỗi khi lấy danh sách đặt phòng: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Lỗi khi lấy danh sách đặt phòng',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $bookings = $query->orderBy('created_at', 'desc')->paginate($perPage, ['*'], 'page', $page);
-
-        return response()->json([
-            'data' => $bookings->items(),
-            'current_page' => $bookings->currentPage(),
-            'last_page' => $bookings->lastPage(),
-            'per_page' => $bookings->perPage(),
-            'total' => $bookings->total(),
-        ], 200);
-    } catch (\Exception $e) {
-        \Log::error('Lỗi khi lấy danh sách đặt phòng: ' . $e->getMessage());
-        return response()->json([
-            'message' => 'Lỗi khi lấy danh sách đặt phòng',
-            'error' => $e->getMessage()
-        ], 500);
     }
-}
 
-    public function booking_by_staff (Request $request)
+    public function booking_by_staff(Request $request)
     {
         try {
             $validatedData = $request->validate([
@@ -221,7 +217,6 @@ class BookingController extends Controller
                 'total_price' => 'required|numeric',
                 'checkin_date' => 'required|date',
                 'checkout_date' => 'required|date|after:checkin_date',
-
             ]);
 
             // Kiểm tra room_type
@@ -294,7 +289,6 @@ class BookingController extends Controller
             return response()->json(['message' => 'Failed to create booking.', 'error' => $e->getMessage()], 500);
         }
     }
-
     public function checkAvailableRooms(Request $request)
     {
         try {

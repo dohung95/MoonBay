@@ -452,7 +452,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
                                     <input
                                         ref={checkoutRef}
                                         value={formData.checkout}
-                                        type="date"
+                                        type="datetime-local"
                                         id="checkout"
                                         className="form-control"
                                         onChange={handleChange}

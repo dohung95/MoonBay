@@ -49,7 +49,6 @@ Route::get('/google/login', [AuthController::class, 'redirectToGoogle'])->name('
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('google.callback');
 // dangerous
 
-Route::apiResource('users', AuthController::class);
 Route::get('/users/{id}/bookings', [BookingController::class, 'getUserBookings']);
 Route::put('/users/{id}', [AuthController::class, 'update']);
 Route::post('/users/{id}/change-password', [AuthController::class, 'changePassword']);

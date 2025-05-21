@@ -61,6 +61,10 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
         : 0;
     const Maxmember = () => formData.room * (maxCapacity + 2);
 
+
+    // const maxCapacity = roomTypes.find(rt => rt.name === formData.roomType)?.capacity || 0;
+    // const Maxmember = () => formData.room * (maxCapacity + 2);
+
     useEffect(() => {
         const fetchRoomTypes = async () => {
             try {
@@ -216,6 +220,10 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
             const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available').length;
             if (id === "room" && newValue > availableRooms) {
                 window.showNotification(`Only ${availableRooms} room${availableRooms > 1 ? 's' : ''} available`, "error");
+            }
+
+            if (id === "member" && newValue > Maxmember(formData.room)) {
+                window.showNotification(`Maximum capacity is ${Maxmember(formData.room)} member${Maxmember(formData.room) > 1 ? 's' : ''} for ${formData.room} room${formData.room > 1 ? 's' : ''}. Please reduce the number of members.`, "error");
             }
 
             // Kiểm tra giới hạn tổng số khách
