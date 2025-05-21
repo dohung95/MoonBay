@@ -317,7 +317,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
                 method: 'bank_transfer',
                 bank_account_receiver: '9567899995',
                 payment_info: isDeposit ? 'Deposit for room booking' : 'Payment for room booking',
-                status: 'pending',
+                status: 'paid',
                 is_deposit: isDeposit,
                 total_amount: safeAmount(parseFloat(formData.Total_price)),
             }, {

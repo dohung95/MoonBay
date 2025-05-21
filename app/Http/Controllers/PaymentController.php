@@ -23,7 +23,7 @@ class PaymentController extends Controller
             'method' => 'required|string',
             'bank_account_receiver' => 'nullable|string',
             'payment_info' => 'nullable|string',
-            'status' => 'nullable|string|in:pending,completed,failed',
+            'status' => 'nullable|string|in:pending,paid,failed',
             'is_deposit' => 'required|boolean', // Thêm trường is_deposit
             'total_amount' => 'required|numeric|min:0', // Thêm trường total_amount
         ]);
