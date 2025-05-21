@@ -430,7 +430,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                             <div className="row">
                                 <div className="col-md-6">
                                     <label>Children (0–11):</label>
-                                    <input type="number" id="children" className="form-control" min="0" max="11" onChange={handleChange} placeholder="0" value={formData.children} />
+                                    <input type="number" id="children" className="form-control" min="0" max={MaxChildren()} onChange={handleChange} placeholder="0" />
                                 </div>
                                 <div className="col-md-6">
                                     <label>Member:</label>
