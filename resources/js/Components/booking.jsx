@@ -47,8 +47,8 @@ const Booking = ({ checkLogin, checkLogins }) => {
     const safeAmount = (amount) => {
         if (typeof amount !== 'number') amount = Number(amount);
         return amount < 10000 ? amount * 1000 : amount;
-      };
-      
+    };
+
 
     const Total_price = (price, room) => {
         return parseFloat(price) * parseInt(room);
@@ -105,7 +105,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
                     return prevData; // Không cập nhật nếu vượt giới hạn
                 }
             }
-            
+
 
             const updatedData = {
                 ...prevData,
@@ -423,7 +423,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
         const fetchAvailableRooms = async () => {
             try {
                 const response = await axios.get('/api/rooms');
-                const availableRooms = response.data || []; 
+                const availableRooms = response.data || [];
                 setRooms(availableRooms);
             } catch (error) {
                 console.error('Error fetching available rooms:', error.response?.data || error);
@@ -520,45 +520,39 @@ const Booking = ({ checkLogin, checkLogins }) => {
                                     <input type="number" id="member" className="form-control" min={0} max={Maxmember(formData.room)} onChange={handleChange} placeholder="1" />
                                 </div>
                             </div>
-                            <div className="row g-3 mt-1">
-                                <div className="col-md-12">
+                            <div className="row g-3 mt-1 justify-content-center">
+                                <div className="col-md-12 text-center">
                                     <label className="form-label"><b>Payment Option:</b></label>
-                                    <div >
-                                        <div className="row">
-                                            <div className="col-md-6" align="right">
-                                                Pay Deposit (20%)
-                                            </div>
-                                            <div className="col-md-2" align="left">
-                                                <label className="me-3">
-                                                    <input
-                                                        type="radio"
-                                                        name="paymentOption"
-                                                        value="deposit"
-                                                        checked={paymentOption === 'deposit'}
-                                                        onChange={handlePaymentOptionChange}
-                                                    />
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div className="row">
-                                            <div className="col-md-6" align="right">
-                                                Pay Full Amount
-                                            </div>
-                                            <div className="col-md-2" align="left">
-                                                <label className="me-3">
-                                                    <input
-                                                        type="radio"
-                                                        name="paymentOption"
-                                                        value="full"
-                                                        checked={paymentOption === 'full'}
-                                                        onChange={handlePaymentOptionChange}
-                                                    />
-                                                </label>
-                                            </div>
-                                        </div>
+
+                                    <div className="d-flex justify-content-center gap-4 mt-2">
+                                        <label className="d-flex align-items-center gap-2" style={{ width: '20%' }}>
+                                            <input
+                                                type="radio"
+                                                name="paymentOption"
+                                                value="deposit"
+                                                checked={paymentOption === 'deposit'}
+                                                onChange={handlePaymentOptionChange}
+                                                style={{ width: '20%' }}
+                                            />
+                                            <p style={{ width: '100%' }}>Pay Deposit (20%)</p>
+                                        </label>
+
+                                        <label className="d-flex align-items-center gap-2" style={{ width: '20%' }}>
+                                            <input
+                                                type="radio"
+                                                name="paymentOption"
+                                                value="full"
+                                                checked={paymentOption === 'full'}
+                                                onChange={handlePaymentOptionChange}
+                                                style={{ width: '20%' }}
+                                            />
+                                            <p style={{ width: '100%' }}>Pay Full Amount</p>
+                                        </label>
                                     </div>
                                 </div>
                             </div>
+
+
                             <div className="row">
                                 <div className="view-price col-md-6">
                                     <p>Days: {CalculatorDays(formData.checkin, formData.checkout) || '0'}</p>
