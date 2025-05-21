@@ -6,6 +6,19 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import Sitemapmini from './sitemapmini';
 import { Link } from 'react-router-dom';
 
+const formatCurrency = (amount) => {
+  if (typeof amount !== 'number') amount = Number(amount);
+
+  // Nếu giá nhỏ hơn 10.000 thì giả định là "nghìn đồng" (ví dụ: 500 = 500k)
+  const amountInDong = amount < 10000 ? amount * 1000 : amount;
+
+  return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+      minimumFractionDigits: 0, // VND không có số lẻ
+  }).format(amountInDong);
+};
+
 const Rooms = ({ checkLogins }) => {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -82,7 +95,7 @@ const Rooms = ({ checkLogins }) => {
                   <p className="text-muted mb-3">
                     <i className="bi bi-cash-coin me-1 text-success"></i>
                     <strong>
-                      {(room.price * 1000).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                      {formatCurrency(room.price)}
                     </strong> / night
                   </p>
                   <p>{room.description}</p>

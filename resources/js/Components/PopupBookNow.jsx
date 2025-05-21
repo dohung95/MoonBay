@@ -9,7 +9,16 @@ import dayjs from 'dayjs';
 import QRPayment from "./QRPayment.jsx";
 
 const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+    if (typeof amount !== 'number') amount = Number(amount);
+
+    // Nếu giá nhỏ hơn 10.000 thì giả định là "nghìn đồng" (ví dụ: 500 = 500k)
+    const amountInDong = amount < 10000 ? amount * 1000 : amount;
+
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+        minimumFractionDigits: 0, // VND không có số lẻ
+    }).format(amountInDong);
 };
 
 const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
@@ -32,6 +41,10 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
     const [paymentOption, setPaymentOption] = useState('deposit'); // New state for payment option: 'deposit' or 'full'
     const [isPaymentPopupOpen, setIsPaymentPopupOpen] = useState(false);
     const [bookingAmount, setBookingAmount] = useState(0);
+    const safeAmount = (amount) => {
+        if (typeof amount !== 'number') amount = Number(amount);
+        return amount < 10000 ? amount * 1000 : amount;
+      };
 
     const CalculatorDays = (checkin, checkout) => {
         return Math.ceil(Math.abs(new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24));
@@ -59,7 +72,8 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
     const maxCapacity = roomTypes.length > 0 
         ? roomTypes.find(rt => rt.name === formData.roomType)?.capacity || 0 
         : 0;
-    const Maxmember = () => formData.room * (maxCapacity + 2);
+        const Maxmember = () => formData.room * maxCapacity;
+        const MaxChildren = () => formData.room * 2;
 
 
     // const maxCapacity = roomTypes.find(rt => rt.name === formData.roomType)?.capacity || 0;

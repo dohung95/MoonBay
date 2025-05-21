@@ -11,7 +11,16 @@ import dayjs from 'dayjs';
 import QRPayment from "./QRPayment.jsx";
 
 const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+    if (typeof amount !== 'number') amount = Number(amount);
+
+    // Nếu giá nhỏ hơn 10.000 thì giả định là "nghìn đồng" (ví dụ: 500 = 500k)
+    const amountInDong = amount < 10000 ? amount * 1000 : amount;
+
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+        minimumFractionDigits: 0, // VND không có số lẻ
+    }).format(amountInDong);
 };
 
 const Booking = ({ checkLogin, checkLogins }) => {
@@ -35,6 +44,11 @@ const Booking = ({ checkLogin, checkLogins }) => {
     const [bookingAmount, setBookingAmount] = useState(0);
     const [priceNotification, setPriceNotification] = useState('');
     const [paymentOption, setPaymentOption] = useState('deposit'); // New state for payment option: 'deposit' or 'full'
+    const safeAmount = (amount) => {
+        if (typeof amount !== 'number') amount = Number(amount);
+        return amount < 10000 ? amount * 1000 : amount;
+      };
+      
 
     const Total_price = (price, room) => {
         return parseFloat(price) * parseInt(room);
@@ -62,7 +76,8 @@ const Booking = ({ checkLogin, checkLogins }) => {
     };
 
     const maxCapacity = roomTypes.length > 0 ? roomTypes.find((roomType) => roomType.name === formData.roomType)?.capacity || 0 : 0;
-    const Maxmember = () => formData.room * (maxCapacity + 2); // 2 children
+    const Maxmember = () => formData.room * maxCapacity;
+    const MaxChildren = () => formData.room * 2;
 
     const now = new Date();
     const formatDateTime = (date) => {
@@ -80,6 +95,18 @@ const Booking = ({ checkLogin, checkLogins }) => {
         const newValue = id === "member" ? parseInt(value) || 0 : value;
 
         setFormData((prevData) => {
+
+            if (id === "children") {
+                const childrenCount = parseInt(value) || 0;
+                const maxChildren = MaxChildren();
+
+                if (childrenCount > maxChildren) {
+                    window.showNotification("Only up to 2 children (under 12) are allowed per booking.", "error");
+                    return prevData; // Không cập nhật nếu vượt giới hạn
+                }
+            }
+            
+
             const updatedData = {
                 ...prevData,
                 [id]: value,
@@ -128,7 +155,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
                     if (specialDays.length > 0) {
                         notification = specialDays.map(day => {
                             const type = day.isWeekend && day.isHoliday ? 'Weekend & Holiday' : (day.isWeekend ? 'Weekend' : 'Holiday');
-                            return `${day.date} (${type}): Price is ${formatCurrency(day.price * 1000)}/night`;
+                            return `${day.date} (${type}): Price is ${formatCurrency(day.price)}/night`;
                         }).join('\n');
                     }
                 }
@@ -140,7 +167,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
                     const checkout = id === 'checkout' ? value : formData.checkout;
                     const roomType = id === 'roomType' ? value : formData.roomType;
                     const selectedRoom = roomTypes.find(room => room.name === value);
-                    const totalCapacity = selectedRoom.capacity + 2;
+                    // const totalCapacity = selectedRoom.capacity + 2;
 
                     if (roomType && checkin && checkout && dayjs(checkin).isValid() && dayjs(checkout).isValid()) {
                         axios.get('/api/available_rooms', {
@@ -154,7 +181,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
                                 const available = response.data.available_rooms;
                                 window.showNotification(
                                     available > 0
-                                        ? `${available} room${available > 1 ? 's' : ''} available and This room type has a capacity of ${selectedRoom.capacity} adults plus 2 children, total ${totalCapacity} guests.`
+                                        ? `${available} room${available > 1 ? 's' : ''} available and This room type has a capacity of ${selectedRoom.capacity} adults. Children are limited to 2 per booking.`
                                         : 'No rooms available, please choose another room type or call hotline',
                                     available > 0 ? 'success' : 'error'
                                 );
@@ -189,6 +216,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
             return updatedData;
         });
     };
+
     const handlePaymentOptionChange = (e) => {
         setPaymentOption(e.target.value);
     };
@@ -285,13 +313,13 @@ const Booking = ({ checkLogin, checkLogins }) => {
         try {
             const isDeposit = paymentOption === 'deposit';
             const paymentResponse = await axios.post('/api/payments', {
-                amount: bookingAmount,
+                amount: safeAmount(bookingAmount),
                 method: 'bank_transfer',
                 bank_account_receiver: '9567899995',
                 payment_info: isDeposit ? 'Deposit for room booking' : 'Payment for room booking',
                 status: 'pending',
                 is_deposit: isDeposit,
-                total_amount: parseFloat(formData.Total_price),
+                total_amount: safeAmount(parseFloat(formData.Total_price)),
             }, {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -317,7 +345,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
                         children: parseInt(formData.children),
                         member: parseInt(formData.member),
                         price: parseFloat(roomPrice),
-                        total_price: parseFloat(formData.Total_price),
+                        total_price: safeAmount(parseFloat(formData.Total_price)),
                         deposit_paid: isDeposit ? bookingAmount : 0,
                         checkin_date: formData.checkin,
                         checkout_date: formData.checkout,
@@ -485,7 +513,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
                             <div className="row g-3 mt-1">
                                 <div className="col-md-6">
                                     <label htmlFor="children" className="form-label">Children Ages(0-11):</label>
-                                    <input type="number" id="children" className="form-control" min="0" max="11" onChange={handleChange} placeholder="0" value={formData.children} />
+                                    <input type="number" id="children" className="form-control" min="0" max={MaxChildren()} onChange={handleChange} placeholder="0" value={formData.children} />
                                 </div>
                                 <div className="col-md-6">
                                     <label htmlFor="member" className="form-label">Member:</label>
