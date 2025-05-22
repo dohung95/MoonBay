@@ -45,12 +45,46 @@ const RoomManagement = () => {
       });
   };
 
+  const formatCurrency = (value) => {
+    if (!value && value !== 0) return '';
+    const number = parseFloat(value);
+    if (isNaN(number)) return '';
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(number).replace('₫', '').trim();
+  };
+
+  const parseCurrencyInput = (value) => {
+    // Loại bỏ ký tự không phải số (dấu phẩy, khoảng trắng, v.v.)
+    return value.replace(/[^0-9]/g, '');
+  };
+
   const handleInputChange = (e) => {
-    setEditingRoom({ ...editingRoom, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === 'price') {
+      // Lưu giá trị thô (số) và định dạng hiển thị
+      const rawValue = parseCurrencyInput(value);
+      setEditingRoom({ ...editingRoom, [name]: rawValue });
+    } else {
+      setEditingRoom({ ...editingRoom, [name]: value });
+    }
+  };
+
+  const handleNewRoomInputChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'price') {
+      const rawValue = parseCurrencyInput(value);
+      setNewRoom({ ...newRoom, [name]: rawValue });
+    } else {
+      setNewRoom({ ...newRoom, [name]: value });
+    }
   };
 
   const handleEdit = (room) => {
-    setEditingRoom({ ...room, image: null }); // Reset image để tránh gửi giá trị không hợp lệ
+    setEditingRoom({ ...room, image: null });
     setExpandedRoom(room.id);
   };
 
@@ -86,7 +120,6 @@ const RoomManagement = () => {
       return;
     }
 
-    // Kiểm tra các trường bắt buộc
     if (!editingRoom.name || !editingRoom.capacity || !editingRoom.price) {
       toast.error('Please fill in all required fields (Name, Capacity, Price).');
       return;
@@ -109,12 +142,10 @@ const RoomManagement = () => {
     formData.append('price', String(price));
     formData.append('description', String(editingRoom.description || ''));
 
-    // Chỉ thêm image nếu là File hợp lệ
     if (editingRoom.image && editingRoom.image instanceof File) {
       formData.append('image', editingRoom.image);
     }
 
-    // Debug FormData
     for (let [key, value] of formData.entries()) {
       console.log(`${key}: ${value instanceof File ? value.name : value}`);
     }
@@ -158,7 +189,6 @@ const RoomManagement = () => {
   };
 
   const handleAddRoom = () => {
-    // Kiểm tra các trường bắt buộc
     if (!newRoom.name || !newRoom.capacity || !newRoom.price) {
       toast.error('Please fill in all required fields (Name, Capacity, Price).');
       return;
@@ -181,12 +211,10 @@ const RoomManagement = () => {
     formData.append('price', String(price));
     formData.append('description', String(newRoom.description || ''));
 
-    // Chỉ thêm image nếu là File hợp lệ
     if (newRoom.image && newRoom.image instanceof File) {
       formData.append('image', newRoom.image);
     }
 
-    // Debug FormData
     for (let [key, value] of formData.entries()) {
       console.log(`${key}: ${value instanceof File ? value.name : value}`);
     }
@@ -231,14 +259,6 @@ const RoomManagement = () => {
   const toggleRoomDetails = (roomId) => {
     if (expandedRoom === roomId) setExpandedRoom(null);
     else setExpandedRoom(roomId);
-  };
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-      minimumFractionDigits: 0,
-    }).format(amount);
   };
 
   const filteredRooms = rooms.filter(room =>
@@ -311,7 +331,8 @@ const RoomManagement = () => {
                   type="text"
                   className="form-control"
                   value={newRoom.name}
-                  onChange={(e) => setNewRoom({ ...newRoom, name: e.target.value })}
+                  onChange={handleNewRoomInputChange}
+                  name="name"
                 />
               </div>
               <div className="col-md-6">
@@ -320,16 +341,18 @@ const RoomManagement = () => {
                   type="number"
                   className="form-control"
                   value={newRoom.capacity}
-                  onChange={(e) => setNewRoom({ ...newRoom, capacity: e.target.value })}
+                  onChange={handleNewRoomInputChange}
+                  name="capacity"
                 />
               </div>
               <div className="col-md-6">
-                <label className="form-label">Price</label>
+                <label className="form-label">Price (VND)</label>
                 <input
-                  type="number"
+                  type="text"
                   className="form-control"
-                  value={newRoom.price}
-                  onChange={(e) => setNewRoom({ ...newRoom, price: e.target.value })}
+                  value={formatCurrency(newRoom.price)}
+                  onChange={handleNewRoomInputChange}
+                  name="price"
                 />
               </div>
               <div className="col-12">
@@ -338,7 +361,8 @@ const RoomManagement = () => {
                   className="form-control"
                   rows={3}
                   value={newRoom.description}
-                  onChange={(e) => setNewRoom({ ...newRoom, description: e.target.value })}
+                  onChange={handleNewRoomInputChange}
+                  name="description"
                 />
               </div>
               <div className="col-12">
@@ -418,10 +442,10 @@ const RoomManagement = () => {
                           <div className="col-md-6">
                             <label className="form-label">Price (VND)</label>
                             <input
-                              type="number"
+                              type="text"
                               name="price"
                               className="form-control"
-                              value={editingRoom.price}
+                              value={formatCurrency(editingRoom.price)}
                               onChange={handleInputChange}
                             />
                           </div>
