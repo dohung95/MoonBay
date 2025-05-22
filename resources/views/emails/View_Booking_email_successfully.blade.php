@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Booking Confirmation - Moon Bay Hotel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        .table td:first-child {
+            font-weight: bold;
+            background-color: #ecf0f1;
+        }
+        hr {
+            border: 0;
+            height: 1px;
+            background: #ddd;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Booking Confirmation</h1>
+        <p>Dear {{ $data['user_name'] }},</p>
+        <p>Thank you for booking with Moon Bay Hotel. Below are the details of your reservation:</p>
+        <table class="table">
+            <tr>
+                <td>Room Type</td>
+                <td>{{ $data['room_type'] }}</td>
+            </tr>
+            <tr>
+                <td>Number of Rooms</td>
+                <td>{{ $data['number_of_rooms'] }}</td>
+            </tr>
+            <tr>
+                <td>Check-in</td>
+                <td>{{ $data['checkin_date'] }}</td>
+            </tr>
+            <tr>
+                <td>Check-out</td>
+                <td>{{ $data['checkout_date'] }}</td>
+            </tr>
+            <tr>
+                <td>Number of Adults</td>
+                <td>{{ $data['member'] }}</td>
+            </tr>
+            <tr>
+                <td>Number of Children</td>
+                <td>{{ $data['children'] }}</td>
+            </tr>
+            <tr>
+                <td>Total Price</td>
+                <td>{{ $data['total_price'] }}</td>
+            </tr>
+            <tr>
+                <td>Amount Paid</td>
+                <td>{{ $data['deposit_paid'] }}</td>
+            </tr>
+            <tr>
+                <td>Remaining Balance</td>
+                <td>{{ $data['remaining_amount'] }}</td>
+            </tr>
+            <tr>
+                <td>Payment Status</td>
+                <td>{{ $data['payment_status'] }}</td>
+            </tr>
+        </table>
+        <hr>
+        <p>We look forward to welcoming you!</p>
+        <p>Best regards,<br>Moon Bay Hotel</p>
+    </div>
+</body>
+</html>
