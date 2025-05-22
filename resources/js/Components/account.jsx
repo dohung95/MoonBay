@@ -4,6 +4,7 @@ import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../css/my_css/account.css';
 import Banner from './banner';
+import UserReviewsAndComplaints from './UserReviewsAndComplaints.jsx';
 
 const Account = () => {
     const { user, token, updateUser } = useContext(AuthContext);
@@ -344,6 +345,7 @@ const Account = () => {
                     </div>
                 </div>
             </div>
+            <UserReviewsAndComplaints />
         </>
     );
 };

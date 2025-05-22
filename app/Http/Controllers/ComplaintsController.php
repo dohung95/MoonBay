@@ -76,5 +76,23 @@ public function destroy($id)
     return response()->json(['message' => 'Xóa khiếu nại thành công']);
 }
 
+    public function getComplaintsByUserID($id)
+    {
+        try {
+            $complaints = Complaints::where('user_id', $id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $complaints,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Internal server error',
+            ], 500);
+        }
+    }
 
 }
