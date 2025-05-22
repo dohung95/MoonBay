@@ -3,7 +3,7 @@ import { format, getDaysInMonth, addMonths, subMonths, startOfDay, isSameDay, is
 import { enUS } from 'date-fns/locale';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Modal, Tooltip } from 'bootstrap';
+import { Tooltip } from 'bootstrap';
 import '../../../css/css_of_admin/ManageBooking.css';
 
 const ManageBookings = () => {
@@ -14,9 +14,10 @@ const ManageBookings = () => {
   const [error, setError] = useState(null);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [formData, setFormData] = useState({});
+  const [showModal, setShowModal] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [searchPhone, setSearchPhone] = useState(''); // State for search query
   const tableRef = useRef(null);
-  const modalRef = useRef(null);
-  const modalInstanceRef = useRef(null);
 
   // Fetch all rooms from paginated API
   useEffect(() => {
@@ -33,10 +34,13 @@ const ManageBookings = () => {
             params: { per_page: perPage, page },
           });
           const { data, last_page } = response.data;
+          if (!Array.isArray(data)) {
+            throw new Error('Invalid API response: room data is not an array');
+          }
           allRooms = [...allRooms, ...data.map(item => ({
             id: item.id,
             room_number: item.room_number,
-            status: item.status, // Lưu trạng thái phòng
+            status: item.status,
           }))];
           if (page >= last_page) break;
           page++;
@@ -44,7 +48,7 @@ const ManageBookings = () => {
         setRooms(allRooms);
       } catch (error) {
         console.error('Error fetching room list:', error);
-        setError('Failed to load room list');
+        setError('Unable to load room list: ' + error.message);
         setRooms([]);
       } finally {
         setIsLoading(false);
@@ -76,24 +80,32 @@ const ManageBookings = () => {
               checkout_date: format(endOfMonth, 'yyyy-MM-dd HH:mm:ss'),
             },
           });
-          const data = response.data;
+
+          if (!response.data || typeof response.data !== 'object') {
+            throw new Error('Invalid API response: data is missing or not in the correct format');
+          }
+
+          const { data, last_page } = response.data;
           if (!Array.isArray(data)) {
-            console.error('Expected data to be an array, received:', data);
+            console.error('API response:', response.data);
             throw new Error('Invalid API response: data is not an array');
           }
+
           allBookings = [...allBookings, ...data.map(booking => ({
             ...booking,
             checkin_date: new Date(booking.checkin_date),
             checkout_date: new Date(booking.checkout_date),
+            check_status: booking.check_status || 'not checked in',
           }))];
-          if (data.length < perPage) break;
+
+          if (page >= last_page || data.length < perPage) break;
           page++;
         }
         console.log('Bookings:', allBookings);
         setBookings(allBookings);
       } catch (error) {
-        console.error('Error fetching bookings:', error);
-        setError('Failed to load bookings');
+        console.error('Error fetching booking list:', error);
+        setError('Unable to load booking list: ' + error.message);
         setBookings([]);
       } finally {
         setIsLoading(false);
@@ -103,7 +115,7 @@ const ManageBookings = () => {
     fetchBookings();
   }, [currentDate]);
 
-  // Initialize Bootstrap tooltips and modal
+  // Initialize Bootstrap tooltips
   useEffect(() => {
     if (tableRef.current) {
       const tooltipTriggerList = tableRef.current.querySelectorAll('[data-bs-toggle="tooltip"]');
@@ -111,29 +123,46 @@ const ManageBookings = () => {
         new Tooltip(tooltipTriggerEl);
       });
     }
-    if (modalRef.current && !modalInstanceRef.current) {
-      modalInstanceRef.current = new Modal(modalRef.current, { backdrop: 'static' });
-    }
-    return () => {
-      if (modalInstanceRef.current) {
-        modalInstanceRef.current.dispose();
-        modalInstanceRef.current = null;
-      }
-    };
   }, [bookings, rooms]);
 
-  // Handle cell click to open edit modal
+  // Auto-hide toast after 3 seconds
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchPhone(e.target.value);
+  };
+
+  // Clear search
+  const handleClearSearch = () => {
+    setSearchPhone('');
+  };
+
+  // Handle cell click to open modal
   const handleCellClick = (booking) => {
     if (booking) {
       setSelectedBooking(booking);
       setFormData({
         checkin_date: format(booking.checkin_date, 'yyyy-MM-dd'),
         checkout_date: format(booking.checkout_date, 'yyyy-MM-dd'),
+        check_status: booking.check_status || 'not checked in',
       });
-      if (modalInstanceRef.current) {
-        modalInstanceRef.current.show();
-      }
+      setShowModal(true);
     }
+  };
+
+  // Handle modal close
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedBooking(null);
+    setFormData({});
   };
 
   // Handle form input change
@@ -150,16 +179,13 @@ const ManageBookings = () => {
     try {
       setIsLoading(true);
       setError(null);
-      
-      // Extract original time components
+
       const originalCheckin = new Date(selectedBooking.checkin_date);
       const originalCheckout = new Date(selectedBooking.checkout_date);
-      
-      // Parse new dates from formData
+
       const newCheckinDate = new Date(formData.checkin_date);
       const newCheckoutDate = new Date(formData.checkout_date);
-      
-      // Combine new dates with original times
+
       newCheckinDate.setHours(
         originalCheckin.getHours(),
         originalCheckin.getMinutes(),
@@ -174,23 +200,26 @@ const ManageBookings = () => {
       const response = await axios.put(`http://localhost:8000/api/booking_manager/${selectedBooking.id}`, {
         checkin_date: format(newCheckinDate, 'yyyy-MM-dd HH:mm:ss'),
         checkout_date: format(newCheckoutDate, 'yyyy-MM-dd HH:mm:ss'),
+        check_status: formData.check_status,
       });
+
       setBookings(prev =>
         prev.map(b => (b.id === selectedBooking.id ? {
           ...b,
           ...response.data,
           checkin_date: new Date(response.data.checkin_date),
           checkout_date: new Date(response.data.checkout_date),
+          check_status: response.data.check_status,
         } : b))
       );
-      if (modalInstanceRef.current) {
-        modalInstanceRef.current.hide();
-      }
+
+      setShowModal(false);
       setSelectedBooking(null);
       setFormData({});
+      setShowToast(true);
     } catch (error) {
       console.error('Error updating booking:', error);
-      setError('Failed to update booking');
+      setError('Unable to update booking: ' + error.message);
     } finally {
       setIsLoading(false);
     }
@@ -225,13 +254,11 @@ const ManageBookings = () => {
   // Check if a room is booked on a specific day and return booking info
   const isRoomBooked = (room, day) => {
     const targetDate = startOfDay(new Date(currentDate.getFullYear(), currentDate.getMonth(), day));
-    
-    // Ưu tiên kiểm tra trạng thái maintenance
+
     if (room.status === 'maintenance') {
-      return { booking: null, status: 'maintenance' };
+      return { booking: null, status: 'maintenance', check_status: null };
     }
 
-    // Kiểm tra đặt phòng
     const booking = bookings.find(booking => {
       if (booking.room_id !== room.id) return false;
       const checkin = startOfDay(booking.checkin_date);
@@ -243,7 +270,8 @@ const ManageBookings = () => {
 
     return {
       booking,
-      status: booking ? 'booked' : 'available'
+      status: booking ? 'booked' : 'available',
+      check_status: booking ? booking.check_status : null,
     };
   };
 
@@ -258,7 +286,8 @@ const ManageBookings = () => {
         <strong>Name:</strong> ${booking.name}<br>
         <strong>Phone:</strong> ${booking.phone}<br>
         <strong>Check-in:</strong> ${format(booking.checkin_date, 'yyyy-MM-dd HH:mm:ss')}<br>
-        <strong>Check-out:</strong> ${format(booking.checkout_date, 'yyyy-MM-dd HH:mm:ss')}
+        <strong>Check-out:</strong> ${format(booking.checkout_date, 'yyyy-MM-dd HH:mm:ss')}<br>
+        <strong>Status:</strong> ${booking.check_status}<br>
       </div>
     `;
   };
@@ -268,13 +297,65 @@ const ManageBookings = () => {
     const daysInMonth = getDaysInMonth(currentDate);
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
+    // Determine if a cell should be highlighted based on search
+    const isCellHighlighted = (booking, day) => {
+      if (!searchPhone || !booking) return false;
+      const targetDate = startOfDay(new Date(currentDate.getFullYear(), currentDate.getMonth(), day));
+      const checkin = startOfDay(booking.checkin_date);
+      const checkout = startOfDay(booking.checkout_date);
+      const isWithinBooking = (isSameDay(targetDate, checkin) || isAfter(targetDate, checkin)) &&
+                             (isSameDay(targetDate, checkout) || isBefore(targetDate, checkout));
+      return isWithinBooking && booking.phone.includes(searchPhone.trim());
+    };
+
     return (
-      <div className="table-container">
+      <div className="table-container position-relative">
+        {/* Search Bar */}
+        <div className="mb-3 d-flex align-items-center">
+          <input
+            type="text"
+            className="form-control me-2"
+            placeholder="Search by phone number"
+            value={searchPhone}
+            onChange={handleSearchChange}
+            style={{ maxWidth: '250px' }}
+          />
+          {searchPhone && (
+            <button className="btn btn-outline-secondary" onClick={handleClearSearch}>
+              Clear
+            </button>
+          )}
+        </div>
+
         {error && <div className="alert alert-danger">{error}</div>}
         {isLoading ? (
           <div className="text-center">Loading...</div>
         ) : (
           <>
+            {/* Toast Notification */}
+            {showToast && (
+              <div
+                className="toast show position-fixed top-0 end-0 m-3"
+                style={{ zIndex: 1050 }}
+                role="alert"
+                aria-live="assertive"
+                aria-atomic="true"
+              >
+                <div className="toast-header">
+                  <strong className="me-auto">Success</strong>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setShowToast(false)}
+                    aria-label="Close"
+                  ></button>
+                </div>
+                <div className="toast-body">
+                  Booking updated successfully!
+                </div>
+              </div>
+            )}
+
             <table ref={tableRef} className="table table-bordered table-sm w-100" style={{ tableLayout: 'fixed' }}>
               <thead className="table-light">
                 <tr>
@@ -308,15 +389,18 @@ const ManageBookings = () => {
                         {room.room_number}
                       </td>
                       {days.map(day => {
-                        const { booking, status } = isRoomBooked(room, day);
-                        const cellClass = 
+                        const { booking, status, check_status } = isRoomBooked(room, day);
+                        const cellClass =
                           status === 'maintenance' ? 'bg-danger text-white' :
-                          status === 'booked' ? 'bg-warning text-dark' :
+                          status === 'booked' && check_status === 'not checked in' ? 'bg-warning text-dark' :
+                          status === 'booked' && check_status === 'checked in' ? 'bg-success text-white' :
+                          status === 'booked' && check_status === 'checked out' ? 'bg-secondary text-white' :
                           'bg-white';
+                        const isHighlighted = isCellHighlighted(booking, day);
                         return (
                           <td
                             key={`room-${room.id}-day-${day}`}
-                            className={`text-center align-middle ${cellClass}`}
+                            className={`text-center align-middle ${cellClass} ${isHighlighted ? 'highlight-search' : ''}`}
                             style={{ height: '30px', fontSize: '0.7rem', cursor: status === 'booked' ? 'pointer' : 'default' }}
                             data-column={day}
                             onMouseEnter={() => handleMouseEnter(day.toString())}
@@ -342,57 +426,68 @@ const ManageBookings = () => {
               </tbody>
             </table>
 
-            {/* Edit Booking Modal */}
-            <div
-              className="modal fade"
-              id="editBookingModal"
-              tabIndex="-1"
-              aria-labelledby="editBookingModalLabel"
-              aria-hidden="true"
-              ref={modalRef}
-            >
-              <div className="modal-dialog">
-                <div className="modal-content">
-                  <div className="modal-header">
-                    <h5 className="modal-title" id="editBookingModalLabel">Edit Booking Dates</h5>
-                    <button type="button" className="btn-close" onClick={() => modalInstanceRef.current.hide()} aria-label="Close"></button>
-                  </div>
-                  <div className="modal-body">
-                    {selectedBooking && (
-                      <form onSubmit={handleUpdateBooking}>
-                        <div className="mb-3">
-                          <label htmlFor="checkin_date" className="form-label">Check-in Date</label>
-                          <input
-                            type="date"
-                            className="form-control"
-                            id="checkin_date"
-                            name="checkin_date"
-                            value={formData.checkin_date || ''}
-                            onChange={handleInputChange}
-                            required
-                          />
-                        </div>
-                        <div className="mb-3">
-                          <label htmlFor="checkout_date" className="form-label">Check-out Date</label>
-                          <input
-                            type="date"
-                            className="form-control"
-                            id="checkout_date"
-                            name="checkout_date"
-                            value={formData.checkout_date || ''}
-                            onChange={handleInputChange}
-                            required
-                          />
-                        </div>
-                        <button type="submit" className="btn btn-primary" disabled={isLoading}>
-                          {isLoading ? 'Updating...' : 'Update Dates'}
-                        </button>
-                      </form>
-                    )}
+            {/* Custom React Modal */}
+            {showModal && (
+              <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} tabIndex="-1">
+                <div className="modal-dialog">
+                  <div className="modal-content">
+                    <div className="modal-header">
+                      <h5 className="modal-title">Edit Booking</h5>
+                      <button type="button" className="btn-close" onClick={handleCloseModal} aria-label="Close"></button>
+                    </div>
+                    <div className="modal-body">
+                      {selectedBooking && (
+                        <form onSubmit={handleUpdateBooking}>
+                          <div className="mb-3">
+                            <label htmlFor="checkin_date" className="form-label">Check-in Date</label>
+                            <input
+                              type="date"
+                              className="form-control"
+                              id="checkin_date"
+                              name="checkin_date"
+                              value={formData.checkin_date || ''}
+                              onChange={handleInputChange}
+                              required
+                            />
+                          </div>
+                          <div className="mb-3">
+                            <label htmlFor="checkout_date" className="form-label">Check-out Date</label>
+                            <input
+                              type="date"
+                              className="form-control"
+                              id="checkout_date"
+                              name="checkout_date"
+                              value={formData.checkout_date || ''}
+                              onChange={handleInputChange}
+                              required
+                            />
+                          </div>
+                          <div className="mb-3">
+                            <label htmlFor="check_status" className="form-label">Check Status</label>
+                            <select
+                              className="form-control"
+                              id="check_status"
+                              name="check_status"
+                              value={formData.check_status || ''}
+                              onChange={handleInputChange}
+                              required
+                            >
+                              <option value="">Select status</option>
+                              <option value="not checked in">Not checked in</option>
+                              <option value="checked in">Checked in</option>
+                              <option value="checked out">Checked out</option>
+                            </select>
+                          </div>
+                          <button type="submit" className="btn btn-primary" disabled={isLoading}>
+                            {isLoading ? 'Updating...' : 'Update Booking'}
+                          </button>
+                        </form>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </>
         )}
       </div>

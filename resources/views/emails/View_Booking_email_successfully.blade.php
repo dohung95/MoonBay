@@ -51,43 +51,43 @@
         <p>Thank you for booking with Moon Bay Hotel. Below are the details of your reservation:</p>
         <table class="table">
             <tr>
-                <td>Room Type</td>
+                <td><b>Room Type</b></td>
                 <td>{{ $data['room_type'] }}</td>
             </tr>
             <tr>
-                <td>Number of Rooms</td>
+                <td><b>Number of Rooms</b></td>
                 <td>{{ $data['number_of_rooms'] }}</td>
             </tr>
             <tr>
-                <td>Check-in</td>
+                <td><b>Check-in</b></td>
                 <td>{{ $data['checkin_date'] }}</td>
             </tr>
             <tr>
-                <td>Check-out</td>
+                <td><b>Check-out</b></td>
                 <td>{{ $data['checkout_date'] }}</td>
             </tr>
             <tr>
-                <td>Number of Adults</td>
+                <td><b>Number of Adults</b></td>
                 <td>{{ $data['member'] }}</td>
             </tr>
             <tr>
-                <td>Number of Children</td>
+                <td><b>Number of Children</b></td>
                 <td>{{ $data['children'] }}</td>
             </tr>
             <tr>
-                <td>Total Price</td>
+                <td><b>Total Price</b></td>
                 <td>{{ $data['total_price'] }}</td>
             </tr>
             <tr>
-                <td>Amount Paid</td>
+                <td><b>Amount Paid</b></td>
                 <td>{{ $data['deposit_paid'] }}</td>
             </tr>
             <tr>
-                <td>Remaining Balance</td>
+                <td><b>Remaining Balance</b></td>
                 <td>{{ $data['remaining_amount'] }}</td>
             </tr>
             <tr>
-                <td>Payment Status</td>
+                <td><b>Payment Status</b></td>
                 <td>{{ $data['payment_status'] }}</td>
             </tr>
         </table>
