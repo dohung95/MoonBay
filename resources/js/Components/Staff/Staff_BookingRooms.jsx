@@ -4,6 +4,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import '../../../css/css_of_staff/Staff_BookingRoom.css';
 import { AuthContext } from '../AuthContext.jsx';
+import ManageBookings from '../Admin/ManageBookings.jsx';
 
 // Hàm định dạng tiền VNĐ
 const formatCurrency = (amount) => {
@@ -17,6 +18,24 @@ const calculateDays = (checkIn, checkOut) => {
     const checkOutDate = new Date(checkOut);
     const diffTime = checkOutDate - checkInDate;
     return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+};
+
+// Hàm định dạng ngày
+const formatDate = (date) => {
+    return new Date(date).toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+    });
+};
+
+// Hàm kiểm tra ngày trong tuần hiện tại
+const isWithinCurrentWeek = (date) => {
+    const today = new Date();
+    const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)));
+    const endOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 7));
+    const checkDate = new Date(date);
+    return checkDate >= startOfWeek && checkDate <= endOfWeek;
 };
 
 const Staff_BookingRooms = () => {
@@ -43,8 +62,10 @@ const Staff_BookingRooms = () => {
     const [roomTypes, setRoomTypes] = useState([]);
     const [selectedRoomPrice, setSelectedRoomPrice] = useState(0);
     const [rooms, setRooms] = useState([]);
-    const [isFetchingRooms, setIsFetchingRooms] = useState(false); // Thêm state để kiểm soát việc fetch rooms
-    
+    const [bookings, setBookings] = useState([]); // Danh sách đặt phòng
+    const today = new Date();
+    const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)));
+    const endOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 7));
 
     // Theo dõi các giá trị thay đổi
     const roomType = useWatch({ control, name: 'room_type' });
@@ -53,26 +74,6 @@ const Staff_BookingRooms = () => {
     const checkOut = useWatch({ control, name: 'checkout_date' });
     const price = useWatch({ control, name: 'price' });
     const totalPrice = useWatch({ control, name: 'total_price' });
-
-    // Hàm fetch rooms từ API
-    const fetchRooms = async (token) => {
-        try {
-            setIsFetchingRooms(true); // Đánh dấu đang fetch
-            const roomsResponse = await axios.get('/api/rooms', {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (Array.isArray(roomsResponse.data)) {
-                setRooms(roomsResponse.data);
-            } else {
-                throw new Error('Invalid rooms data structure');
-            }
-        } catch (error) {
-            console.error('Error fetching rooms:', error.response || error);
-            setError('Failed to load room availability data');
-        } finally {
-            setIsFetchingRooms(false); // Hoàn tất fetch
-        }
-    };
 
     // Fetch room types từ API
     useEffect(() => {
@@ -98,14 +99,26 @@ const Staff_BookingRooms = () => {
         fetchRoomTypes();
     }, []);
 
-    // Fetch rooms ban đầu
+    // Fetch bookings từ API
     useEffect(() => {
-        const token = Cookies.get('auth_token');
-        if (token) {
-            fetchRooms(token);
-        } else {
-            setError('Không tìm thấy token xác thực');
-        }
+        const fetchBookings = async () => {
+            try {
+                const token = Cookies.get('auth_token');
+                if (!token) {
+                    setError('Không tìm thấy token xác thực');
+                    return;
+                }
+
+                const response = await axios.get('/api/bookingList', {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                setBookings(response.data.data || []);
+            } catch (error) {
+                console.error('Error fetching bookings:', error.response || error);
+                setError('Failed to load bookings');
+            }
+        };
+        fetchBookings();
     }, []);
 
     // Tính tổng giá tự động
@@ -145,17 +158,11 @@ const Staff_BookingRooms = () => {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
-            // Cập nhật trạng thái phòng trong database
-            const availableRooms = rooms.filter(r => r.type === data.room_type && r.status === 'available');
-            for (let i = 0; i < parseInt(data.number_of_rooms) && i < availableRooms.length; i++) {
-                await axios.put(`/api/rooms/${availableRooms[i].id}`, { status: null }, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                console.log(`Updated room ${availableRooms[i].id} status to null`);
-            }
-
-            // Fetch lại dữ liệu phòng từ server để đồng bộ
-            await fetchRooms(token);
+            // Fetch lại dữ liệu phòng và booking từ server để đồng bộ
+            const [roomsResponse, bookingsResponse] = await Promise.all([
+                axios.get('/api/bookingList', { headers: { Authorization: `Bearer ${token}` } }),
+            ]);
+            setBookings(bookingsResponse.data.data || []);
 
             setSuccess('Đặt phòng thành công!');
             reset();
@@ -177,45 +184,77 @@ const Staff_BookingRooms = () => {
     // Tính số đêm trực tiếp trong JSX
     const numberOfNights = calculateDays(checkIn, checkOut);
 
-    // Hàm đếm số phòng trống theo loại phòng
-    const getAvailableCount = (roomTypeName) => {
-        const count = rooms.filter(room => room.type === roomTypeName && room.status === 'available').length;
-        return count;
+    const isBookNowDisabled = !roomType || !numberOfRooms || parseInt(numberOfRooms) === 0 || !checkIn || !checkOut || loading;
+
+    // Lọc danh sách đặt phòng ngày hôm nay
+    const todayBookings = bookings.filter((booking) => {
+        const checkInDate = new Date(booking.checkin_date);
+        const today = new Date();
+        return checkInDate.toDateString() === today.toDateString();
+    });
+
+    // Lọc và sắp xếp danh sách đặt phòng trong tuần này
+    today.setHours(0, 0, 0, 0); // Đặt giờ về 00:00:00 để so sánh ngày chính xác
+    const weeklyBookings = bookings
+        .filter((booking) => {
+            const checkInDate = new Date(booking.checkin_date);
+            return checkInDate >= startOfWeek && checkInDate <= endOfWeek;
+        })
+        .sort((a, b) => {
+            const dateA = new Date(a.checkin_date);
+            const dateB = new Date(b.checkin_date);
+            return (dateA < today && dateB < today) ? dateB - dateA : dateA - dateB;
+        });
+
+    // Hàm kiểm tra booking đã qua
+    const isPastBooking = (checkInDate) => {
+        const bookingDate = new Date(checkInDate);
+        bookingDate.setHours(0, 0, 0, 0); // Đặt giờ về 00:00:00 để so sánh ngày chính xác
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Đặt giờ hôm nay về 00:00:00
+        return bookingDate < today;
     };
 
-    // Hàm đếm số phòng đang bảo trì
-    const getMaintenanceCount = (roomTypeName) => {
-        return rooms.filter(room => room.type === roomTypeName && room.status === 'maintenance').length;
-    };
-
-    // Hàm đếm số phòng đang có người đặt (status null hoặc rỗng)
-    const getBookedCount = (roomTypeName) => {
-        return rooms.filter(room => room.type === roomTypeName && (!room.status || room.status === 'booked')).length;
-    };
-const isBookNowDisabled = !roomType || !numberOfRooms || parseInt(numberOfRooms) > getAvailableCount(roomType) || getAvailableCount(roomType) === 0;
     return (
         <div className="Staff_IndexPage">
-            <div className="table-container mt-4">
-                <h3>Room Type Availability</h3>
-                {isFetchingRooms ? (
-                    <div>Loading rooms...</div>
+            <ManageBookings />
+
+            {/* Hiển thị danh sách đặt phòng ngày hôm nay */}
+            <div className="mt-4">
+                <h3>Today's Booking List ({new Date().toLocaleDateString('en-GB', { year: 'numeric', month: '2-digit', day: '2-digit' })})</h3>
+                {todayBookings.length === 0 ? (
+                    <p>No bookings today.</p>
                 ) : (
                     <table className="table table-striped">
                         <thead>
                             <tr>
+                                <th>Name</th>
+                                <th>Email/ ID Number</th>
+                                <th>Phone</th>
                                 <th>Room Type</th>
-                                <th>Available Rooms</th>
-                                <th>Under Maintenance</th>
-                                <th>Booked</th>
+                                <th>Number of Rooms</th>
+                                <th>Members</th>
+                                <th>Children</th>
+                                <th>Check-in Date</th>
+                                <th>Check-out Date</th>
+                                <th>Total Price (VND)</th>
+                                <th>Room IDs</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {roomTypes.map((roomType) => (
-                                <tr key={roomType.id}>
-                                    <td>{roomType.name}</td>
-                                    <td>{getAvailableCount(roomType.name)}</td>
-                                    <td>{getMaintenanceCount(roomType.name)}</td>
-                                    <td>{getBookedCount(roomType.name)}</td>
+                            {todayBookings.map((booking) => (
+                                <tr key={booking.id}>
+                                    <td>{booking.name}</td>
+                                    <td>{booking.email}</td>
+                                    <td>{booking.phone}</td>
+                                    <td>{booking.room_type}</td>
+                                    <td>{booking.number_of_rooms}</td>
+                                    <td>{booking.member}</td>
+                                    <td>{booking.children}</td>
+                                    <td>{formatDate(booking.checkin_date)}</td>
+                                    <td>{formatDate(booking.checkout_date)}</td>
+                                    <td>{formatCurrency(booking.total_price)}</td>
+                                    <td>{booking.room_id}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -223,10 +262,62 @@ const isBookNowDisabled = !roomType || !numberOfRooms || parseInt(numberOfRooms)
                 )}
             </div>
 
+            {/* Hiển thị danh sách đặt phòng trong tuần này */}
+            <div className="mt-4">
+                <h3>List of bookings for the current week ({formatDate(startOfWeek)} - {formatDate(endOfWeek)})</h3>
+                {weeklyBookings.length === 0 ? (
+                    <p>No bookings for the current week.</p>
+                ) : (
+                    <div className="bookingStaff-table-container">
+                        <table className="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email/ ID Number</th>
+                                    <th>Phone</th>
+                                    <th>Room Type</th>
+                                    <th>Number of Rooms</th>
+                                    <th>Members</th>
+                                    <th>Children</th>
+                                    <th>Check-in Date</th>
+                                    <th>Check-out Date</th>
+                                    <th>Total Price (VND)</th>
+                                    <th>Room IDs</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {weeklyBookings.map((booking) => (
+                                    <tr
+                                        key={booking.id}
+                                        style={{
+                                            opacity: isPastBooking(booking.checkin_date) ? 0.3 : 1, // Làm mờ nếu ngày đã qua
+                                        }}
+                                    >
+                                        <td>{booking.name}</td>
+                                        <td>{booking.email}</td>
+                                        <td>{booking.phone}</td>
+                                        <td>{booking.room_type}</td>
+                                        <td>{booking.number_of_rooms}</td>
+                                        <td>{booking.member}</td>
+                                        <td>{booking.children}</td>
+                                        <td>{formatDate(booking.checkin_date)}</td>
+                                        <td>{formatDate(booking.checkout_date)}</td>
+                                        <td>{formatCurrency(booking.total_price)}</td>
+                                        <td>{booking.room_id}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+
             <div className="Staff_BookingRooms-container container mt-4">
                 <h2 className="Staff_BookingRooms-container-title mb-4">FORM BOOKING ROOM</h2>
                 {success && <div className="alert alert-success">{success}</div>}
                 {error && <div className="alert alert-danger">{error}</div>}
+
+                <h6>Always refresh the page to check room status before booking for customers</h6>
                 <form onSubmit={handleSubmit(onSubmit)} className="form-wrapper">
                     <div className="form-row">
                         <div className="form-group">

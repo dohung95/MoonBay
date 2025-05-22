@@ -157,3 +157,21 @@
     font-weight: 600;
 }
 
+
+
+/* ---------------------------------------------------------------------------------------------- */
+.bookingStaff-table-container{
+    max-height: 700px;
+    overflow-y: auto;
+}
+
+.bookingStaff-table-container::-webkit-scrollbar {
+    display: none;
+}
+
+.bookingStaff-table-container thead th {
+    position: sticky;
+    top: 0;
+    background-color: #fff;
+    z-index: 1;
+}

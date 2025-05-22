@@ -75,10 +75,6 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
     const Maxmember = () => formData.room * maxCapacity;
     const MaxChildren = () => formData.room * 2;
 
-
-    // const maxCapacity = roomTypes.find(rt => rt.name === formData.roomType)?.capacity || 0;
-    // const Maxmember = () => formData.room * (maxCapacity + 2);
-
     useEffect(() => {
         const fetchRoomTypes = async () => {
             try {
@@ -177,7 +173,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
     const handleChange = useCallback(
         debounce((event) => {
             const { id, value } = event.target;
-            const newValue = id === "member" ? parseInt(value) || 0 : value;
+            // const newValue = id === "member" ? parseInt(value) || 0 : value;
 
             setFormData((prevData) => {
                 const updatedData = { ...prevData, [id]: value };
@@ -221,8 +217,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                 return updatedData; // Trả về state cập nhật
             });
 
-
-
+            // Tính toán tổng giá trị
             if (id === 'room') {
                 const total = Total_price(selectedRoomPrice, value).toString();
                 setFormData((prevData) => ({
@@ -231,24 +226,20 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                 }));
             }
 
+            // Kiểm tra số lượng phòng có sẵn
             const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available').length;
             if (id === "room" && newValue > availableRooms) {
                 window.showNotification(`Only ${availableRooms} room${availableRooms > 1 ? 's' : ''} available`, "error");
             }
 
-            if (id === "member" && newValue > Maxmember(formData.room)) {
-                window.showNotification(`Maximum capacity is ${Maxmember(formData.room)} member${Maxmember(formData.room) > 1 ? 's' : ''} for ${formData.room} room${formData.room > 1 ? 's' : ''}. Please reduce the number of members.`, "error");
-            }
-
-            // Kiểm tra giới hạn tổng số khách
+            // Kiểm tra số lượng thành viên không vượt quá sức chứa của phòng
             const totalGuests = parseInt(formData.member) + parseInt(formData.children || 0);
             if ((id === "member" || id === "children") && totalGuests > Maxmember()) {
                 window.showNotification(
-                    `Maximum capacity is ${Maxmember()} guests for ${updatedData.room} room${updatedData.room > 1 ? 's' : ''}. Please reduce the number of guests.`,
-                    "error"
-                );
+                    `Maximum capacity is ${Maxmember(formData.room)} member${Maxmember(formData.room) > 1 ? 's' : ''} for ${formData.room} room${formData.room > 1 ? 's' : ''}. Please reduce the number of members.`, "error");
             }
 
+            // Tính toán giá phòng
             if (id === 'roomType') {
                 const selectedRoom = roomTypes.find((room) => room.id === parseInt(value));
                 const price = selectedRoom ? selectedRoom.price : 0;
@@ -299,27 +290,18 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
             return;
         }
 
+        // Kiểm tra số lượng thành viên không vượt quá sức chứa của phòng
         if (parseInt(formData.member) > Maxmember(formData.room) || parseInt(formData.member) <= 0) {
             window.showNotification(`Cannot book. Number of members (${formData.member}) exceeds room capacity (${Maxmember(formData.room)}).`, "error");
             return;
         }
 
+        // kiểm tra không cho book quá 30 ngày
         const daysDifference = CalculatorDays(formData.checkin, formData.checkout);
         if (daysDifference > 30) {
             window.showNotification("Booking is limited to a maximum of 30 days as per regulations.", "error");
             return;
         }
-
-        const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available').length;
-        if (availableRooms < 1) {
-            window.showNotification("No rooms available for booking.", "error");
-            return;
-        } else if (availableRooms < parseInt(formData.room)) {
-            window.showNotification(`Only ${availableRooms} room${availableRooms > 1 ? 's' : ''} available, but you selected ${formData.room}.`, "error");
-            return;
-        }
-
-        window.showNotification(`${availableRooms} room${availableRooms > 1 ? 's' : ''} available for booking.`, "success");
 
         const maxAmount = 9999999999999999.99;
         const totalAmount = parseFloat(formData.Total_price);
@@ -332,7 +314,6 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
         }
         setBookingAmount(amountToPay);
         setIsPopUp_deposit(true);
-
     };
 
     const handlePopupConfirm = (confirmed) => {
@@ -348,6 +329,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
         if (confirmed) confirmed.preventDefault();
 
         try {
+            const isDeposit = paymentOption === 'deposit';
             const response = await axios.post('/api/booking', {
                 user_id: user.id,
                 name: user.name,
@@ -361,32 +343,17 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                 checkout_date: formData.checkout,
                 price: formData.price,
                 total_price: formData.total_price,
+                status: isDeposit ? 'pending_payment' : 'confirmed',
+                deposit_paid: isDeposit ? bookingAmount : 0,
             });
 
-            if (response.status === 201) {
-                const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available');
-                for (let i = 0; i < parseInt(formData.room) && i < availableRooms.length; i++) {
-                    await axios.put(`/api/rooms/${availableRooms[i].id}`, { status: "booked" })
-                        .then(() => console.log(`Updated room ${availableRooms[i].id} status to booked`))
-                        .catch(err => console.error(`Error updating room ${availableRooms[i].id}:`, err));
-                }
-
-                // Cập nhật state rooms cục bộ
-                setRooms(prev => prev.map(room =>
-                    availableRooms.some(ar => ar.id === room.id) ? { ...room, status: null } : room
-                ));
-
-                closePopup();
-                setIsPopUp_deposit(false);
-                setPriceNotification('');
-                window.showNotification("Booking created successfully!", "success");
-            }
+            closePopup();
+            setIsPopUp_deposit(false);
+            setPriceNotification('');
+            window.showNotification("Booking created successfully!", "success");
         } catch (error) {
             console.error('Error creating booking:', error.response || error);
-            window.showNotification("Failed to create booking", "error");
-            setTimeout(() => {
-                window.showNotification("Pls add the phone number if you don't have", "error");
-            }, 4000);
+            window.showNotification("Failed to create booking or the room is full in checkin date, Pls call hotline", "error");
         } finally {
             setIsPaymentPopupOpen(false);
         }
