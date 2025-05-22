@@ -53,6 +53,8 @@ Route::get('/users/{id}/bookings', [BookingController::class, 'getUserBookings']
 Route::put('/users/{id}', [AuthController::class, 'update']);
 Route::post('/users/{id}/change-password', [AuthController::class, 'changePassword']);
 Route::delete('/bookings/{id}', [BookingController::class, 'destroy']);
+Route::get('/reviews/{id}', [ReviewController::class, 'getReviewsByUserID']);
+Route::get('/complaints/{id}', [ComplaintsController::class, 'getComplaintsByUserID']);
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
