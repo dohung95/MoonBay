@@ -18,7 +18,7 @@ use App\Http\Controllers\BookingManagerController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Middleware\RememberTokenAuth;
 use App\Http\Controllers\ComplaintsController;
-
+use App\Http\Controllers\Booking_email_successfullyController;
 use App\Http\Controllers\PaymentController;
 
 
@@ -96,6 +96,7 @@ Route::delete('/staff_manager/{id}', [UserController::class, 'destroy']);
 Route::get('/special-offers', [SpecialOfferController::class, 'index']);
 Route::put('/special-offers/{id}', [SpecialOfferController::class, 'update']);
 Route::post('/send-offers', [OfferController::class, 'sendOffers']);
+Route::post('/Send_booking_email_successfully', [Booking_email_successfullyController::class, 'sendEmail']);
 
 //Review User
 Route::middleware([RememberTokenAuth::class])->group(function () {
