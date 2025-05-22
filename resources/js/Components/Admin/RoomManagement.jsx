@@ -214,7 +214,7 @@ const RoomManagement = () => {
                 <input type="number" className="form-control" value={newRoom.capacity} onChange={(e) => setNewRoom({ ...newRoom, capacity: e.target.value })} />
               </div>
               <div className="col-md-6">
-                <label className="form-label">Price (x1000 VND)</label>
+                <label className="form-label">Price </label>
                 <input type="number" className="form-control" value={newRoom.price} onChange={(e) => setNewRoom({ ...newRoom, price: e.target.value })} />
               </div>
               <div className="col-12">
@@ -261,7 +261,7 @@ const RoomManagement = () => {
                       <strong>{room.name}</strong>
                       <div className="text-muted small mt-1">
                         <Users size={14} className="me-1" /> {room.capacity} people   |
-                        <DollarSign size={14} className="me-1 text-success" /> {formatCurrency(room.price * 1000)}
+                        <DollarSign size={14} className="me-1 text-success" /> {formatCurrency(room.price)}
                       </div>
                     </div>
                   </button>
@@ -280,8 +280,18 @@ const RoomManagement = () => {
                             <input type="number" name="capacity" className="form-control" value={editingRoom.capacity} onChange={handleInputChange} />
                           </div>
                           <div className="col-md-6">
-                            <label className="form-label">Price</label>
-                            <input type="number" name="price" className="form-control" value={editingRoom.price} onChange={handleInputChange} />
+                            <label className="form-label">Price (VND)</label>
+                            <input
+                              type="text"
+                              name="price"
+                              className="form-control"
+                              value={Number(editingRoom.price).toLocaleString('vi-VN')}
+                              onChange={(e) => {
+                                const rawValue = e.target.value.replace(/\D/g, '');
+                                setEditingRoom({ ...editingRoom, price: rawValue });
+                              }}
+                            />
+
                           </div>
                           <div className="col-md-6">
                             <label className="form-label">Description</label>

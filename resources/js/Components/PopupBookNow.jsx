@@ -211,7 +211,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
 
                     if (specialDays.length > 0) {
                         notification = specialDays.map(day =>
-                            `${day.date} (${day.type}): Price is ${formatCurrency(day.price * 1000)}/night`
+                            `${day.date} (${day.type}): Price is ${formatCurrency(day.price )}/night`
                         ).join('\n');
                     }
 
@@ -486,16 +486,16 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                                     <div className="row">
                                         <div className="popup-booknow col-md-6">
                                             <p className="popup-booknow info-item">Days: {CalculatorDays(formData.checkin, formData.checkout) || '0'}</p>
-                                            <p className="popup-booknow info-item">Base Price: {formatCurrency(selectedRoomPrice * 1000)}/night</p>
+                                            <p className="popup-booknow info-item">Base Price: {formatCurrency(selectedRoomPrice)}/night</p>
                                         </div>
                                         {/* Cột phải: Deposit, Total Price, Remaining, Amount to Pay Now */}
                                         <div className="popup-booknow col-md-6 view-price">
-                                            <p>Deposit (20%): {formatCurrency((parseFloat(formData.total_price) * 0.2) * 1000)}</p>
-                                            <p>Total Price: {formatCurrency(parseFloat(formData.total_price) * 1000)}</p>
+                                            <p>Deposit (20%): {formatCurrency((parseFloat(formData.total_price) * 0.2))}</p>
+                                            <p>Total Price: {formatCurrency(parseFloat(formData.total_price) )}</p>
                                             {paymentOption === 'deposit' && (
-                                                <p>Remaining (Due on Check-in): {formatCurrency(parseFloat(formData.total_price) * 0.8 * 1000)}</p>
+                                                <p>Remaining (Due on Check-in): {formatCurrency(parseFloat(formData.total_price) * 0.8 )}</p>
                                             )}
-                                            <p>Amount to Pay Now: {formatCurrency((paymentOption === 'deposit' ? parseFloat(formData.total_price) * 0.2 : parseFloat(formData.total_price)) * 1000)}</p>
+                                            <p>Amount to Pay Now: {formatCurrency((paymentOption === 'deposit' ? parseFloat(formData.total_price) * 0.2 : parseFloat(formData.total_price)))}</p>
                                         </div>
                                     </div>
                                 </div>
