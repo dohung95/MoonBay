@@ -3,7 +3,6 @@ import { Edit, Save, X, Plus, Trash2, Search, Loader2, Info, Users, DollarSign }
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-
 const RoomManagement = () => {
   const [rooms, setRooms] = useState([]);
   const [editingRoom, setEditingRoom] = useState(null);
@@ -41,6 +40,7 @@ const RoomManagement = () => {
       })
       .catch(err => {
         console.error("ERROR: ", err);
+        toast.error('Failed to fetch rooms.');
         setLoading(false);
       });
   };
@@ -50,26 +50,76 @@ const RoomManagement = () => {
   };
 
   const handleEdit = (room) => {
-    setEditingRoom({ ...room });
+    setEditingRoom({ ...room, image: null }); // Reset image để tránh gửi giá trị không hợp lệ
     setExpandedRoom(room.id);
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file instanceof File && ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'].includes(file.type)) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error('Image size must not exceed 2MB.');
+        return;
+      }
+      setEditingRoom({ ...editingRoom, image: file });
+    } else {
+      toast.error('Please select a valid image file (JPEG, PNG, JPG, GIF).');
+    }
+  };
+
+  const handleNewRoomImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file instanceof File && ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'].includes(file.type)) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error('Image size must not exceed 2MB.');
+        return;
+      }
+      setNewRoom({ ...newRoom, image: file });
+    } else {
+      toast.error('Please select a valid image file (JPEG, PNG, JPG, GIF).');
+    }
+  };
+
   const handleSave = () => {
-    if (!editingRoom) return;
+    if (!editingRoom) {
+      toast.error('No room selected for editing.');
+      return;
+    }
+
+    // Kiểm tra các trường bắt buộc
+    if (!editingRoom.name || !editingRoom.capacity || !editingRoom.price) {
+      toast.error('Please fill in all required fields (Name, Capacity, Price).');
+      return;
+    }
+
+    const capacity = parseInt(editingRoom.capacity);
+    const price = parseFloat(editingRoom.price);
+    if (isNaN(capacity) || capacity < 1) {
+      toast.error('Capacity must be a positive integer.');
+      return;
+    }
+    if (isNaN(price) || price < 0) {
+      toast.error('Price must be a non-negative number.');
+      return;
+    }
 
     const formData = new FormData();
-    formData.append('name', String(editingRoom.name || ''));
-    formData.append('capacity', String(editingRoom.capacity || '0'));
-    formData.append('price', String(editingRoom.price || '0'));
+    formData.append('name', String(editingRoom.name));
+    formData.append('capacity', String(capacity));
+    formData.append('price', String(price));
     formData.append('description', String(editingRoom.description || ''));
 
-    // Thêm ảnh mới nếu có
-    if (editingRoom.image) {
+    // Chỉ thêm image nếu là File hợp lệ
+    if (editingRoom.image && editingRoom.image instanceof File) {
       formData.append('image', editingRoom.image);
     }
 
-    setLoading(true);
+    // Debug FormData
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}: ${value instanceof File ? value.name : value}`);
+    }
 
+    setLoading(true);
     formData.append('_method', 'PUT');
     fetch(`/api/room_types/${editingRoom.id}`, {
       method: 'POST',
@@ -77,8 +127,8 @@ const RoomManagement = () => {
     })
       .then(response => {
         if (!response.ok) {
-          return response.text().then(text => {
-            throw new Error(`HTTP ERROR! status: ${response.status}, response: ${text}`);
+          return response.json().then(data => {
+            throw new Error(`HTTP ERROR! status: ${response.status}, response: ${JSON.stringify(data)}`);
           });
         }
         return response.json();
@@ -92,20 +142,53 @@ const RoomManagement = () => {
       })
       .catch(error => {
         console.error('Error:', error.message);
-        toast.error(`Update failed: ${error.message}`);
+        try {
+          const errorData = JSON.parse(error.message.split('response: ')[1]);
+          if (errorData.messages) {
+            const errorMessages = Object.values(errorData.messages).flat().join(' ');
+            toast.error(`Update failed: ${errorMessages}`);
+          } else {
+            toast.error(`Update failed: ${errorData.error || error.message}`);
+          }
+        } catch (e) {
+          toast.error(`Update failed: ${error.message}`);
+        }
         setLoading(false);
       });
   };
 
   const handleAddRoom = () => {
-    const formData = new FormData();
-    formData.append('name', newRoom.name);
-    formData.append('capacity', newRoom.capacity);
-    formData.append('price', newRoom.price);
-    formData.append('description', newRoom.description);
+    // Kiểm tra các trường bắt buộc
+    if (!newRoom.name || !newRoom.capacity || !newRoom.price) {
+      toast.error('Please fill in all required fields (Name, Capacity, Price).');
+      return;
+    }
 
-    if (newRoom.image) {
+    const capacity = parseInt(newRoom.capacity);
+    const price = parseFloat(newRoom.price);
+    if (isNaN(capacity) || capacity < 1) {
+      toast.error('Capacity must be a positive integer.');
+      return;
+    }
+    if (isNaN(price) || price < 0) {
+      toast.error('Price must be a non-negative number.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('name', String(newRoom.name));
+    formData.append('capacity', String(capacity));
+    formData.append('price', String(price));
+    formData.append('description', String(newRoom.description || ''));
+
+    // Chỉ thêm image nếu là File hợp lệ
+    if (newRoom.image && newRoom.image instanceof File) {
       formData.append('image', newRoom.image);
+    }
+
+    // Debug FormData
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}: ${value instanceof File ? value.name : value}`);
     }
 
     setLoading(true);
@@ -113,16 +196,34 @@ const RoomManagement = () => {
       method: 'POST',
       body: formData,
     })
-      .then(() => {
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(data => {
+            throw new Error(`HTTP ERROR! status: ${response.status}, response: ${JSON.stringify(data)}`);
+          });
+        }
+        return response.json();
+      })
+      .then(data => {
         toast.success('New room added successfully!');
         setShowAddForm(false);
         setNewRoom({ name: '', capacity: '', price: '', description: '', image: null });
         fetchRooms();
         setLoading(false);
       })
-      .catch((error) => {
-        console.error("ERROR when adding room:", error);
-        toast.error(`Add room failed: ${error.message}`);
+      .catch(error => {
+        console.error('ERROR when adding room:', error);
+        try {
+          const errorData = JSON.parse(error.message.split('response: ')[1]);
+          if (errorData.messages) {
+            const errorMessages = Object.values(errorData.messages).flat().join(' ');
+            toast.error(`Add room failed: ${errorMessages}`);
+          } else {
+            toast.error(`Add room failed: ${errorData.error || error.message}`);
+          }
+        } catch (e) {
+          toast.error(`Add room failed: ${error.message}`);
+        }
         setLoading(false);
       });
   };
@@ -136,7 +237,7 @@ const RoomManagement = () => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -145,26 +246,26 @@ const RoomManagement = () => {
   );
 
   const handleDelete = (roomId) => {
-    if (!window.confirm("Are you sure you want to delete this room type?")) return;
+    if (!window.confirm('Are you sure you want to delete this room type?')) return;
 
     setLoading(true);
     fetch(`/api/room_types/${roomId}`, {
       method: 'DELETE',
     })
-      .then(() => {
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(data => {
+            throw new Error(`HTTP ERROR! status: ${response.status}, response: ${JSON.stringify(data)}`);
+          });
+        }
         toast.success('Room deleted successfully!');
         fetchRooms();
       })
-      .catch((error) => {
-        console.error("ERROR when deleting room:", error);
+      .catch(error => {
+        console.error('ERROR when deleting room:', error);
         toast.error(`Delete failed: ${error.message}`);
         setLoading(false);
       });
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setEditingRoom({ ...editingRoom, image: file });
   };
 
   return (
@@ -192,7 +293,6 @@ const RoomManagement = () => {
                 </div>
               </div>
             </div>
-
           </div>
           <div className="col-md-6 text-md-end">
             <button className="btn btn-primary" onClick={() => setShowAddForm(true)}>
@@ -207,23 +307,48 @@ const RoomManagement = () => {
             <div className="row g-3">
               <div className="col-md-6">
                 <label className="form-label">Room Name</label>
-                <input type="text" className="form-control" value={newRoom.name} onChange={(e) => setNewRoom({ ...newRoom, name: e.target.value })} />
+                <input
+                  type="text"
+                  className="form-control"
+                  value={newRoom.name}
+                  onChange={(e) => setNewRoom({ ...newRoom, name: e.target.value })}
+                />
               </div>
               <div className="col-md-6">
                 <label className="form-label">Capacity</label>
-                <input type="number" className="form-control" value={newRoom.capacity} onChange={(e) => setNewRoom({ ...newRoom, capacity: e.target.value })} />
+                <input
+                  type="number"
+                  className="form-control"
+                  value={newRoom.capacity}
+                  onChange={(e) => setNewRoom({ ...newRoom, capacity: e.target.value })}
+                />
               </div>
               <div className="col-md-6">
-                <label className="form-label">Price </label>
-                <input type="number" className="form-control" value={newRoom.price} onChange={(e) => setNewRoom({ ...newRoom, price: e.target.value })} />
+                <label className="form-label">Price</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={newRoom.price}
+                  onChange={(e) => setNewRoom({ ...newRoom, price: e.target.value })}
+                />
               </div>
               <div className="col-12">
                 <label className="form-label">Description</label>
-                <textarea className="form-control" rows={3} value={newRoom.description} onChange={(e) => setNewRoom({ ...newRoom, description: e.target.value })} />
+                <textarea
+                  className="form-control"
+                  rows={3}
+                  value={newRoom.description}
+                  onChange={(e) => setNewRoom({ ...newRoom, description: e.target.value })}
+                />
               </div>
               <div className="col-12">
                 <label className="form-label">Image</label>
-                <input type="file" className="form-control" onChange={(e) => setNewRoom({ ...newRoom, image: e.target.files[0] })} />
+                <input
+                  type="file"
+                  className="form-control"
+                  accept="image/jpeg,image/png,image/jpg,image/gif"
+                  onChange={handleNewRoomImageChange}
+                />
               </div>
             </div>
             <div className="mt-3 d-flex gap-2">
@@ -245,7 +370,7 @@ const RoomManagement = () => {
         ) : filteredRooms.length === 0 ? (
           <div className="alert alert-info text-center">
             <Info size={24} className="me-2" />
-            {searchTerm ? "No matching room type found." : "No room types available."}
+            {searchTerm ? 'No matching room type found.' : 'No room types available.'}
           </div>
         ) : (
           <div className="accordion" id="roomAccordion">
@@ -260,7 +385,7 @@ const RoomManagement = () => {
                     <div className="flex-grow-1">
                       <strong>{room.name}</strong>
                       <div className="text-muted small mt-1">
-                        <Users size={14} className="me-1" /> {room.capacity} people   |
+                        <Users size={14} className="me-1" /> {room.capacity} people |{' '}
                         <DollarSign size={14} className="me-1 text-success" /> {formatCurrency(room.price)}
                       </div>
                     </div>
@@ -273,33 +398,51 @@ const RoomManagement = () => {
                         <div className="row g-3">
                           <div className="col-md-6">
                             <label className="form-label">Room Name</label>
-                            <input name="name" className="form-control" value={editingRoom.name} onChange={handleInputChange} />
+                            <input
+                              name="name"
+                              className="form-control"
+                              value={editingRoom.name}
+                              onChange={handleInputChange}
+                            />
                           </div>
                           <div className="col-md-6">
                             <label className="form-label">Capacity</label>
-                            <input type="number" name="capacity" className="form-control" value={editingRoom.capacity} onChange={handleInputChange} />
+                            <input
+                              type="number"
+                              name="capacity"
+                              className="form-control"
+                              value={editingRoom.capacity}
+                              onChange={handleInputChange}
+                            />
                           </div>
                           <div className="col-md-6">
                             <label className="form-label">Price (VND)</label>
                             <input
-                              type="text"
+                              type="number"
                               name="price"
                               className="form-control"
-                              value={Number(editingRoom.price).toLocaleString('vi-VN')}
-                              onChange={(e) => {
-                                const rawValue = e.target.value.replace(/\D/g, '');
-                                setEditingRoom({ ...editingRoom, price: rawValue });
-                              }}
+                              value={editingRoom.price}
+                              onChange={handleInputChange}
                             />
-
                           </div>
                           <div className="col-md-6">
                             <label className="form-label">Description</label>
-                            <textarea name="description" className="form-control" value={editingRoom.description} onChange={handleInputChange} />
+                            <textarea
+                              name="description"
+                              className="form-control"
+                              value={editingRoom.description}
+                              onChange={handleInputChange}
+                            />
                           </div>
                           <div>
                             <label className="form-label">Image</label>
-                            <input type="file" name="image" className="form-control" onChange={handleImageChange} />
+                            <input
+                              type="file"
+                              name="image"
+                              className="form-control"
+                              accept="image/jpeg,image/png,image/jpg,image/gif"
+                              onChange={handleImageChange}
+                            />
                           </div>
                         </div>
                         <div className="d-flex gap-2 mt-3">

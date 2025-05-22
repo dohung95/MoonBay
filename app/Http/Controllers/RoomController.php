@@ -7,28 +7,17 @@ use App\Models\RoomType;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
-
 class RoomController extends Controller
 {
-
     public function index()
     {
-        $roomTypes = RoomType::all();
-
-        $roomTypes = $roomTypes->map(function ($roomType) {
-            // Kiểm tra nếu phòng có hình ảnh
-            if ($roomType->image) {
-                $roomType->image_url = asset('storage/' . $roomType->image);
-            } else {
-                $roomType->image_url = null;
-            }
-
+        $roomTypes = RoomType::all()->map(function ($roomType) {
+            $roomType->image_url = $roomType->image ? asset('storage/' . $roomType->image) : null;
             return $roomType;
         });
 
-        return response()->json($roomTypes);
+        return response()->json($roomTypes, 200);
     }
-
 
     public function show()
     {
@@ -51,121 +40,163 @@ class RoomController extends Controller
 
             $request->validate([
                 'name' => 'sometimes|string|max:255',
-                'capacity' => 'sometimes|integer',
-                'price' => 'sometimes|numeric',
-                'description' => 'sometimes|string',
-                'image' => 'sometimes|file|image|max:2048'
+                'capacity' => 'sometimes|integer|min:1',
+                'price' => 'sometimes|numeric|min:0',
+                'description' => 'sometimes|string|nullable',
+                'image' => 'sometimes|file|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ], [
+                'image.file' => 'The image field must be a file.',
+                'image.image' => 'The image must be a valid image (JPEG, PNG, JPG, GIF).',
+                'image.max' => 'The image size must not exceed 2MB.',
+                'capacity.integer' => 'The capacity must be a valid integer.',
+                'capacity.min' => 'The capacity must be at least 1.',
+                'price.numeric' => 'The price must be a valid number.',
+                'price.min' => 'The price must be non-negative.',
             ]);
 
-            Log::info('Dữ liệu nhận từ request:', $request->all());
+            Log::info('Data received from request:', $request->all());
 
             $roomType->fill($request->except('image'));
 
-            if ($roomType->image && Storage::disk('public')->exists("room_types_huy/" . $roomType->image)) {
-                Log::info('Ảnh tồn tại, chuẩn bị xóa:', ['file' => "room_types_huy/" . $roomType->image]);
-                Storage::disk('public')->delete("room_types_huy/" . $roomType->image);
-            } else {
-                Log::error('Không tìm thấy ảnh cần xóa:', ['file' => "room_types_huy/" . $roomType->image]);
-            }
-            
-
-            $oldImagePath = $roomType->image ? "room_types_huy/" . basename($roomType->image) : null;
-
             if ($request->hasFile('image')) {
-                // Xóa ảnh cũ đúng cách
-                if ($oldImagePath && Storage::disk('public')->exists($oldImagePath)) {
-                    Log::info('Ảnh tồn tại, chuẩn bị xóa:', ['file' => $oldImagePath]);
-                    Storage::disk('public')->delete($oldImagePath);
-                } else {
-                    Log::error('Không tìm thấy ảnh cần xóa:', ['file' => $oldImagePath]);
+                // Delete old image if exists
+                if ($roomType->image && Storage::disk('public')->exists($roomType->image)) {
+                    Log::info('Deleting old image:', ['file' => $roomType->image]);
+                    Storage::disk('public')->delete($roomType->image);
                 }
 
-                // Lưu ảnh mới
-                $filename = time() . '_' . $request->file('image')->getClientOriginalName();
-                $request->file('image')->storeAs('room_types_huy', $filename, 'public');
-                $roomType->image = "room_types_huy/" . $filename;
+                // Use original filename
+                $filename = $request->file('image')->getClientOriginalName();
+                $filename = preg_replace('/[^A-Za-z0-9_\-\.]/', '_', $filename); // Sanitize filename
+                if (Storage::disk('public')->exists('room_types_huy/' . $filename)) {
+                    Log::warning('File already exists, will overwrite:', ['file' => $filename]);
+                }
+                $path = $request->file('image')->storeAs('room_types_huy', $filename, 'public');
+                $roomType->image = $path;
             }
 
+            $roomType->save();
 
+            $imageUrl = $roomType->image ? asset('storage/' . $roomType->image) : null;
 
-
-            $updated = $roomType->save();
-
-            Log::info('Cập nhật room type:', [
+            Log::info('Room type updated successfully:', [
                 'id' => $id,
-                'updated' => $updated,
                 'data' => $roomType->toArray(),
             ]);
-
-            $imageUrl = $roomType->image ? asset("storage/" . $roomType->image) : null;
 
             return response()->json([
                 'message' => 'Room type updated successfully',
                 'data' => [
                     'id' => $roomType->id,
                     'name' => $roomType->name,
-                    'image' => $imageUrl
-                ]
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Lỗi khi cập nhật phòng:', ['error' => $e->getMessage(), 'request' => $request->all()]);
+                    'capacity' => $roomType->capacity,
+                    'price' => $roomType->price,
+                    'description' => $roomType->description,
+                    'image' => $imageUrl,
+                ],
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation error:', ['errors' => $e->errors(), 'request' => $request->all()]);
             return response()->json([
-                'error' => $e->getMessage()
+                'error' => 'Validation failed',
+                'messages' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating room:', ['error' => $e->getMessage(), 'request' => $request->all()]);
+            return response()->json([
+                'error' => 'Failed to update room: ' . $e->getMessage(),
             ], 500);
         }
     }
 
-
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'capacity' => 'required|integer',
-            'price' => 'required|numeric',
-            'description' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
-        ]);
+        try {
+            $validatedData = $request->validate([
+                'name' => 'required|string|max:255',
+                'capacity' => 'required|integer|min:1',
+                'price' => 'required|numeric|min:0',
+                'description' => 'nullable|string',
+                'image' => 'nullable|file|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ], [
+                'image.file' => 'The image field must be a file.',
+                'image.image' => 'The image must be a valid image (JPEG, PNG, JPG, GIF).',
+                'image.max' => 'The image size must not exceed 2MB.',
+                'name.required' => 'The room name is required.',
+                'capacity.required' => 'The capacity is required.',
+                'capacity.integer' => 'The capacity must be a valid integer.',
+                'capacity.min' => 'The capacity must be at least 1.',
+                'price.required' => 'The price is required.',
+                'price.numeric' => 'The price must be a valid number.',
+                'price.min' => 'The price must be non-negative.',
+            ]);
 
-        $room = new RoomType();
-        $room->name = $validatedData['name'];
-        $room->capacity = $validatedData['capacity'];
-        $room->price = $validatedData['price'];
-        $room->description = $validatedData['description'] ?? null;
+            $room = new RoomType();
+            $room->name = $validatedData['name'];
+            $room->capacity = $validatedData['capacity'];
+            $room->price = $validatedData['price'];
+            $room->description = $validatedData['description'] ?? null;
 
-        if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $extension = $file->getClientOriginalExtension();
-            $imageName = 'room_' . time() . '_' . uniqid() . '.' . $extension;
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                $filename = $file->getClientOriginalName();
+                $filename = preg_replace('/[^A-Za-z0-9_\-\.]/', '_', $filename); // Sanitize filename
+                if (Storage::disk('public')->exists('room_types_huy/' . $filename)) {
+                    Log::warning('File already exists, will overwrite:', ['file' => $filename]);
+                }
+                $path = $file->storeAs('room_types_huy', $filename, 'public');
+                $room->image = $path;
+            }
 
-            $directory = 'room_types_huy';
-            Storage::disk('public')->makeDirectory($directory);
+            $room->save();
 
-            $path = $file->storeAs($directory, $imageName, 'public');
-            $room->image = "room_types_huy/" . $imageName;
+            $imageUrl = $room->image ? asset('storage/' . $room->image) : null;
+
+            Log::info('Room type created successfully:', ['data' => $room->toArray()]);
+
+            return response()->json([
+                'message' => 'Room type created successfully',
+                'data' => [
+                    'id' => $room->id,
+                    'name' => $room->name,
+                    'capacity' => $room->capacity,
+                    'price' => $room->price,
+                    'description' => $room->description,
+                    'image' => $imageUrl,
+                ],
+            ], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation error:', ['errors' => $e->errors(), 'request' => $request->all()]);
+            return response()->json([
+                'error' => 'Validation failed',
+                'messages' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Error creating room:', ['error' => $e->getMessage(), 'request' => $request->all()]);
+            return response()->json([
+                'error' => 'Failed to add room: ' . $e->getMessage(),
+            ], 500);
         }
-
-        $room->save();
-
-        $imageUrl = $room->image ? asset("storage/" . $room->image) : null;
-
-        return response()->json([
-            'message' => 'Thêm loại phòng thành công',
-            'data' => [
-                'id' => $room->id,
-                'name' => $room->name,
-                'image' => $imageUrl
-            ]
-        ]);
     }
 
     public function destroy(RoomType $room_type)
     {
-        if ($room_type->image && Storage::disk('public')->exists($room_type->image)) {
-            Storage::disk('public')->delete($room_type->image);
+        try {
+            if ($room_type->image && Storage::disk('public')->exists($room_type->image)) {
+                Storage::disk('public')->delete($room_type->image);
+                Log::info('Image deleted successfully:', ['file' => $room_type->image]);
+            }
+
+            $room_type->delete();
+
+            Log::info('Room type deleted successfully:', ['id' => $room_type->id]);
+
+            return response()->json(['message' => 'Deleted successfully.'], 204);
+        } catch (\Exception $e) {
+            Log::error('Error deleting room:', ['error' => $e->getMessage()]);
+            return response()->json([
+                'error' => 'Failed to delete room: ' . $e->getMessage(),
+            ], 500);
         }
-
-        $room_type->delete();
-
-        return response()->json(['message' => 'Xóa thành công.'], 204);
     }
 }
