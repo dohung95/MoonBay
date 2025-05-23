@@ -7,12 +7,11 @@ use App\Mail\Booking_email_successfully;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 
-
 class Booking_email_successfullyController extends Controller
 {
     public function sendEmail(Request $request)
     {
-        // Kiểm tra dữ liệu đầu vào
+        // Kiểm tra dữ liệu đầu vào (giữ nguyên quy tắc xác thực ban đầu)
         $validator = Validator::make($request->all(), [
             'to' => 'required|email',
             'user_name' => 'required|string',
@@ -36,21 +35,26 @@ class Booking_email_successfullyController extends Controller
         }
 
         try {
+            // Lấy dữ liệu đã xác thực
+            $validated = $validator->validated();
+
+            // Chuyển đổi kiểu dữ liệu và gán vào $bookingData
             $bookingData = [
-                'user_name' => $request->user_name,
-                'room_type' => $request->room_type,
-                'number_of_rooms' => $request->number_of_rooms,
-                'checkin_date' => $request->checkin_date,
-                'checkout_date' => $request->checkout_date,
-                'total_price' => $request->total_price,
-                'deposit_paid' => $request->deposit_paid,
-                'remaining_amount' => $request->remaining_amount,
-                'payment_status' => $request->payment_status,
-                'member' => $request->member,
-                'children' => $request->children,
+                'user_name' => strval($validated['user_name']), // Chuỗi
+                'room_type' => strval($validated['room_type']), // Chuỗi
+                'number_of_rooms' => intval($validated['number_of_rooms']), // Số nguyên
+                'checkin_date' => $validated['checkin_date'], // Giữ nguyên định dạng ngày
+                'checkout_date' => $validated['checkout_date'], // Giữ nguyên định dạng ngày
+                'total_price' => floatval(str_replace(',', '', $validated['total_price'])), // Chuyển chuỗi thành số
+                'deposit_paid' => floatval(str_replace(',', '', $validated['deposit_paid'])), // Chuyển chuỗi thành số
+                'remaining_amount' => floatval(str_replace(',', '', $validated['remaining_amount'])), // Chuyển chuỗi thành số
+                'payment_status' => strval($validated['payment_status']), // Chuỗi
+                'member' => intval($validated['member']), // Số nguyên
+                'children' => intval($validated['children']), // Số nguyên
             ];
 
-            Mail::to($request->to)->send(new Booking_email_successfully($bookingData));
+            // Gửi email
+            Mail::to($validated['to'])->send(new Booking_email_successfully($bookingData));
 
             return response()->json(['message' => 'Booking confirmation email sent successfully'], 200);
         } catch (\Exception $e) {
