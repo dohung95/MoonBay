@@ -23,7 +23,7 @@ import ProtectedAdminRoute from './Components/ProtectedAdminRoute.jsx';
 import ProtectedStaffRoute from './Components/ProtectedStaffRoute.jsx';
 import AdminDashboard from './Components/Admin/AdminDashboard.jsx';
 import StaffDashboard from './Components/Staff/StaffDashboard.jsx';
-
+import {ChatbotProvider} from './Components/Chatbot.jsx';
 import UserManagement from './Components/Admin/UserManagement.jsx';
 import RoomListManagement from './Components/Admin/RoomListManagement.jsx';
 import EmployeeListManagement from './Components/Admin/EmployeeListManagement.jsx';
@@ -136,6 +136,10 @@ const App = () => {
     const [isPopupForgotPassword, setIsPopupForgotPassword] = useState(false);
     const [isPopupBookNow, setIsPopupBookNow] = useState(false);
     const [selectedRoomName, setSelectedRoomName] = useState('');
+    const [isChatOpen, setIsChatOpen] = useState(false);
+    const toggleChatbot = () => {
+        setIsChatOpen(prev => !prev);
+    };
 
     // Mở popup đăng nhập
     const openLoginPopup = () => {
@@ -189,9 +193,33 @@ const App = () => {
     return (
         <PopupContext.Provider value={{ closePopup }}>
             <AuthProvider>
-            <SearchProvider>
+                <ChatbotProvider isOpen={isChatOpen} setIsOpen={setIsChatOpen}>
+                <SearchProvider>
                     <Router>
                         <AuthHandler />
+                        <button
+                            onClick={toggleChatbot}
+                            style={{
+                                position: 'fixed',
+                                bottom: '2%',
+                                right: '6%',
+                                zIndex: 10000,
+                                background: '#007bff',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '50%',
+                                width: '60px',
+                                height: '60px',
+                                fontSize: '24px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+                            }}
+                        >
+                            {isChatOpen ? '−' : '+'}
+                        </button>
                         <Routes>
                             {/* Các route công khai */}
                             <Route
@@ -490,6 +518,7 @@ const App = () => {
                         </Routes>
                     </Router>
                 </SearchProvider>
+                </ChatbotProvider>
             </AuthProvider>
         </PopupContext.Provider>
     );

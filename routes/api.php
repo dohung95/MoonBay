@@ -18,7 +18,7 @@ use App\Http\Controllers\BookingManagerController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Middleware\RememberTokenAuth;
 use App\Http\Controllers\ComplaintsController;
-
+use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\PaymentController;
 
 
@@ -154,3 +154,8 @@ Route::delete('/admin/complaints/{id}', [ComplaintsController::class, 'destroy']
 
 //QRPayment
 Route::middleware([RememberTokenAuth::class])->post('/payments', [PaymentController::class, 'store']);
+
+//Chatbot
+Route::post('/chatbot', [ChatbotController::class, 'handle']);
+
+
