@@ -40,6 +40,16 @@
 }
 /* ManageBooking.css */
 .booking-show .highlight-search {
-  border: 2px solid #007bff !important; /* Blue border for highlighted cells */
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Optional: subtle glow effect */
+  border: 2px solid #fc1d4c !important; /* Blue border for highlighted cells */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5) ; /* Optional: subtle glow effect */
+}
+
+/* Highlight the current date */
+.booking-show .highlight-today {
+ border: 1.5px solid #2a91ff !important; /* Blue border for current date */
+}
+
+/* Dim past dates */
+.booking-show .past-date {
+  opacity: 0.3; /* Reduce opacity for past dates */
 }

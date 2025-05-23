@@ -19,6 +19,7 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Middleware\RememberTokenAuth;
 use App\Http\Controllers\ComplaintsController;
 use App\Http\Controllers\Booking_email_successfullyController;
+use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\StaffCustomerManagementController;
 
@@ -60,7 +61,8 @@ Route::get('/complaints/{id}', [ComplaintsController::class, 'getComplaintsByUse
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/ForgotPassword', [AuthController::class, 'ForgotPassword']);
+Route::post('/ForgotPassword', [AuthController::class, 'ForgotPassword'])->middleware('throttle:3,1'); // Giới hạn 5 request/phút
+Route::post('/reset-password', [AuthController::class, 'ResetPassword']);
 Route::post('/booking', [BookingController::class, 'booking']);
 Route::get('/available_rooms', [BookingController::class, 'checkAvailableRooms']);
 Route::post('/contact', [App\Http\Controllers\ContactController::class, 'send']);
@@ -167,3 +169,7 @@ Route::delete('/admin/complaints/{id}', [ComplaintsController::class, 'destroy']
 
 //QRPayment
 Route::middleware([RememberTokenAuth::class])->post('/payments', [PaymentController::class, 'store']);
+
+//Chatbot
+Route::post('/chatbot', [ChatbotController::class, 'handle']);
+Route::get('/booking', [BookingController::class, 'showBookingPage']);

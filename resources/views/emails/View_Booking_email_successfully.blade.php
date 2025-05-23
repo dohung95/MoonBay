@@ -28,7 +28,7 @@
             border-collapse: collapse;
             margin-top: 10px;
         }
-        .table td {
+        .table crc {
             padding: 8px;
             border: 1px solid #ddd;
         }
@@ -76,15 +76,15 @@
             </tr>
             <tr>
                 <td><b>Total Price</b></td>
-                <td>{{ $data['total_price'] }}</td>
+                <td>{{ number_format($data['total_price'], 0, '.', ',') }} VND</td>
             </tr>
             <tr>
                 <td><b>Amount Paid</b></td>
-                <td>{{ $data['deposit_paid'] }}</td>
+                <td>{{ number_format($data['deposit_paid'], 0, '.', ',') }} VND</td>
             </tr>
             <tr>
                 <td><b>Remaining Balance</b></td>
-                <td>{{ $data['remaining_amount'] }}</td>
+                <td>{{ number_format($data['remaining_amount'], 0, '.', ',') }} VND</td>
             </tr>
             <tr>
                 <td><b>Payment Status</b></td>

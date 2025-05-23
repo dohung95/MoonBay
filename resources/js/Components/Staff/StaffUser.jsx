@@ -89,8 +89,8 @@ const StaffUser = () => {
                                         </span></td>
                                         <td>{user.email_verified_at || 'N/A'}</td>
                                         <td>{user.provider || 'N/A'}</td>
-                                        <td>{user.created_at || 'N/A'}</td>
-                                        <td>{user.updated_at || 'N/A'}</td>
+                                        <td>{user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</td>
+                                        <td>{user.updated_at ? new Date(user.updated_at).toLocaleDateString() : 'N/A'}</td>
                                     </tr>
                                 ))}
                             </tbody>

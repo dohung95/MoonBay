@@ -35,6 +35,10 @@
   transition: background-color 1s ease, box-shadow 1s ease;
 }
 
+.navbar-nav{
+  align-items: center;
+}
+
 .navbar-transparent {
   background-color: transparent !important;
   box-shadow: none;
@@ -124,6 +128,9 @@
   }
   .nav-item {
     margin: 5px 0;
+    flex-grow: 1; 
+    text-align: center; 
+    width: 120px;
   }
   .nav-link {
     padding: 10px 20px !important;
@@ -141,5 +148,36 @@
   .navbar-collapse.collapsing {
     transition: opacity 0.3s ease-in-out, height 0.3s ease-in-out;
     opacity: 0;
+  }
+
+  .user-name {
+    max-width: 100%;
+  }
+
+  .navbar-toggler{
+    background-color: #ffffff !important;
+  }
+
+  .navbar-collapse.collapsing,
+  .navbar-collapse.show {
+    background-color: #04091e ; 
+  }
+
+  .dropdown-menu-account {
+    text-align: center;
+  }
+
+  /* xử lý sắp xếp lại các thẻ */
+  .navbar-nav {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important; 
+  } 
+
+  .navbar-nav .nav-item .text-center .dropdown-menu {
+    width: 200px; /* Độ rộng cố định cho dropdown */
+    left: 50% !important; /* Căn giữa dropdown */
+    transform: translateX(-50%) !important; /* Dịch chuyển để căn giữa */
   }
 }

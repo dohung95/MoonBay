@@ -5,6 +5,20 @@ import { useSearch } from './SearchContext.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../../css/css_of_staff/StaffBookingList.css';
 
+const formatCurrency = (amount) => {
+    if (typeof amount !== 'number') amount = Number(amount);
+
+    // Nếu giá nhỏ hơn 10.000 thì giả định là "nghìn đồng" (ví dụ: 500 = 500k)
+    const amountInDong = amount < 10000 ? amount * 1000 : amount;
+
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+        minimumFractionDigits: 0, // VND không có số lẻ
+    }).format(amountInDong);
+};
+
+
 const StaffBookings = () => {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -115,9 +129,9 @@ const StaffBookings = () => {
                                     <td>{booking.number_of_rooms}</td>
                                     <td>{booking.children}</td>
                                     <td>{booking.member}</td>
-                                    <td>{new Date(booking.check_in).toLocaleDateString()}</td>
-                                    <td>{new Date(booking.check_out).toLocaleDateString()}</td>
-                                    <td>{booking.total_price ? `${booking.total_price}0 VNĐ` : 'N/A'}</td>
+                                    <td>{new Date(booking.checkin_date).toLocaleDateString()}</td>
+                                    <td>{new Date(booking.checkout_date).toLocaleDateString()}</td>
+                                    <td>{formatCurrency(booking.total_price)}</td>
                                 </tr>
                             ))}
                         </tbody>

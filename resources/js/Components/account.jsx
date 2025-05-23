@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
-import axios from 'axios';
+import axios, { isCancel } from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../css/my_css/account.css';
 import Banner from './banner';
@@ -25,7 +25,7 @@ const Account = () => {
     });
     const [latestBooking, setLatestBooking] = useState(null);
 
-     // Function to format date to DD/MM/YYYY
+    // Function to format date to DD/MM/YYYY
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('en-GB', {
@@ -61,6 +61,7 @@ const Account = () => {
         setLoading(false);
     }, [user]);
 
+    // Fetch bookings when the component mounts or when user or token changes
     useEffect(() => {
         const fetchBookings = async () => {
             try {
@@ -72,8 +73,25 @@ const Account = () => {
                 });
 
                 const sortedBookings = response.data.bookings.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                setBookings(sortedBookings);
-                setLatestBooking(sortedBookings[0] || null);
+                const groupedBookings = Object.values(
+                    sortedBookings.reduce((acc, booking) => {
+                        const key = `${booking.room_type}|${booking.children}|${booking.member}|${booking.checkin_date}|${booking.checkout_date}|${booking.total_price}`;
+                        if (!acc[key]) {
+                            acc[key] = {
+                                ...booking,
+                                number_of_rooms: booking.number_of_rooms,
+                                original_ids: [booking.id], // Lưu danh sách ID
+                            };
+                        } else {
+                            acc[key].number_of_rooms += booking.number_of_rooms;
+                            acc[key].original_ids.push(booking.id);
+                        }
+                        return acc;
+                    }, {})
+                );
+
+                setBookings(groupedBookings);
+                setLatestBooking(groupedBookings[0] || null);
                 setLoading(false);
             } catch (err) {
                 console.error('Error fetching bookings:', err.response || err.message);
@@ -172,24 +190,34 @@ const Account = () => {
 
     const handleCancelBooking = async (id) => {
         console.log(`Canceling booking with ID: ${id}`);
-        if (window.confirm('Are you sure you want to cancel this booking?')) {
+        const isCancelBook = window.confirm('Are you sure you want to cancel this booking? If you confirm, you will lose your deposit or call hotline now.');
+        if (isCancelBook) {
             try {
-                const booking = bookings.find((b) => b.id === id);
+                const booking = bookings.find((b) => b.original_ids.includes(id)); // Tìm booking dựa trên original_ids
+                if (!booking) {
+                    window.showNotification('Booking not found.', 'error');
+                    return;
+                }
+
                 const checkinDate = new Date(booking.checkin_date);
                 const now = new Date();
 
                 if (now >= checkinDate) {
-                    window.showNotification('Cannot cancel booking. Check-in time has passed or is due.', 'error');
+                    window.showNotification('Cannot cancel booking after check-in date.', 'error');
                     return;
                 }
 
-                const response = await axios.delete(`/api/bookings/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
+                const cancelPromises = booking.original_ids.map((bid) =>
+                    axios.delete(`/api/bookings/${bid}`, {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    })
+                );
 
-                setBookings(bookings.filter((booking) => booking.id !== id));
+                await Promise.all(cancelPromises);
+
+                setBookings(bookings.filter((b) => !b.original_ids.includes(id))); // Loại bỏ nhóm đã hủy
                 window.showNotification('Booking cancelled successfully!', 'success');
             } catch (err) {
                 console.error('Error cancelling booking:', err.response?.data || err.message);
@@ -310,12 +338,12 @@ const Account = () => {
                                                         </div>
                                                         <div className="info-row">
                                                             <span className="info-item">
-                                                                <strong>Days:</strong> <span className="text-muted">{Math.ceil(Math.abs(new Date(booking.checkout_date) - new Date(booking.checkin_date)) / (1000 * 60 * 60 * 24) + 1)}</span>
+                                                                <strong>Days:</strong> <span className="text-muted">{Math.ceil(Math.abs(new Date(booking.checkout_date) - new Date(booking.checkin_date)) / (1000 * 60 * 60 * 24))}</span>
                                                             </span>
                                                             <span className='info-item'>
                                                                 <strong>Price:</strong> <span className="text-muted">{formatNumber(booking.price)} VNĐ/night</span>
                                                             </span>
-                                                            <span className="info-item">  
+                                                            <span className="info-item">
                                                                 <strong>Deposit:</strong> <span className="text-muted">{formatNumber(parseFloat(booking.total_price) * 0.2)} VNĐ % of total price</span>
                                                             </span>
                                                         </div>
@@ -328,7 +356,7 @@ const Account = () => {
                                                     {canCancel && (
                                                         <button
                                                             className="btn btn-danger btn-sm mt-3"
-                                                            onClick={() => handleCancelBooking(booking.id)} 
+                                                            onClick={() => handleCancelBooking(booking.id)}
                                                         >
                                                             Cancel Booking
                                                         </button>
