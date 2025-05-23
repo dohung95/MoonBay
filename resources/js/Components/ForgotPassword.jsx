@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import '../../css/my_css/ForgotPassword.css'
 
@@ -13,18 +13,34 @@ const ForgotPassword = ({ isPopupForgotPassword, closePopup, openLoginPopup }) =
         }
     };
 
+    // Xóa thông báo sau 5 giây
+    useEffect(() => {
+        if (message) {
+            const timer = setTimeout(() => setMessage(''), 5000);
+            return () => clearTimeout(timer); // Cleanup timer khi component unmount
+        }
+    }, [message]);
+
     const handleForgotPassword = async (e) => {
         e.preventDefault();
         console.log("Email input:", email);
         setLoading(true);
+        setMessage('');
         try {
-            const response = await axios.post('/api/ForgotPassword', { email });
+            const response = await axios.post('/api/ForgotPassword', { email }, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest', // Để Laravel nhận diện request AJAX
+                },
+            });
+
             if (response.status === 200) {
-                setMessage('Reset link sent to your email.');
+                setMessage(response.data.message || 'Reset link sent to your email.');
             }
         } catch (error) {
+            const errorMsg = error.response?.data?.message || 
+                            (error.response?.data?.errors?.email ? error.response.data.errors.email[0] : 'An error occurred.');
             console.error("Forgot Password error:", error.response || error);
-            setMessage(error.response?.data?.message || 'Error occurred.');
+            setMessage(errorMsg);
         } finally {
             setLoading(false);
         }
@@ -54,7 +70,7 @@ const ForgotPassword = ({ isPopupForgotPassword, closePopup, openLoginPopup }) =
                             </button>
                             {message && <p>{message}</p>}
                         </form>
-                        <button className="btn btn-primary" onClick={openLoginPopup}>Back to Login</button>
+                        <button className="btn btn-primary" style={{ marginTop: '20px' }} onClick={openLoginPopup}>Back to Login</button>
                     </div>
                 </div>
             )}

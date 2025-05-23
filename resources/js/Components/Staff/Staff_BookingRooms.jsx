@@ -159,9 +159,7 @@ const Staff_BookingRooms = () => {
             });
 
             // Fetch lại dữ liệu phòng và booking từ server để đồng bộ
-            const [roomsResponse, bookingsResponse] = await Promise.all([
-                axios.get('/api/bookingList', { headers: { Authorization: `Bearer ${token}` } }),
-            ]);
+            const bookingsResponse = await axios.get('/api/bookingList', { headers: { Authorization: `Bearer ${token}` } });
             setBookings(bookingsResponse.data.data || []);
 
             setSuccess('Đặt phòng thành công!');
@@ -194,17 +192,27 @@ const Staff_BookingRooms = () => {
     });
 
     // Lọc và sắp xếp danh sách đặt phòng trong tuần này
-    today.setHours(0, 0, 0, 0); // Đặt giờ về 00:00:00 để so sánh ngày chính xác
     const weeklyBookings = bookings
         .filter((booking) => {
             const checkInDate = new Date(booking.checkin_date);
+            checkInDate.setHours(0, 0, 0, 0); // chuẩn hóa
             return checkInDate >= startOfWeek && checkInDate <= endOfWeek;
         })
         .sort((a, b) => {
             const dateA = new Date(a.checkin_date);
             const dateB = new Date(b.checkin_date);
+            dateA.setHours(0, 0, 0, 0);
+            dateB.setHours(0, 0, 0, 0);
+
             return (dateA < today && dateB < today) ? dateB - dateA : dateA - dateB;
+
+            
+
         });
+        
+console.log("Start of week:", startOfWeek.toString());
+            console.log("End of week:", endOfWeek.toString());
+            bookings.forEach(b => console.log("Check-in:", b.checkin_date, "Parsed:", new Date(b.checkin_date).toString()));
 
     // Hàm kiểm tra booking đã qua
     const isPastBooking = (checkInDate) => {
@@ -217,7 +225,27 @@ const Staff_BookingRooms = () => {
 
     return (
         <div className="Staff_IndexPage">
-            <ManageBookings />
+            <div>
+                <ManageBookings />
+                <div className="d-flex flex-wrap justify-content-between align-items-center">
+                    <p className="mb-0 mx-2 room-type-block standard-room">from room 101-112: Standard Room</p>
+                    <p className="mb-0 mx-2 room-type-block deluxe-room">from room 201-212: Deluxe Room</p>
+                    <p className="mb-0 mx-2 room-type-block superior-room">from room 301-312: Superior Room</p>
+                    <p className="mb-0 mx-2 room-type-block family-room">from room 401-412: Family Room</p>
+                    <p className="mb-0 mx-2 room-type-block suite-room">from room 501-512: Suite Room</p>
+                </div>
+
+                <div className="alert alert-secondary" role="alert" style={{ fontFamily: 'Arial, sans-serif', lineHeight: '1.5', margin: '30px 0' }}>
+                    <h4 className="alert-heading" style={{ marginBottom: '15px', fontSize: '1.25rem', fontWeight: 'bold' }}>Color Legend</h4>
+                    <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', textAlign: 'center', gap: '70px' }}>
+                        <p style={{ color: '#ffc107', marginRight: '10px', marginBottom: '10px' }}>Yellow: Booking made, click to confirm check-in or view details</p>
+                        <p style={{ color: 'green', marginRight: '10px', marginBottom: '10px' }}>Green: Customer checked in</p>
+                        <p style={{ color: 'red', marginRight: '10px', marginBottom: '10px' }}>Red: Room maintenance</p>
+                        <p style={{ color: 'gray', marginRight: '10px', marginBottom: '10px' }}>Gray: Room checked out</p>
+                    </div>
+                </div>
+            </div>
+
 
             {/* Hiển thị danh sách đặt phòng ngày hôm nay */}
             <div className="mt-4">

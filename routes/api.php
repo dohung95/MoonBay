@@ -58,7 +58,8 @@ Route::get('/complaints/{id}', [ComplaintsController::class, 'getComplaintsByUse
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/ForgotPassword', [AuthController::class, 'ForgotPassword']);
+Route::post('/ForgotPassword', [AuthController::class, 'ForgotPassword'])->middleware('throttle:3,1'); // Giới hạn 5 request/phút
+Route::post('/reset-password', [AuthController::class, 'ResetPassword']);
 Route::post('/booking', [BookingController::class, 'booking']);
 Route::get('/available_rooms', [BookingController::class, 'checkAvailableRooms']);
 Route::post('/contact', [App\Http\Controllers\ContactController::class, 'send']);

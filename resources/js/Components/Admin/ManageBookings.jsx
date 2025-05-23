@@ -299,14 +299,24 @@ const ManageBookings = () => {
 
     // Determine if a cell should be highlighted based on search
     const isCellHighlighted = (booking, day) => {
-      if (!searchPhone || !booking) return false;
+      if (!searchPhone?.trim() || !booking) return false;
       const targetDate = startOfDay(new Date(currentDate.getFullYear(), currentDate.getMonth(), day));
       const checkin = startOfDay(booking.checkin_date);
       const checkout = startOfDay(booking.checkout_date);
-      const isWithinBooking = (isSameDay(targetDate, checkin) || isAfter(targetDate, checkin)) &&
-                             (isSameDay(targetDate, checkout) || isBefore(targetDate, checkout));
-      return isWithinBooking && booking.phone.includes(searchPhone.trim());
+      return (isSameDay(targetDate, checkin) || isAfter(targetDate, checkin)) &&
+        (isSameDay(targetDate, checkout) || isBefore(targetDate, checkout)) &&
+        booking.phone?.includes(searchPhone.trim());
     };
+
+    // const isCellHighlighted = (booking, day) => {
+    //   if (!searchPhone || !booking) return false;
+    //   const targetDate = startOfDay(new Date(currentDate.getFullYear(), currentDate.getMonth(), day));
+    //   const checkin = startOfDay(booking.checkin_date);
+    //   const checkout = startOfDay(booking.checkout_date);
+    //   const isWithinBooking = (isSameDay(targetDate, checkin) || isAfter(targetDate, checkin)) &&
+    //                          (isSameDay(targetDate, checkout) || isBefore(targetDate, checkout));
+    //   return isWithinBooking && booking.phone.includes(searchPhone.trim());
+    // };
 
     return (
       <div className="table-container position-relative">
