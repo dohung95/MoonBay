@@ -21,6 +21,7 @@ import PopupBookNow from './Components/PopupBookNow.jsx';
 import NotificationManager from './Components/NotificationManager.jsx';
 import ProtectedAdminRoute from './Components/ProtectedAdminRoute.jsx';
 import ProtectedStaffRoute from './Components/ProtectedStaffRoute.jsx';
+import ResetPassword from './Components/ResetPassword.jsx';
 import AdminDashboard from './Components/Admin/AdminDashboard.jsx';
 import StaffDashboard from './Components/Staff/StaffDashboard.jsx';
 import {ChatbotProvider} from './Components/Chatbot.jsx';
@@ -221,6 +222,7 @@ const App = () => {
                             {isChatOpen ? '−' : '+'}
                         </button>
                         <Routes>
+                            <Route path="/reset-password" element={<ResetPassword openLoginPopup={openLoginPopup}/>} />
                             {/* Các route công khai */}
                             <Route
                                 path="/"

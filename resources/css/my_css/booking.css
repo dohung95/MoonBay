@@ -166,3 +166,59 @@
 .price-notification::-webkit-scrollbar {
   display: none;
 }
+
+@media (min-width: 1260px) and (max-width: 1400px) {
+  .bg {
+    height: 70vw;
+  }
+
+  .container-dat {
+    padding: 20px 10px;
+  }
+    
+}
+
+@media (min-width: 1000px) and (max-width: 1259px) {
+  .bg {
+    height: 85vw;
+  }
+
+  .container-dat {
+    padding: 20px 10px;
+  }
+    
+}
+
+@media (min-width: 900px) and (max-width: 999px) {
+  .bg {
+    height: 95vw;
+  }
+
+  .container-dat {
+    padding: 20px 10px;
+  }
+    
+}
+
+@media (min-width: 769px) and (max-width: 899px) {
+  .bg {
+    height: auto;
+  }
+
+  .container-dat {
+    padding: 20px 10px;
+  }
+    
+}
+
+@media (max-width: 768px) {
+  .bg {
+    height: auto;           /* Không giới hạn chiều cao */
+    min-height: 100vh;      /* Nhưng vẫn đảm bảo đủ chiều cao tối thiểu */
+  }
+
+  .container-dat {
+    padding: 30px 15px;
+  }
+}
+

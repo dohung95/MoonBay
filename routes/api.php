@@ -18,6 +18,7 @@ use App\Http\Controllers\BookingManagerController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Middleware\RememberTokenAuth;
 use App\Http\Controllers\ComplaintsController;
+use App\Http\Controllers\Booking_email_successfullyController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\PaymentController;
 
@@ -53,10 +54,13 @@ Route::get('/users/{id}/bookings', [BookingController::class, 'getUserBookings']
 Route::put('/users/{id}', [AuthController::class, 'update']);
 Route::post('/users/{id}/change-password', [AuthController::class, 'changePassword']);
 Route::delete('/bookings/{id}', [BookingController::class, 'destroy']);
+Route::get('/reviews/{id}', [ReviewController::class, 'getReviewsByUserID']);
+Route::get('/complaints/{id}', [ComplaintsController::class, 'getComplaintsByUserID']);
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/ForgotPassword', [AuthController::class, 'ForgotPassword']);
+Route::post('/ForgotPassword', [AuthController::class, 'ForgotPassword'])->middleware('throttle:3,1'); // Giới hạn 5 request/phút
+Route::post('/reset-password', [AuthController::class, 'ResetPassword']);
 Route::post('/booking', [BookingController::class, 'booking']);
 Route::get('/available_rooms', [BookingController::class, 'checkAvailableRooms']);
 Route::post('/contact', [App\Http\Controllers\ContactController::class, 'send']);
@@ -96,6 +100,7 @@ Route::delete('/staff_manager/{id}', [UserController::class, 'destroy']);
 Route::get('/special-offers', [SpecialOfferController::class, 'index']);
 Route::put('/special-offers/{id}', [SpecialOfferController::class, 'update']);
 Route::post('/send-offers', [OfferController::class, 'sendOffers']);
+Route::post('/Send_booking_email_successfully', [Booking_email_successfullyController::class, 'sendEmail']);
 
 //Review User
 Route::middleware([RememberTokenAuth::class])->group(function () {

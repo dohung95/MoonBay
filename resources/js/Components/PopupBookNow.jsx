@@ -44,7 +44,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
     const safeAmount = (amount) => {
         if (typeof amount !== 'number') amount = Number(amount);
         return amount < 10000 ? amount * 1000 : amount;
-      };
+    };
 
     const CalculatorDays = (checkin, checkout) => {
         return Math.ceil(Math.abs(new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24));
@@ -69,15 +69,11 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
         return totalPerRoom * parseInt(room);
     };
 
-    const maxCapacity = roomTypes.length > 0 
-        ? roomTypes.find(rt => rt.name === formData.roomType)?.capacity || 0 
+    const maxCapacity = roomTypes.length > 0
+        ? roomTypes.find(rt => rt.name === formData.roomType)?.capacity || 0
         : 0;
-        const Maxmember = () => formData.room * maxCapacity;
-        const MaxChildren = () => formData.room * 2;
-
-
-    // const maxCapacity = roomTypes.find(rt => rt.name === formData.roomType)?.capacity || 0;
-    // const Maxmember = () => formData.room * (maxCapacity + 2);
+    const Maxmember = () => formData.room * maxCapacity;
+    const MaxChildren = () => formData.room * 2;
 
     useEffect(() => {
         const fetchRoomTypes = async () => {
@@ -177,7 +173,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
     const handleChange = useCallback(
         debounce((event) => {
             const { id, value } = event.target;
-            const newValue = id === "member" ? parseInt(value) || 0 : value;
+            // const newValue = id === "member" ? parseInt(value) || 0 : value;
 
             setFormData((prevData) => {
                 const updatedData = { ...prevData, [id]: value };
@@ -211,7 +207,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
 
                     if (specialDays.length > 0) {
                         notification = specialDays.map(day =>
-                            `${day.date} (${day.type}): Price is ${formatCurrency(day.price * 1000)}/night`
+                            `${day.date} (${day.type}): Price is ${formatCurrency(day.price )}/night`
                         ).join('\n');
                     }
 
@@ -221,8 +217,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                 return updatedData; // Trả về state cập nhật
             });
 
-
-
+            // Tính toán tổng giá trị
             if (id === 'room') {
                 const total = Total_price(selectedRoomPrice, value).toString();
                 setFormData((prevData) => ({
@@ -231,24 +226,20 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                 }));
             }
 
+            // Kiểm tra số lượng phòng có sẵn
             const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available').length;
             if (id === "room" && newValue > availableRooms) {
                 window.showNotification(`Only ${availableRooms} room${availableRooms > 1 ? 's' : ''} available`, "error");
             }
 
-            if (id === "member" && newValue > Maxmember(formData.room)) {
-                window.showNotification(`Maximum capacity is ${Maxmember(formData.room)} member${Maxmember(formData.room) > 1 ? 's' : ''} for ${formData.room} room${formData.room > 1 ? 's' : ''}. Please reduce the number of members.`, "error");
-            }
-
-            // Kiểm tra giới hạn tổng số khách
+            // Kiểm tra số lượng thành viên không vượt quá sức chứa của phòng
             const totalGuests = parseInt(formData.member) + parseInt(formData.children || 0);
             if ((id === "member" || id === "children") && totalGuests > Maxmember()) {
                 window.showNotification(
-                    `Maximum capacity is ${Maxmember()} guests for ${updatedData.room} room${updatedData.room > 1 ? 's' : ''}. Please reduce the number of guests.`,
-                    "error"
-                );
+                    `Maximum capacity is ${Maxmember(formData.room)} member${Maxmember(formData.room) > 1 ? 's' : ''} for ${formData.room} room${formData.room > 1 ? 's' : ''}. Please reduce the number of members.`, "error");
             }
-            
+
+            // Tính toán giá phòng
             if (id === 'roomType') {
                 const selectedRoom = roomTypes.find((room) => room.id === parseInt(value));
                 const price = selectedRoom ? selectedRoom.price : 0;
@@ -299,28 +290,19 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
             return;
         }
 
+        // Kiểm tra số lượng thành viên không vượt quá sức chứa của phòng
         if (parseInt(formData.member) > Maxmember(formData.room) || parseInt(formData.member) <= 0) {
             window.showNotification(`Cannot book. Number of members (${formData.member}) exceeds room capacity (${Maxmember(formData.room)}).`, "error");
             return;
         }
 
+        // kiểm tra không cho book quá 30 ngày
         const daysDifference = CalculatorDays(formData.checkin, formData.checkout);
         if (daysDifference > 30) {
             window.showNotification("Booking is limited to a maximum of 30 days as per regulations.", "error");
             return;
         }
 
-        const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available').length;
-        if (availableRooms < 1) {
-            window.showNotification("No rooms available for booking.", "error");
-            return;
-        } else if (availableRooms < parseInt(formData.room)) {
-            window.showNotification(`Only ${availableRooms} room${availableRooms > 1 ? 's' : ''} available, but you selected ${formData.room}.`, "error");
-            return;
-        }
-
-        window.showNotification(`${availableRooms} room${availableRooms > 1 ? 's' : ''} available for booking.`, "success");
-        
         const maxAmount = 9999999999999999.99;
         const totalAmount = parseFloat(formData.Total_price);
         const depositAmount = totalAmount * 0.2;
@@ -332,7 +314,6 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
         }
         setBookingAmount(amountToPay);
         setIsPopUp_deposit(true);
-
     };
 
     const handlePopupConfirm = (confirmed) => {
@@ -348,6 +329,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
         if (confirmed) confirmed.preventDefault();
 
         try {
+            const isDeposit = paymentOption === 'deposit';
             const response = await axios.post('/api/booking', {
                 user_id: user.id,
                 name: user.name,
@@ -361,32 +343,17 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
                 checkout_date: formData.checkout,
                 price: formData.price,
                 total_price: formData.total_price,
+                status: isDeposit ? 'pending_payment' : 'confirmed',
+                deposit_paid: isDeposit ? bookingAmount : 0,
             });
 
-            if (response.status === 201) {
-                const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available');
-                for (let i = 0; i < parseInt(formData.room) && i < availableRooms.length; i++) {
-                    await axios.put(`/api/rooms/${availableRooms[i].id}`, { status: "booked" })
-                        .then(() => console.log(`Updated room ${availableRooms[i].id} status to booked`))
-                        .catch(err => console.error(`Error updating room ${availableRooms[i].id}:`, err));
-                }
-
-                // Cập nhật state rooms cục bộ
-                setRooms(prev => prev.map(room =>
-                    availableRooms.some(ar => ar.id === room.id) ? { ...room, status: null } : room
-                ));
-
-                closePopup();
-                setIsPopUp_deposit(false);
-                setPriceNotification(''); 
-                window.showNotification("Booking created successfully!", "success");
-            }
+            closePopup();
+            setIsPopUp_deposit(false);
+            setPriceNotification('');
+            window.showNotification("Booking created successfully!", "success");
         } catch (error) {
             console.error('Error creating booking:', error.response || error);
-            window.showNotification("Failed to create booking", "error");
-            setTimeout(() => {
-                window.showNotification("Pls add the phone number if you don't have", "error");
-            }, 4000);
+            window.showNotification("Failed to create booking or the room is full in checkin date, Pls call hotline", "error");
         } finally {
             setIsPaymentPopupOpen(false);
         }
@@ -397,73 +364,125 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
         setPriceNotification('');
     };
 
+    const handlePaymentOptionChange = (e) => {
+        setPaymentOption(e.target.value);
+    };
+
     return (
         <>
             {isPopupBookNow && (
-                <div className="popup-overlay" onClick={(e) => e.target.classList.contains("popup-overlay") && closePopup() && setPriceNotification('')}>
-                    <div className="popup-content">
-                        <button className="close-popup-btn" onClick={closePopup}>×</button>
-                        <h2>Book Now</h2>
-                        <form className="book-now-form">
-                            <div className="row">
-                                <div className="col-md-6">
-                                    <label htmlFor="checkin" className="form-label">Check-in Date:</label>
-                                    <input type="date" id="checkin" className="form-control" min={minCheckin} onChange={handleChange} />
+                <div className="popup-booknow">
+                    <div className="popup-overlay" onClick={(e) => e.target.classList.contains("popup-overlay") && closePopup() && setPriceNotification('')}>
+                        <div className="popup-content">
+                            <button className="close-popup-btn" onClick={closePopup}>×</button>
+                            <h2>Book Now</h2>
+                            <form className="book-now-form">
+                                <div className="row">
+                                    <div className="col-md-6">
+                                        <label htmlFor="checkin" className="form-label">Check-in Date:</label>
+                                        <input type="date" id="checkin" className="form-control" min={minCheckin} onChange={handleChange} />
+                                    </div>
+                                    <div className="col-md-6">
+                                        <label htmlFor="checkout" className="form-label">Check-out Date:</label>
+                                        <input type="date" id="checkout" className="form-control" onChange={handleChange} />
+                                    </div>
                                 </div>
-                                <div className="col-md-6">
-                                    <label htmlFor="checkout" className="form-label">Check-out Date:</label>
-                                    <input type="date" id="checkout" className="form-control" onChange={handleChange} />
+                                <div className="row">
+                                    <div className="col-md-6">
+                                        <label htmlFor="roomType">Room Type:</label>
+                                        <input type="text" id="roomType" className="form-control" value={formData.roomType} readOnly />
+                                    </div>
+                                    <div className="col-md-6">
+                                        <label>Number of Rooms:</label>
+                                        <select name="room" id="room" className="form-select" onChange={handleChange}>
+                                            {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
+                                        </select>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="row">
-                                <div className="col-md-6">
-                                    <label htmlFor="roomType">Room Type:</label>
-                                    <input type="text" id="roomType" className="form-control" value={formData.roomType} readOnly />
+                                <div className="row">
+                                    <div className="col-md-6">
+                                        <label>Children (0–11):</label>
+                                        <input type="number" id="children" className="form-control" min="0" max={MaxChildren()} onChange={handleChange} placeholder="0" />
+                                    </div>
+                                    <div className="col-md-6">
+                                        <label>Member:</label>
+                                        <input type="number" id="member" className="form-control" min="1" max={Maxmember()} onChange={handleChange} placeholder="1" />
+                                    </div>
                                 </div>
-                                <div className="col-md-6">
-                                    <label>Number of Rooms:</label>
-                                    <select name="room" id="room" className="form-select" onChange={handleChange}>
-                                        {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
-                                    </select>
+                                <div className="row payment-option">
+                                    <div className="col-md-6">
+                                        <label className="form-label"><b>Payment Option:</b></label>
+                                        <div>
+                                            <div className="row">
+                                                <div className="col-md-6 text-end">
+                                                    <label>
+                                                        Pay Deposit (20%)
+                                                        <input
+                                                            type="radio"
+                                                            name="paymentOption"
+                                                            value="deposit"
+                                                            checked={paymentOption === 'deposit'}
+                                                            onChange={handlePaymentOptionChange}
+                                                        />
+                                                    </label>
+                                                </div>
+                                                <div className="col-md-6 text-end">
+                                                    <label>
+                                                        Pay Full Amount
+                                                        <input
+                                                            type="radio"
+                                                            name="paymentOption"
+                                                            value="full"
+                                                            checked={paymentOption === 'full'}
+                                                            onChange={handlePaymentOptionChange}
+                                                        />
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-md-6">
+                                        {priceNotification && (
+                                            <p className="popup-booknow text-warning" style={{ whiteSpace: 'pre-line' }}>
+                                                {priceNotification}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="row">
-                                <div className="col-md-6">
-                                    <label>Children (0–11):</label>
-                                    <input type="number" id="children" className="form-control" min="0" max={MaxChildren()} onChange={handleChange} placeholder="0" />
+                                <div className="view-price-popup info-row">
+                                    <div className="row">
+                                        <div className="popup-booknow col-md-6">
+                                            <p className="popup-booknow info-item">Days: {CalculatorDays(formData.checkin, formData.checkout) || '0'}</p>
+                                            <p className="popup-booknow info-item">Base Price: {formatCurrency(selectedRoomPrice)}/night</p>
+                                        </div>
+                                        {/* Cột phải: Deposit, Total Price, Remaining, Amount to Pay Now */}
+                                        <div className="popup-booknow col-md-6 view-price">
+                                            <p>Deposit (20%): {formatCurrency((parseFloat(formData.total_price) * 0.2))}</p>
+                                            <p>Total Price: {formatCurrency(parseFloat(formData.total_price) )}</p>
+                                            {paymentOption === 'deposit' && (
+                                                <p>Remaining (Due on Check-in): {formatCurrency(parseFloat(formData.total_price) * 0.8 )}</p>
+                                            )}
+                                            <p>Amount to Pay Now: {formatCurrency((paymentOption === 'deposit' ? parseFloat(formData.total_price) * 0.2 : parseFloat(formData.total_price)))}</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="col-md-6">
-                                    <label>Member:</label>
-                                    <input type="number" id="member" className="form-control" min="1" max={Maxmember()} onChange={handleChange} placeholder="1" />
-                                </div>
-                            </div>
-                            <div className="view-price-popup info-row">
-                                <p className="info-item">Days: {CalculatorDays(formData.checkin, formData.checkout) || '0'}</p>
-                                <p className="info-item">Base Price: {formatCurrency(selectedRoomPrice * 1000)}/night</p>
-                                {priceNotification && (
-                                    <p className="text-warning" style={{ whiteSpace: 'pre-line' }}>
-                                        {priceNotification}
-                                    </p>
+                                <button onClick={handleBookNow} className="btn btn-primary w-100">Submit</button>
+                                {isPopUp_deposit && (
+                                    <PopUp_deposit
+                                        onConfirm={handlePopupConfirm}
+                                        onClose={handlePopupClose}
+                                    />
                                 )}
-                                <p className="info-item">Deposit (20%): {formatCurrency(parseFloat(formData.total_price) * 0.2 * 1000)}</p>
-                                <p className="info-item">Total Price: {formatCurrency(parseFloat(formData.total_price) * 1000)}</p>
-                            </div>
-                            <button onClick={handleBookNow} className="btn btn-primary w-100">Submit</button>
-                            {isPopUp_deposit && (
-                                <PopUp_deposit
-                                    onConfirm={handlePopupConfirm}
-                                    onClose={handlePopupClose}
-                                />
-                            )}
-                            {isPaymentPopupOpen && (
-                                <QRPayment
-                                    amount={bookingAmount}
-                                    onClose={() => setIsPaymentPopupOpen(false)}
-                                    onConfirm={handlePaymentConfirm}
-                                    isDeposit={paymentOption === 'deposit'}
-                                />
-                            )}
-                        </form>
+                                {isPaymentPopupOpen && (
+                                    <QRPayment
+                                        amount={bookingAmount}
+                                        onClose={() => setIsPaymentPopupOpen(false)}
+                                        onConfirm={handlePaymentConfirm}
+                                        isDeposit={paymentOption === 'deposit'}
+                                    />
+                                )}
+                            </form>
+                        </div>
                     </div>
                 </div>
             )}

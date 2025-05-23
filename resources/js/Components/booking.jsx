@@ -47,8 +47,8 @@ const Booking = ({ checkLogin, checkLogins }) => {
     const safeAmount = (amount) => {
         if (typeof amount !== 'number') amount = Number(amount);
         return amount < 10000 ? amount * 1000 : amount;
-      };
-      
+    };
+
 
     const Total_price = (price, room) => {
         return parseFloat(price) * parseInt(room);
@@ -105,7 +105,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
                     return prevData; // Không cập nhật nếu vượt giới hạn
                 }
             }
-            
+
 
             const updatedData = {
                 ...prevData,
@@ -302,101 +302,129 @@ const Booking = ({ checkLogin, checkLogins }) => {
     };
 
     const handlePaymentConfirm = async (e) => {
-        if (e) e.preventDefault();
+    if (e) e.preventDefault();
 
-        if (!token) {
-            window.showNotification("Token not found. Please log in again.", "error");
-            setIsPaymentPopupOpen(false);
-            return;
-        }
+    if (!token) {
+        window.showNotification("Token not found. Please log in again.", "error");
+        setIsPaymentPopupOpen(false);
+        return;
+    }
 
-        try {
-            const isDeposit = paymentOption === 'deposit';
-            const paymentResponse = await axios.post('/api/payments', {
-                amount: safeAmount(bookingAmount),
-                method: 'bank_transfer',
-                bank_account_receiver: '9567899995',
-                payment_info: isDeposit ? 'Deposit for room booking' : 'Payment for room booking',
-                status: 'paid',
-                is_deposit: isDeposit,
-                total_amount: safeAmount(parseFloat(formData.Total_price)),
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`
+    try {
+        const isDeposit = paymentOption === 'deposit';
+        const paymentResponse = await axios.post('/api/payments', {
+            amount: safeAmount(bookingAmount),
+            method: 'bank_transfer',
+            bank_account_receiver: '9567899995',
+            payment_info: isDeposit ? 'Deposit for room booking' : 'Payment for room booking',
+            status: 'paid',
+            is_deposit: isDeposit,
+            total_amount: safeAmount(parseFloat(formData.Total_price)),
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (paymentResponse.status === 201) {
+            const message = isDeposit
+                ? "Deposit recorded successfully. Please pay the remaining amount upon check-in."
+                : "Payment recorded successfully. Your booking is fully paid!";
+            window.showNotification(message, "success");
+
+            try {
+                const selectedRoomType = roomTypes.find((roomType) => roomType.name === formData.roomType);
+                const roomPrice = selectedRoomType ? selectedRoomType.price : 0;
+                const bookingData = {
+                    user_id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    phone: user.phone,
+                    room_type: formData.roomType,
+                    number_of_rooms: parseInt(formData.room),
+                    children: parseInt(formData.children),
+                    member: parseInt(formData.member),
+                    price: parseFloat(roomPrice),
+                    total_price: safeAmount(parseFloat(formData.Total_price)),
+                    deposit_paid: isDeposit ? bookingAmount : 0,
+                    checkin_date: formData.checkin,
+                    checkout_date: formData.checkout,
+                    status: isDeposit ? 'pending_payment' : 'confirmed',
+                };
+
+                const bookingResponse = await axios.post('/api/booking', bookingData);
+
+                if (bookingResponse.status === 201) {
+                    window.showNotification("Booking successful!", "success");
+
+                    // Gửi email xác nhận
+                    try {
+                        const emailData = {
+                            to: user.email,
+                            user_name: user.name,
+                            room_type: formData.roomType,
+                            number_of_rooms: parseInt(formData.room),
+                            checkin_date: dayjs(formData.checkin).format('YYYY-MM-DD'),
+                            checkout_date: dayjs(formData.checkout).format('YYYY-MM-DD'),
+                            total_price: parseFloat(formData.Total_price).toString(),
+                            deposit_paid: isDeposit ? bookingAmount.toString() : '0',
+                            remaining_amount: isDeposit ? (parseFloat(formData.Total_price) * 0.8).toString() : '0',
+                            payment_status: isDeposit ? 'Deposit Paid (20%)' : 'Fully Paid',
+                            member: parseInt(formData.member),
+                            children: parseInt(formData.children),
+                        };
+                        console.log('Sending email data:', emailData);
+                        await axios.post('/api/Send_booking_email_successfully', emailData);
+                    } catch (emailError) {
+                        console.error('Error sending email:', emailError);
+                        let errorMessage = "";
+                        if (emailError.response?.data?.error) {
+                            errorMessage += " Details: " + emailError.response.data.error;
+                        }
+                        window.showNotification(errorMessage, "warning");
+                    }
+
+                    setFormData({
+                        checkin: '',
+                        checkout: '',
+                        roomType: '',
+                        room: 1,
+                        children: 0,
+                        member: 1,
+                        price: '0',
+                        Total_price: '0',
+                    });
+                    setPaymentOption('deposit');
+                    setPriceNotification('');
+                    setSelectedRoomPrice(0);
+                    if (checkinRef.current) checkinRef.current.value = '';
+                    if (checkoutRef.current) checkoutRef.current.value = '';
                 }
-            });
+            } catch (bookingError) {
+                console.error('Error creating booking:', bookingError.response?.data || bookingError);
+                const errorMessage = bookingError.response?.data?.message ||
+                    (bookingError.response?.data?.errors ?
+                        Object.values(bookingError.response.data.errors).flat().join(', ') :
+                        "Booking failed. Please try again or contact support.");
+                window.showNotification(errorMessage, "error");
 
-            if (paymentResponse.status === 201) {
-                const message = isDeposit
-                    ? "Deposit recorded successfully. Please pay the remaining amount upon check-in."
-                    : "Payment recorded successfully. Your booking is fully paid!";
-                window.showNotification(message, "success");
-
-                try {
-                    const selectedRoomType = roomTypes.find((roomType) => roomType.name === formData.roomType);
-                    const roomPrice = selectedRoomType ? selectedRoomType.price : 0;
-                    const bookingData = {
-                        user_id: user.id,
-                        name: user.name,
-                        email: user.email,
-                        phone: user.phone,
-                        room_type: formData.roomType,
-                        number_of_rooms: parseInt(formData.room),
-                        children: parseInt(formData.children),
-                        member: parseInt(formData.member),
-                        price: parseFloat(roomPrice),
-                        total_price: safeAmount(parseFloat(formData.Total_price)),
-                        deposit_paid: isDeposit ? bookingAmount : 0,
-                        checkin_date: formData.checkin,
-                        checkout_date: formData.checkout,
-                        status: isDeposit ? 'pending_payment' : 'confirmed',
-                    };
-
-                    const bookingResponse = await axios.post('/api/booking', bookingData);
-
-                    if (bookingResponse.status === 201) {
-                        window.showNotification("Booking successful!", "success");
-                        setFormData({
-                            checkin: '',
-                            checkout: '',
-                            roomType: '',
-                            room: 1,
-                            children: 0,
-                            member: 1,
-                            price: '0',
-                            Total_price: '0',
-                        });
-                        setPaymentOption('deposit'); // Reset to default
-                        setPriceNotification('');
-                        setSelectedRoomPrice(0);
-                        if (checkinRef.current) checkinRef.current.value = '';
-                        if (checkoutRef.current) checkoutRef.current.value = '';
-                    }
-                } catch (bookingError) {
-                    console.error('Error creating booking:', bookingError.response?.data || bookingError);
-                    const errorMessage = bookingError.response?.data?.message ||
-                        (bookingError.response?.data?.errors ?
-                            Object.values(bookingError.response.data.errors).flat().join(', ') :
-                            "Booking failed. Please try again or contact support.");
-                    window.showNotification(errorMessage, "error");
-
-                    if (bookingError.response?.data?.errors?.phone) {
-                        setTimeout(() => {
-                            window.showNotification("Please provide a valid phone number.", "error");
-                        }, 3000);
-                    }
+                if (bookingError.response?.data?.errors?.phone) {
+                    setTimeout(() => {
+                        window.showNotification("Please provide a valid phone number.", "error");
+                    }, 3000);
                 }
             }
-        } catch (paymentError) {
-            console.error('Payment error:', paymentError.response?.data || paymentError);
-            window.showNotification(
-                paymentError.response?.data?.message || "Failed to record payment. Please try again.",
-                "error"
-            );
-        } finally {
-            setIsPaymentPopupOpen(false);
         }
-    };
+    } catch (paymentError) {
+        console.error('Payment error:', paymentError.response?.data || paymentError);
+        window.showNotification(
+            paymentError.response?.data?.message || "Failed to record payment. Please try again.",
+            "error"
+        );
+    } finally {
+        setIsPaymentPopupOpen(false);
+    }
+};
 
     useEffect(() => {
         const fetchRooms = async () => {
@@ -423,7 +451,7 @@ const Booking = ({ checkLogin, checkLogins }) => {
         const fetchAvailableRooms = async () => {
             try {
                 const response = await axios.get('/api/rooms');
-                const availableRooms = response.data || []; 
+                const availableRooms = response.data || [];
                 setRooms(availableRooms);
             } catch (error) {
                 console.error('Error fetching available rooms:', error.response?.data || error);
@@ -520,45 +548,39 @@ const Booking = ({ checkLogin, checkLogins }) => {
                                     <input type="number" id="member" className="form-control" min={0} max={Maxmember(formData.room)} onChange={handleChange} placeholder="1" />
                                 </div>
                             </div>
-                            <div className="row g-3 mt-1">
-                                <div className="col-md-12">
+                            <div className="row g-3 mt-1 justify-content-center">
+                                <div className="col-md-12 text-center">
                                     <label className="form-label"><b>Payment Option:</b></label>
-                                    <div >
-                                        <div className="row">
-                                            <div className="col-md-6" align="right">
-                                                Pay Deposit (20%)
-                                            </div>
-                                            <div className="col-md-2" align="left">
-                                                <label className="me-3">
-                                                    <input
-                                                        type="radio"
-                                                        name="paymentOption"
-                                                        value="deposit"
-                                                        checked={paymentOption === 'deposit'}
-                                                        onChange={handlePaymentOptionChange}
-                                                    />
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div className="row">
-                                            <div className="col-md-6" align="right">
-                                                Pay Full Amount
-                                            </div>
-                                            <div className="col-md-2" align="left">
-                                                <label className="me-3">
-                                                    <input
-                                                        type="radio"
-                                                        name="paymentOption"
-                                                        value="full"
-                                                        checked={paymentOption === 'full'}
-                                                        onChange={handlePaymentOptionChange}
-                                                    />
-                                                </label>
-                                            </div>
-                                        </div>
+
+                                    <div className="d-flex justify-content-center gap-4 mt-2">
+                                        <label className="d-flex align-items-center gap-2" style={{ width: '20%' }}>
+                                            <input
+                                                type="radio"
+                                                name="paymentOption"
+                                                value="deposit"
+                                                checked={paymentOption === 'deposit'}
+                                                onChange={handlePaymentOptionChange}
+                                                style={{ width: '20%' }}
+                                            />
+                                            <p style={{ width: '100%' }}>Pay Deposit (20%)</p>
+                                        </label>
+
+                                        <label className="d-flex align-items-center gap-2" style={{ width: '20%' }}>
+                                            <input
+                                                type="radio"
+                                                name="paymentOption"
+                                                value="full"
+                                                checked={paymentOption === 'full'}
+                                                onChange={handlePaymentOptionChange}
+                                                style={{ width: '20%' }}
+                                            />
+                                            <p style={{ width: '100%' }}>Pay Full Amount</p>
+                                        </label>
                                     </div>
                                 </div>
                             </div>
+
+
                             <div className="row">
                                 <div className="view-price col-md-6">
                                     <p>Days: {CalculatorDays(formData.checkin, formData.checkout) || '0'}</p>

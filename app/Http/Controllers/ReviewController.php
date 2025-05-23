@@ -102,4 +102,24 @@ public function destroy($id)
     return response()->json(['message' => 'Review đã được xóa thành công']);
 }
 
+public function getReviewsByUserID($id)
+    {
+        try {
+            // Lấy danh sách reviews dựa trên $id (user_id)
+            $reviews = Review::where('user_id', $id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $reviews,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Internal server error',
+            ], 500);
+        }
+    }
+
 }

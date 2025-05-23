@@ -38,3 +38,8 @@
   overflow-y: auto;
   display: block;
 }
+/* ManageBooking.css */
+.booking-show .highlight-search {
+  border: 2px solid #007bff !important; /* Blue border for highlighted cells */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Optional: subtle glow effect */
+}

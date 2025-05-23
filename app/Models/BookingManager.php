@@ -26,6 +26,7 @@ class BookingManager extends Model
         'checkin_date',
         'checkout_date',
         'room_id',
+        'check_status'
     ];
 
     protected $casts = [
