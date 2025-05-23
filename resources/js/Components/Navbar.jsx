@@ -32,7 +32,6 @@ const Navbar = ({ openLoginPopup }) => {
     setIsMenuOpen((prev) => {
       const navbarCollapse = document.getElementById('navbarNav');
       const newState = !prev;
-      console.log('Hamburger clicked, isMenuOpen:', newState, 'classList:', navbarCollapse.classList);
       if (newState) {
         navbarCollapse.classList.add('show');
       } else {
@@ -69,14 +68,18 @@ const Navbar = ({ openLoginPopup }) => {
     });
   };
 
+  document.addEventListener("DOMContentLoaded", function () {
+    var dropdownTrigger = document.getElementById("userDropdown");
+    dropdownTrigger.addEventListener("click");
+  });
+
   return (
     <nav
-      className={`navbar navbar-expand-lg sticky-top ${isVisible ? 'visible' : 'hidden'} ${
-        isAtTop ? 'navbar-transparent' : 'navbar-colored'
-      }`}
+      className={`navbar navbar-expand-lg sticky-top ${isVisible ? 'visible' : 'hidden'} ${isAtTop && !isMenuOpen ? 'navbar-transparent' : 'navbar-colored'
+        }`}
       style={{ transition: 'top 0.3s', top: isVisible ? '0' : '-80px' }}
     >
-      <div className="container">
+      <div className="container container-navbar">
         <Link className="navbar-brand d-flex align-items-center gap-2" to="/" onClick={top}>
           <img
             src="/images/logo/moonbaylogo.png"
@@ -90,7 +93,7 @@ const Navbar = ({ openLoginPopup }) => {
         <button
           className="navbar-toggler"
           type="button"
-          // data-bs-toggle="collapse" tạm thời tắt để kiểm tra logic thủ công
+          //data-bs-toggle="collapse" //tạm thời tắt để kiểm tra logic thủ công
           data-bs-target="#navbarNav"
           aria-controls="navbarNav"
           aria-expanded={isMenuOpen}
@@ -198,6 +201,7 @@ const Navbar = ({ openLoginPopup }) => {
                   role="button"
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
+                  onClick={() => document.getElementById("userDropdownMenu").classList.toggle("show")}
                 >
                   <img
                     src={user.avatar}
@@ -208,7 +212,7 @@ const Navbar = ({ openLoginPopup }) => {
                   />
                   <span className="user-name text-white">{user.name}</span>
                 </a>
-                <ul className="dropdown-menu" aria-labelledby="userDropdown">
+                <ul id="userDropdownMenu" className="dropdown-menu dropdown-menu-account" aria-labelledby="userDropdown">
                   <li>
                     <Link className="dropdown-item" to="/account">
                       Account
