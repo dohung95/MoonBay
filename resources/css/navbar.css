@@ -35,6 +35,10 @@
   transition: background-color 1s ease, box-shadow 1s ease;
 }
 
+.navbar-nav{
+  align-items: center;
+}
+
 .navbar-transparent {
   background-color: transparent !important;
   box-shadow: none;
