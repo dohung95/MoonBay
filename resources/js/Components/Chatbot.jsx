@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import "../../css/Chatbot.css";
 
@@ -12,23 +13,33 @@ export const ChatbotProvider = ({ children, isOpen: propIsOpen, setIsOpen: propS
   const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const faqs = [
+    "Có những loại phòng nào trong hệ thống?",
+    "Giá phòng bao nhiêu?",
+    "Sức chứa tối đa của phòng là bao nhiêu?",
+    "Có ưu đãi nào đang áp dụng không?",
+    "Làm thế nào để đặt phòng?"
+  ];
+
   useEffect(() => {
     setIsOpen(propIsOpen);
   }, [propIsOpen]);
 
   const toggleChatbot = () => setIsOpen(!isOpen);
+
   const handleInputChange = (e) => setUserInput(e.target.value);
 
-  const handleSendMessage = async (e) => {
+  const handleSendMessage = async (e, faqText = null) => {
     e.preventDefault();
-    if (!userInput.trim()) return;
+    const inputText = faqText || userInput;
+    if (!inputText.trim()) return;
 
-    const userMsg = { sender: "user", text: userInput };
+    const userMsg = { sender: "user", text: inputText };
     setMessages((prev) => [...prev, userMsg]);
     setIsLoading(true);
 
     try {
-      const response = await axios.post("/api/chatbot", { prompt: userInput });
+      const response = await axios.post("/api/chatbot", { prompt: inputText });
       const botMsg = { sender: "bot", text: response.data.response };
       setMessages((prev) => [...prev, botMsg]);
     } catch (err) {
@@ -41,6 +52,49 @@ export const ChatbotProvider = ({ children, isOpen: propIsOpen, setIsOpen: propS
       setUserInput("");
       setIsLoading(false);
     }
+  };
+
+  const handleFaqClick = (faqText) => (e) => {
+    handleSendMessage(e, faqText);
+  };
+
+  const parseMessageText = (text) => {
+    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = linkRegex.exec(text)) !== null) {
+      const [fullMatch, linkText, url] = match;
+      const startIndex = match.index;
+
+      if (startIndex > lastIndex) {
+        parts.push(text.slice(lastIndex, startIndex));
+      }
+
+            parts.push(
+        <a
+          key={startIndex}
+          href={url}
+          className="chatbot-link"
+          onClick={(e) => {
+            e.preventDefault(); // Ngăn tải lại trang mặc định
+            window.location.href = url; // Điều hướng thủ công
+            setIsOpen(false); // Đóng chatbot
+          }}
+        >
+          {linkText}
+        </a>
+      );
+
+      lastIndex = startIndex + fullMatch.length;
+    }
+
+    if (lastIndex < text.length) {
+      parts.push(text.slice(lastIndex));
+    }
+
+    return parts;
   };
 
   useEffect(() => {
@@ -62,9 +116,28 @@ export const ChatbotProvider = ({ children, isOpen: propIsOpen, setIsOpen: propS
           {isOpen && (
             <>
               <div className="chatbot-body">
+                {messages.length === 1 && (
+                  <div className="chatbot-message bot faq-message">
+                    <p>Câu hỏi thường gặp:</p>
+                    <div className="faq-container">
+                      {faqs.map((faq, idx) => (
+                        <button
+                          key={idx}
+                          className="faq-button"
+                          onClick={handleFaqClick(faq)}
+                          disabled={isLoading}
+                        >
+                          {faq}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {messages.map((msg, idx) => (
                   <div key={idx} className={`chatbot-message ${msg.sender}`}>
-                    <p style={{ whiteSpace: 'pre-line' }}>{msg.text}</p>
+                    <p style={{ whiteSpace: "pre-line" }}>
+                      {parseMessageText(msg.text)}
+                    </p>
                   </div>
                 ))}
                 {isLoading && (
