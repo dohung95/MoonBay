@@ -42,6 +42,7 @@ import StaffRooms from './Components/Staff/StaffRooms.jsx';
 import { SearchProvider } from './Components/Staff/SearchContext.jsx'
 import StaffRoomManagement from './Components/Staff/StaffRoomManagement.jsx';
 import Staff_BookingRooms from './Components/Staff/Staff_BookingRooms.jsx';
+import StaffCustomerManagement from './Components/Staff/StaffCustomerManagement.jsx';
 import Complaints from './Components/Complaints.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -477,6 +478,12 @@ const App = () => {
                                     path="RoomList"
                                     element={
                                         <StaffRooms />
+                                    }
+                                />
+                                <Route
+                                    path="StaffCustomerManagement"
+                                    element={
+                                        <StaffCustomerManagement />
                                     }
                                 />
                                 <Route
