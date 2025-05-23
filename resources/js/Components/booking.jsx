@@ -397,6 +397,8 @@ const Booking = ({ checkLogin, checkLogins }) => {
                         setPaymentOption('deposit');
                         setPriceNotification('');
                         setSelectedRoomPrice(0);
+                        setIsPaymentPopupOpen(false);
+                        setIsPopUp_deposit(false);
                         if (checkinRef.current) checkinRef.current.value = '';
                         if (checkoutRef.current) checkoutRef.current.value = '';
                     }
