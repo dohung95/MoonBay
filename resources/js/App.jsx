@@ -45,6 +45,7 @@ import StaffRoomManagement from './Components/Staff/StaffRoomManagement.jsx';
 import Staff_BookingRooms from './Components/Staff/Staff_BookingRooms.jsx';
 import Complaints from './Components/Complaints.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { FaRobot } from 'react-icons/fa';
 
 // PopupContext để quản lý trạng thái popup
 export const PopupContext = React.createContext();
@@ -218,8 +219,16 @@ const App = () => {
                                 justifyContent: 'center',
                                 boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
                             }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.background = "#0056b3";
+                                e.currentTarget.style.transform = "scale(1.1)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = "#007bff";
+                                e.currentTarget.style.transform = "scale(1)";
+                              }}
                         >
-                            {isChatOpen ? '−' : '+'}
+                            <FaRobot />
                         </button>
                         <Routes>
                             <Route path="/reset-password" element={<ResetPassword openLoginPopup={openLoginPopup}/>} />

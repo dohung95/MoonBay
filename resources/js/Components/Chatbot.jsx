@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import axios from "axios";
 import "../../css/Chatbot.css";
 
@@ -25,7 +24,9 @@ export const ChatbotProvider = ({ children, isOpen: propIsOpen, setIsOpen: propS
     setIsOpen(propIsOpen);
   }, [propIsOpen]);
 
-  const toggleChatbot = () => setIsOpen(!isOpen);
+  const toggleChatbot = () => {
+    propSetIsOpen((prev) => !prev);
+  }
 
   const handleInputChange = (e) => setUserInput(e.target.value);
 
@@ -40,6 +41,7 @@ export const ChatbotProvider = ({ children, isOpen: propIsOpen, setIsOpen: propS
 
     try {
       const response = await axios.post("/api/chatbot", { prompt: inputText });
+      console.log("Chatbot response:", response.data.response);
       const botMsg = { sender: "bot", text: response.data.response };
       setMessages((prev) => [...prev, botMsg]);
     } catch (err) {
@@ -72,20 +74,32 @@ export const ChatbotProvider = ({ children, isOpen: propIsOpen, setIsOpen: propS
         parts.push(text.slice(lastIndex, startIndex));
       }
 
-            parts.push(
-        <a
-          key={startIndex}
-          href={url}
-          className="chatbot-link"
-          onClick={(e) => {
-            e.preventDefault(); // Ngăn tải lại trang mặc định
-            window.location.href = url; // Điều hướng thủ công
-            setIsOpen(false); // Đóng chatbot
-          }}
-        >
-          {linkText}
-        </a>
-      );
+      // Kiểm tra nếu URL là hình ảnh (dựa vào đuôi file)
+      const isImage = /\.(jpg|jpeg|png|gif)$/i.test(url);
+      if (isImage) {
+        // Đảm bảo đường dẫn đầy đủ (thêm /storage/ nếu cần)
+        const fullUrl = url.startsWith('/') ? `/storage${url}` : `/storage/${url}`;
+        parts.push(
+          <div key={startIndex} className="chatbot-image">
+            <img src={fullUrl} alt={linkText} style={{ maxWidth: "100%", height: "auto", borderRadius: "8px" }} onError={(e) => console.log("Image load error:", e)} />
+          </div>
+        );
+      } else {
+        parts.push(
+          <a
+            key={startIndex}
+            href={url}
+            className="chatbot-link"
+            onClick={(e) => {
+              e.preventDefault();
+              window.location.href = url;
+              propSetIsOpen(false);
+            }}
+          >
+            {linkText}
+          </a>
+        );
+      }
 
       lastIndex = startIndex + fullMatch.length;
     }
@@ -110,7 +124,7 @@ export const ChatbotProvider = ({ children, isOpen: propIsOpen, setIsOpen: propS
       <div className="chatbot-container">
         <div className={`chatbot ${isOpen ? "open" : ""}`}>
           <div className="chatbot-header" onClick={toggleChatbot}>
-            <h5>Trợ lý AI</h5>
+            <h5>Trợ lý MoonBay Hotel</h5>
             <span>{isOpen ? "−" : "+"}</span>
           </div>
           {isOpen && (
@@ -118,8 +132,8 @@ export const ChatbotProvider = ({ children, isOpen: propIsOpen, setIsOpen: propS
               <div className="chatbot-body">
                 {messages.length === 1 && (
                   <div className="chatbot-message bot faq-message">
-                    <p>Câu hỏi thường gặp:</p>
                     <div className="faq-container">
+                    <p>Câu hỏi thường gặp:</p>
                       {faqs.map((faq, idx) => (
                         <button
                           key={idx}
