@@ -17,7 +17,8 @@ const StaffCustomerManagement = () => {
   const [noteList, setNoteList] = useState([]);
   const [newNote, setNewNote] = useState('');
   const [newType, setNewType] = useState('regular');
-  const { searchQuery } = useSearch();
+  const [currentType, setCurrentType] = useState('regular');
+  const { searchQuery, setSearchQuery } = useSearch();
 
   const itemsPerPage = 7;
 
@@ -27,8 +28,8 @@ const StaffCustomerManagement = () => {
       try {
         const token = Cookies.get('auth_token');
         if (!token) {
-                    throw new Error('Không tìm thấy token xác thực');
-                }
+          throw new Error('Không tìm thấy token xác thực');
+        }
 
         const response = await axios.get('/api/staff_customers', {
           headers: { Authorization: `Bearer ${token}` },
@@ -110,96 +111,95 @@ const StaffCustomerManagement = () => {
   };
 
   // Mở modal Note
-  // Thêm state mới để lưu trữ Type hiện tại của khách hàng
-  const [currentType, setCurrentType] = useState('regular');
-
   const handleOpenNote = (customer) => {
     setSelectedCustomer(customer);
-    setCurrentType(customer.customer_type || 'regular'); // Lấy Type hiện tại
-    setNewType(customer.customer_type || 'regular'); // Đặt giá trị mặc định cho newType
+    setCurrentType(customer.customer_type || 'regular');
+    setNewType(customer.customer_type || 'regular');
     fetchCustomerNotes(customer.id);
-    setIsNoteModalOpen(true); // Sửa từ setNoteModalOpen thành setIsNoteModalOpen
+    setIsNoteModalOpen(true);
   };
 
   // Đóng modal Stay History
   const closeStayHistoryModal = () => {
     setIsStayHistoryModalOpen(false);
-    setSelectedCustomer(null);
     setStayHistory([]);
   };
 
   // Đóng modal Note
   const closeNoteModal = () => {
     setIsNoteModalOpen(false);
-    setSelectedCustomer(null);
     setNoteList([]);
   };
 
   if (loading) {
-    return <div className="text-center mt-5">Loading data...</div>;
+    return <div className="loading">Loading data...</div>;
   }
 
   return (
-    <div className="customer-management-container">
-      <h2>Customer Management</h2>
-      <div className="customer-search">
+      <div className="staff-customer-management">
+      <h2 className="staff-title">Customer Management</h2>
+      
+      <div className="staff-search-container">
         <input
           type="text"
           placeholder="Search by name, email or phone number..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
+          className="staff-search-input"
         />
       </div>
 
-      <table className="customer-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Type</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentCustomers.length > 0 ? (
-            currentCustomers.map(customer => (
-              <tr key={customer.id}>
-                <td>{customer.id}</td>
-                <td>{customer.name}</td>
-                <td>{customer.email}</td>
-                <td>{customer.phone || 'N/A'}</td>
-                <td>
-                  <span className={`status-badge status-${customer.customer_type || 'regular'}`}>
-                    {customer.customer_type === 'vip' ? 'VIP' :
-                      customer.customer_type === 'special' ? 'Special' :
-                        'Regular'}
-                  </span>
-                </td>
-                <td className="action-cell">
-                  <button className="btn btn-view" title="Accommodation history" onClick={() => handleOpenStayHistory(customer)}>
-                    <i className="fas fa-history"></i>
-                  </button>
-                  <button className="btn btn-edit" title="Customer notes" onClick={() => handleOpenNote(customer)}>
-                    <i className="fas fa-sticky-note"></i>
-                  </button>
-                </td>
-              </tr>
-            ))
-          ) : (
+      <div className="staff-table-container">
+        <table className="staff-data-table">
+          <thead>
             <tr>
-              <td colSpan="6" className="text-center">No customers found.</td>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Type</th>
+              <th>Action</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {currentCustomers.length > 0 ? (
+              currentCustomers.map(customer => (
+                <tr key={customer.id}>
+                  <td>{customer.id}</td>
+                  <td>{customer.name}</td>
+                  <td>{customer.email}</td>
+                  <td>{customer.phone || 'N/A'}</td>
+                  <td>
+                    <span className={`staff-badge staff-badge-${customer.customer_type || 'regular'}`}>
+                      {customer.customer_type === 'vip' ? 'VIP' :
+                        customer.customer_type === 'special' ? 'Special' :
+                          'Regular'}
+                    </span>
+                  </td>
+                  <td className="staff-actions">
+                    <button className="btn btn-history staff-btn-history" onClick={() => handleOpenStayHistory(customer)}>
+                      <i className="fas fa-history"></i> Stay History
+                    </button>
+                    <button className="btn btn-note staff-btn-note" onClick={() => handleOpenNote(customer)}>
+                      <i className="fas fa-sticky-note"></i> Notes
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="6" className="staff-no-data">No customers found.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="pagination">
+        <div className="staff-pagination">
           <button
-            className="page-btn"
+            className="staff-page-btn"
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
           >
@@ -208,14 +208,14 @@ const StaffCustomerManagement = () => {
           {[...Array(totalPages)].map((_, idx) => (
             <button
               key={idx + 1}
-              className={`page-btn ${currentPage === idx + 1 ? 'active' : ''}`}
+              className={`staff-page-btn ${currentPage === idx + 1 ? 'active' : ''}`}
               onClick={() => handlePageChange(idx + 1)}
             >
               {idx + 1}
             </button>
           ))}
           <button
-            className="page-btn"
+            className="staff-page-btn"
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
           >
@@ -226,68 +226,94 @@ const StaffCustomerManagement = () => {
 
       {/* Stay History Modal */}
       {isStayHistoryModalOpen && selectedCustomer && (
-        <div className="modal-overlay" onClick={closeStayHistoryModal}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Stay History</h3>
-              <button className="close-button" onClick={closeStayHistoryModal}>&times;</button>
+        <div className="staff-modal-backdrop" onClick={closeStayHistoryModal}>
+          <div className="staff-modal" onClick={e => e.stopPropagation()}>
+            <div className="staff-modal-header staff-modal-header-note">
+              <h3 className="staff-modal-title-center">Stay History</h3>
+              <button className="close-btn staff-close-btn-wow" onClick={closeStayHistoryModal} aria-label="Close Stay History Modal">
+                <span className="staff-close-x">&times;</span>
+              </button>
             </div>
-            <div className="customer-details">
-              <div className="detail-item">
-                <span className="detail-label">ID:</span>
-                <span className="detail-value">{selectedCustomer.id}</span>
+            
+            <div className="staff-customer-info">
+              <div className="staff-info-item">
+                <span className="staff-info-label">ID:</span>
+                <span className="staff-info-value">{selectedCustomer.id}</span>
               </div>
-              <div className="detail-item">
-                <span className="detail-label">Name:</span>
-                <span className="detail-value">{selectedCustomer.name}</span>
+              <div className="staff-info-item">
+                <span className="staff-info-label">Name:</span>
+                <span className="staff-info-value">{selectedCustomer.name}</span>
               </div>
-              <div className="detail-item">
-                <span className="detail-label">Email:</span>
-                <span className="detail-value">{selectedCustomer.email}</span>
+              <div className="staff-info-item">
+                <span className="staff-info-label">Email:</span>
+                <span className="staff-info-value">{selectedCustomer.email}</span>
               </div>
-              <div className="detail-item">
-                <span className="detail-label">Phone:</span>
-                <span className="detail-value">{selectedCustomer.phone || 'N/A'}</span>
+              <div className="staff-info-item">
+                <span className="staff-info-label">Phone:</span>
+                <span className="staff-info-value">{selectedCustomer.phone || 'N/A'}</span>
               </div>
-              <div className="detail-item">
-                <span className="detail-label">Type:</span>
-                <span className="detail-value">
-                  <span className={`status-badge status-${selectedCustomer.customer_type || 'regular'}`}>
+              <div className="staff-info-item">
+                <span className="staff-info-label">Type:</span>
+                <span className="staff-info-value">
+                  <span className={`staff-badge staff-badge-${selectedCustomer.customer_type || 'regular'}`}>
                     {selectedCustomer.customer_type === 'vip' ? 'VIP' :
                       selectedCustomer.customer_type === 'special' ? 'Special' : 'Regular'}
                   </span>
                 </span>
               </div>
             </div>
-            <div className="stay-history">
-              <h4>Lịch sử lưu trú</h4>
+            
+            <div className="staff-stay-history">
+              <h4>List of Stays</h4>
               {historyLoading ? (
-                <p>Loading history...</p>
+                <div className="staff-loading-spinner">
+                  <div className="staff-spinner"></div>
+                  <p>Loading stay history...</p>
+                </div>
               ) : Array.isArray(stayHistory) && stayHistory.length > 0 ? (
-                <table className="customer-table">
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Room Type</th>
-                      <th>Check-in Date</th>
-                      <th>Check-out Date</th>
-                      <th>Total Price</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stayHistory.map(stay => (
-                      <tr key={stay.id}>
-                        <td>{stay.id}</td>
-                        <td>{stay.room_type}</td>
-                        <td>{new Date(stay.check_in).toLocaleDateString('en-GB')}</td>
-                        <td>{new Date(stay.check_out).toLocaleDateString('en-GB')}</td>
-                        <td>{stay.total_price?.toLocaleString('en-GB')} VND</td>
+                <div className="staff-table-container">
+                  <table className="staff-data-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Number of room</th>
+                        <th>Member</th>
+                        <th>Children</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Room</th>
+                        <th>Total Price</th>
+                        <th>Status</th>
+                        <th>Note</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {stayHistory.map(stay => (
+                        <tr key={stay.id}>
+                          <td>{stay.id}</td>
+                          <td>{stay.number_of_rooms}</td>
+                          <td>{stay.member}</td>
+                          <td>{stay.children}</td>
+                          <td>{new Date(stay.checkin_date).toLocaleDateString('vi-VN')}</td>
+                          <td>{new Date(stay.checkout_date).toLocaleDateString('vi-VN')}</td>
+                          <td className="staff-room-info">{stay.room_id ? `P${stay.room_id} - ${stay.room_type}` : stay.room_type}</td>
+                          <td className="staff-price">{stay.total_price?.toLocaleString('vi-VN')}đ</td>
+                          <td>
+                            <span className={`staff-badge staff-badge-${stay.check_status || 'not_check_in'}`}>
+                              {stay.check_status === 'check_in' ? 'Check in' :
+                                stay.check_status === 'check_out' ? 'Check out' :
+                                'Not check in'}
+                            </span>
+                          </td>
+                          <td>{selectedCustomer.customer_type === 'vip' ? 'VIP' : 
+                              selectedCustomer.customer_type === 'special' ? 'Special' : 'Regular'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               ) : (
-                <p>This customer has no stay history.</p>
+                <p className="staff-no-history">This customer has no stay history.</p>
               )}
             </div>
           </div>
@@ -296,100 +322,113 @@ const StaffCustomerManagement = () => {
 
       {/* Note Modal */}
       {isNoteModalOpen && selectedCustomer && (
-        <div className="modal-overlay" onClick={closeNoteModal}>
-          <div className="modal-content note-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3> Note Timeline</h3>
-              <button className="close-button" onClick={closeNoteModal}>&times;</button>
+        <div className="staff-modal-backdrop" onClick={closeNoteModal}>
+          <div className="staff-modal staff-note-modal" style={{maxHeight: 'none', overflow: 'visible'}} onClick={e => e.stopPropagation()}>
+            <div className="staff-modal-header staff-modal-header-note">
+              <h3 className="staff-modal-title-center">Note Timeline</h3>
+              <button className="close-btn staff-close-btn-wow" onClick={closeNoteModal} aria-label="Close Note Modal">
+                <span className="staff-close-x">&times;</span>
+              </button>
             </div>
-            <div className="customer-details">
-              <div className="detail-item"><span className="detail-label">ID:</span> <span className="detail-value">{selectedCustomer.id}</span></div>
-              <div className="detail-item"><span className="detail-label">Name:</span> <span className="detail-value">{selectedCustomer.name}</span></div>
-              <div className="detail-item"><span className="detail-label">Email:</span> <span className="detail-value">{selectedCustomer.email}</span></div>
-              <div className="detail-item"><span className="detail-label">Phone:</span> <span className="detail-value">{selectedCustomer.phone || 'N/A'}</span></div>
+            
+            <div className="staff-customer-info">
+              <div className="staff-info-item"><span className="staff-info-label">ID:</span> <span className="staff-info-value">{selectedCustomer.id}</span></div>
+              <div className="staff-info-item"><span className="staff-info-label">Name:</span> <span className="staff-info-value">{selectedCustomer.name}</span></div>
+              <div className="staff-info-item"><span className="staff-info-label">Email:</span> <span className="staff-info-value">{selectedCustomer.email}</span></div>
+              <div className="staff-info-item"><span className="staff-info-label">Phone:</span> <span className="staff-info-value">{selectedCustomer.phone || 'N/A'}</span></div>
             </div>
+            
             {/* Note History */}
-            <div className="notes-history-section">
+            <div className="staff-notes-section">
               <h4>Note History</h4>
               {Array.isArray(noteList) && noteList.length === 0 ? (
-                <div className="text-muted">No notes available.</div>
+                <div className="staff-no-notes">No notes available.</div>
               ) : (
-                <ul className="note-timeline wow-timeline">
+                <ul className="staff-note-list staff-note-list-scrollable">
                   {Array.isArray(noteList) && noteList.map((note, idx) => (
-                    <li key={note.id} className={`note-item wow-note ${idx === 0 ? 'newest' : ''}`}> 
-                      <div className="note-header">
-                        <span className={`status-badge status-${note.customer_type}`}>{note.customer_type === 'vip' ? '🌟 VIP' : note.customer_type === 'special' ? '💎 Special' : '👤 Regular'}</span>
-                        <span className="note-staff"> {note.staff_name}</span>
-                        <span className="note-date"> {new Date(note.created_at).toLocaleString('en-US')}</span>
+                    <li key={note.id} className={`staff-note-item ${idx === 0 ? 'newest' : ''}`}> 
+                      <div className="staff-note-header">
+                        <span className={`staff-badge staff-badge-${note.customer_type}`}>
+                          {note.customer_type === 'vip' ? '🌟 VIP' : 
+                           note.customer_type === 'special' ? '💎 Special' : 
+                           '👤 Regular'}
+                        </span>
+                        <span className="staff-note-staff">{note.staff_name}</span>
+                        <span className="staff-note-date">{new Date(note.created_at).toLocaleString('en-US')}</span>
                       </div>
-                      <div className="note-content">{note.note ? note.note : <span className="text-muted">(No content)</span>}</div>
+                      <div className="staff-note-content">
+                        {note.note ? note.note : <span className="staff-empty-note">(No content)</span>}
+                      </div>
                     </li>
                   ))}
                 </ul>
               )}
             </div>
+            
             {/* Add New Note */}
-            <div className="add-note-section">
+            <div className="staff-add-note">
               <h4>Add New Note</h4>
-              <div className="current-type-info">
-                <span className="detail-label">Current Type: </span>
-                <span className={`status-badge status-${currentType}`}>
-                  {currentType === 'vip' ? '🌟 VIP' : currentType === 'special' ? '💎 Special' : '👤 Regular'}
-                </span>
-              </div>
               <textarea
-                className="notes-input"
+                className="staff-note-input"
                 value={newNote}
                 onChange={e => setNewNote(e.target.value)}
                 placeholder="Enter new note (allergies, special requests, etc.)"
               ></textarea>
-              <select
-                value={newType}
-                onChange={e => setNewType(e.target.value)}
-                className="form-select mb-2"
-              >
-                <option value="regular">👤 Regular</option>
-                <option value="vip">🌟 VIP</option>
-                <option value="special">💎 Special</option>
-              </select>
-              <button
-                className="save-button"
-                onClick={async () => {
-                  try {
-                    const token = Cookies.get('auth_token');
-                    await axios.post('/api/customer-notes', {
-                      user_id: selectedCustomer.id,
-                      note: newNote,
-                      customer_type: newType
-                    }, {
-                      headers: { Authorization: `Bearer ${token}` }
-                    });
-                    setNewNote('');
-                    setNewType('regular');
-                    fetchCustomerNotes(selectedCustomer.id);
-                    
-                    // Cập nhật danh sách khách hàng
-                    setCustomers(prevCustomers => {
-                      return prevCustomers.map(customer => {
-                        if (customer.id === selectedCustomer.id) {
-                          return { ...customer, customer_type: newType };
-                        }
-                        return customer;
+              <div className="staff-change-type-row" style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', margin: '12px 0'}}>
+                <div className="staff-change-type-label" style={{fontWeight: 500, color: '#1976d2'}}>Change customer type</div>
+                <select
+                  value={newType}
+                  onChange={e => {
+                    setNewType(e.target.value);
+                    setCurrentType(e.target.value); // cập nhật luôn currentType để giao diện phản ánh ngay
+                  }}
+                  className="staff-type-select"
+                  style={{margin: 0}}
+                >
+                  <option value="regular">👤 Regular</option>
+                  <option value="vip">🌟 VIP</option>
+                  <option value="special">💎 Special</option>
+                </select>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'center', marginTop: '10px'}}>
+                <button
+                  className="save-btn staff-save-btn"
+                  style={{minWidth: '160px', fontWeight: 600, fontSize: '1.08em', borderRadius: '8px', boxShadow: '0 2px 8px #1976d21a'}}
+                  onClick={async () => {
+                    try {
+                      const token = Cookies.get('auth_token');
+                      await axios.post('/api/customer-notes', {
+                        user_id: selectedCustomer.id,
+                        note: newNote,
+                        customer_type: newType
+                      }, {
+                        headers: { Authorization: `Bearer ${token}` }
                       });
-                    });
-                    
-                    setTimeout(() => {
-                      const el = document.querySelector('.wow-timeline .wow-note.newest');
-                      if (el) el.classList.add('highlight-new');
-                    }, 300);
-                    alert('Note added successfully!');
-                  } catch {
-                    alert('Error adding note.');
-                  }
-                }}
-              >
-                Save Note
-              </button>
+                      setNewNote('');
+                      // Không reset newType về 'regular', giữ nguyên giá trị vừa chọn
+                      setCurrentType(newType);
+                      fetchCustomerNotes(selectedCustomer.id);
+                      setCustomers(prevCustomers => {
+                        return prevCustomers.map(customer => {
+                          if (customer.id === selectedCustomer.id) {
+                            return { ...customer, customer_type: newType };
+                          }
+                          return customer;
+                        });
+                      });
+                      setTimeout(() => {
+                        const el = document.querySelector('.staff-note-list .staff-note-item.newest');
+                        if (el) el.classList.add('highlight-new');
+                      }, 300);
+                      alert('Note added successfully!');
+                    } catch {
+                      alert('Error adding note.');
+                    }
+                  }}
+                >
+                  Save Note
+                </button>
+              </div>
             </div>
           </div>
         </div>
