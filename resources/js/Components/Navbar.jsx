@@ -219,11 +219,6 @@ const Navbar = ({ openLoginPopup }) => {
                     </Link>
                   </li>
                   <li>
-                    <a className="dropdown-item" href="#">
-                      Setting
-                    </a>
-                  </li>
-                  <li>
                     <Link to="/" className="dropdown-item" onClick={handleLogout}>
                       Logout
                     </Link>
