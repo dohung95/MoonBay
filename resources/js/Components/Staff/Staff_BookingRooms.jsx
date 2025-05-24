@@ -126,13 +126,13 @@ const Staff_BookingRooms = () => {
         if (roomTypes.length > 0 && roomType && numberOfRooms && checkIn && checkOut) {
             const selectedRoom = roomTypes.find((room) => room.name === roomType);
             const pricePerRoom = parseFloat(selectedRoom?.price || 0);
-            setSelectedRoomPrice(pricePerRoom * 1000);
+            setSelectedRoomPrice(pricePerRoom);
 
             const roomsCount = parseInt(numberOfRooms) || 0;
             const days = calculateDays(checkIn, checkOut);
-            const total = (pricePerRoom * 1000) * roomsCount * days;
+            const total = (pricePerRoom) * roomsCount * days;
             setValue('total_price', total);
-            setValue('price', pricePerRoom * 1000);
+            setValue('price', pricePerRoom);
         }
     }, [roomType, numberOfRooms, checkIn, checkOut, roomTypes, setValue]);
 
