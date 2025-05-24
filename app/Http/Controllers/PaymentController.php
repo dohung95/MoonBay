@@ -42,7 +42,7 @@ class PaymentController extends Controller
             'amount' => $validated['amount'],
             'bank_account_receiver' => $validated['bank_account_receiver'] ?? null,
             'payment_info' => $validated['payment_info'] ?? null,
-            'status' => $validated['status'] ?? 'pending', // Mặc định là pending
+            'status' => $validated['status'] ?? 'paid',
             'is_deposit' => $validated['is_deposit'],
             'total_amount' => $validated['total_amount'],
         ]);
