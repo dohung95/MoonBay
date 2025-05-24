@@ -103,6 +103,30 @@ class ChatbotController extends Controller
             return response()->json(['response' => $response]);
         }
 
+        // Xem thống tin phòng cụ thể
+        $roomTypes = RoomType::pluck('name')->map(function ($name) {
+            return $this->normalizeVietnamese($name);
+        })->toArray();
+
+        foreach ($roomTypes as $index => $roomType) {
+            // Loại bỏ "phòng" hoặc "loại phòng" để so sánh trực tiếp
+            $cleanedInput = preg_replace('/\b(phong|loai phong)\b/', '', $normalizedInput);
+            if (preg_match("/\b" . preg_quote($roomType, '/') . "\b/", $cleanedInput) || 
+                preg_match("/\b" . preg_quote(str_replace(' Room', '', $roomType), '/') . "\b/", $cleanedInput)) {
+                $room = RoomType::where('name', RoomType::pluck('name')[$index])->first();
+                if ($room) {
+                    $response = "Thông tin chi tiết về phòng {$room->name}:\n";
+                    $response .= "- Giá: " . number_format($room->price, 0, ',', '.') . " VNĐ/đêm\n";
+                    $response .= "- Sức chứa: {$room->capacity} người\n";
+                    if ($room->image) {
+                        $response .= "- Xem hình ảnh: [Hình ảnh phòng {$room->name}]({$room->image})\n";
+                    }
+                    $response .= "\nBạn có muốn đặt phòng này? [Đặt ngay](/booking#booknow)";
+                    return response()->json(['response' => $response]);
+                }
+            }
+        }
+
         // Xem các loại phòng
         if (preg_match('/\b(loai phong)\b/', $normalizedInput)) {
             $rooms = RoomType::pluck('name');
