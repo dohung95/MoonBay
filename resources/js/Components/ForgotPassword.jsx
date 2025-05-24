@@ -37,9 +37,18 @@ const ForgotPassword = ({ isPopupForgotPassword, closePopup, openLoginPopup }) =
                 setMessage(response.data.message || 'Reset link sent to your email.');
             }
         } catch (error) {
-            const errorMsg = error.response?.data?.message || 
-                            (error.response?.data?.errors?.email ? error.response.data.errors.email[0] : 'An error occurred.');
             console.error("Forgot Password error:", error.response || error);
+            let errorMsg = 'An error occurred.';
+            if (error.response?.status === 422) {
+                // Kiểm tra lỗi cụ thể từ backend
+                if (error.response.data.errors?.email) {
+                    // Nếu backend trả về lỗi liên quan đến email (ví dụ: "We can't find a user with that email address.")
+                    errorMsg = error.response.data.errors.email[0] || 'Email does not exist';
+                } else if (error.response.data.message?.toLowerCase().includes('email')) {
+                    // Nếu message chứa từ "email", giả định là email không tồn tại
+                    errorMsg = 'Email does not exist';
+                }
+            }
             setMessage(errorMsg);
         } finally {
             setLoading(false);
