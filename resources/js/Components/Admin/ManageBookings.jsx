@@ -264,7 +264,7 @@ const ManageBookings = () => {
       const checkin = startOfDay(booking.checkin_date);
       const checkout = startOfDay(booking.checkout_date);
       const isBooked = (isSameDay(targetDate, checkin) || isAfter(targetDate, checkin)) &&
-                       (isSameDay(targetDate, checkout) || isBefore(targetDate, checkout));
+        (isSameDay(targetDate, checkout) || isBefore(targetDate, checkout));
       return isBooked;
     });
 
@@ -296,6 +296,7 @@ const ManageBookings = () => {
   const renderCalendar = () => {
     const daysInMonth = getDaysInMonth(currentDate);
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+    const today = startOfDay(new Date()); // Current date for comparison
 
     // Determine if a cell should be highlighted based on search
     const isCellHighlighted = (booking, day) => {
@@ -303,9 +304,22 @@ const ManageBookings = () => {
       const targetDate = startOfDay(new Date(currentDate.getFullYear(), currentDate.getMonth(), day));
       const checkin = startOfDay(booking.checkin_date);
       const checkout = startOfDay(booking.checkout_date);
-      return (isSameDay(targetDate, checkin) || isAfter(targetDate, checkin)) &&
-             (isSameDay(targetDate, checkout) || isBefore(targetDate, checkout)) &&
-             booking.phone?.includes(searchPhone.trim());
+      return (
+        (isSameDay(targetDate, checkin) || isAfter(targetDate, checkin)) &&
+        (isSameDay(targetDate, checkout) || isBefore(targetDate, checkout)) &&
+        booking.phone?.includes(searchPhone.trim())
+      );
+    };
+
+    // Check if a date is today or in the past
+    const isToday = (day) => {
+      const targetDate = startOfDay(new Date(currentDate.getFullYear(), currentDate.getMonth(), day));
+      return isSameDay(targetDate, today);
+    };
+
+    const isPastDate = (day) => {
+      const targetDate = startOfDay(new Date(currentDate.getFullYear(), currentDate.getMonth(), day));
+      return isBefore(targetDate, today);
     };
 
     return (
@@ -353,58 +367,81 @@ const ManageBookings = () => {
                       aria-label="Close"
                     ></button>
                   </div>
-                  <div className="toast-body">
-                    Booking updated successfully!
-                  </div>
+                  <div className="toast-body">Booking updated successfully!</div>
                 </div>
               )}
 
               <table ref={tableRef} className="table table-bordered table-sm w-100" style={{ tableLayout: 'fixed' }}>
                 <thead className="table-light sticky-thead">
                   <tr>
-                    <th scope="col" className="text-center align-middle" style={{ width: '80px', fontSize: '0.8rem' }} data-column="0">
+                    <th
+                      scope="col"
+                      className="text-center align-middle"
+                      style={{ width: '80px', fontSize: '0.8rem' }}
+                      data-column="0"
+                    >
                       Room
                     </th>
-                    {days.map(day => (
-                      <th
-                        key={day}
-                        scope="col"
-                        className="text-center align-middle"
-                        style={{ width: `calc((100% - 80px) / ${days.length})`, fontSize: '0.8rem' }}
-                        data-column={day}
-                        onMouseEnter={() => handleMouseEnter(day.toString())}
-                        onMouseLeave={() => handleMouseLeave(day.toString())}
-                      >
-                        {day}
-                      </th>
-                    ))}
+                    {days.map((day) => {
+                      const isTodayClass = isToday(day) ? 'highlight-today' : '';
+                      const isPastClass = isPastDate(day) ? 'past-date' : '';
+                      return (
+                        <th
+                          key={day}
+                          scope="col"
+                          className={`text-center align-middle ${isTodayClass} ${isPastClass}`}
+                          style={{ width: `calc((100% - 80px) / ${days.length})`, fontSize: '0.8rem' }}
+                          data-column={day}
+                          onMouseEnter={() => handleMouseEnter(day.toString())}
+                          onMouseLeave={() => handleMouseLeave(day.toString())}
+                        >
+                          {day}
+                        </th>
+                      );
+                    })}
                   </tr>
                 </thead>
                 <tbody>
                   {rooms.length > 0 ? (
-                    rooms.map(room => (
+                    rooms.map((room) => (
                       <tr key={`room-${room.id}`}>
                         <td
                           className="text-center align-middle fw-bold"
-                          style={{ width: '80px', fontSize: '0.8rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                          style={{
+                            width: '80px',
+                            fontSize: '0.8rem',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
                           data-column="0"
                         >
                           {room.room_number}
                         </td>
-                        {days.map(day => {
+                        {days.map((day) => {
                           const { booking, status, check_status } = isRoomBooked(room, day);
                           const cellClass =
-                            status === 'maintenance' ? 'bg-danger text-white' :
-                            status === 'booked' && check_status === 'not checked in' ? 'bg-warning text-dark' :
-                            status === 'booked' && check_status === 'checked in' ? 'bg-success text-white' :
-                            status === 'booked' && check_status === 'checked out' ? 'bg-secondary text-white' :
-                            'bg-white';
+                            status === 'maintenance'
+                              ? 'bg-danger text-white'
+                              : status === 'booked' && check_status === 'not checked in'
+                                ? 'bg-warning text-dark'
+                                : status === 'booked' && check_status === 'checked in'
+                                  ? 'bg-success text-white'
+                                  : status === 'booked' && check_status === 'checked out'
+                                    ? 'bg-secondary text-white'
+                                    : 'bg-white';
                           const isHighlighted = isCellHighlighted(booking, day);
+                          const isTodayClass = isToday(day) ? 'highlight-today' : '';
+                          const isPastClass = isPastDate(day) ? 'past-date' : '';
                           return (
                             <td
                               key={`room-${room.id}-day-${day}`}
-                              className={`text-center align-middle ${cellClass} ${isHighlighted ? 'highlight-search' : ''}`}
-                              style={{ height: '30px', fontSize: '0.7rem', cursor: status === 'booked' ? 'pointer' : 'default' }}
+                              className={`text-center align-middle ${cellClass} ${isHighlighted ? 'highlight-search' : ''} ${isTodayClass} ${isPastClass}`}
+                              style={{
+                                height: '30px',
+                                fontSize: '0.7rem',
+                                cursor: status === 'booked' ? 'pointer' : 'default',
+                              }}
                               data-column={day}
                               onMouseEnter={() => handleMouseEnter(day.toString())}
                               onMouseLeave={() => handleMouseLeave(day.toString())}
@@ -436,13 +473,20 @@ const ManageBookings = () => {
                     <div className="modal-content">
                       <div className="modal-header">
                         <h5 className="modal-title">Edit Booking</h5>
-                        <button type="button" className="btn-close" onClick={handleCloseModal} aria-label="Close"></button>
+                        <button
+                          type="button"
+                          className="btn-close"
+                          onClick={handleCloseModal}
+                          aria-label="Close"
+                        ></button>
                       </div>
                       <div className="modal-body">
                         {selectedBooking && (
                           <form onSubmit={handleUpdateBooking}>
                             <div className="mb-3">
-                              <label htmlFor="checkin_date" className="form-label">Check-in Date</label>
+                              <label htmlFor="checkin_date" className="form-label">
+                                Check-in Date
+                              </label>
                               <input
                                 type="date"
                                 className="form-control"
@@ -454,7 +498,9 @@ const ManageBookings = () => {
                               />
                             </div>
                             <div className="mb-3">
-                              <label htmlFor="checkout_date" className="form-label">Check-out Date</label>
+                              <label htmlFor="checkout_date" className="form-label">
+                                Check-out Date
+                              </label>
                               <input
                                 type="date"
                                 className="form-control"
@@ -466,7 +512,9 @@ const ManageBookings = () => {
                               />
                             </div>
                             <div className="mb-3">
-                              <label htmlFor="check_status" className="form-label">Check Status</label>
+                              <label htmlFor="check_status" className="form-label">
+                                Check Status
+                              </label>
                               <select
                                 className="form-control"
                                 id="check_status"

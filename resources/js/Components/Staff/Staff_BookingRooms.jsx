@@ -205,14 +205,49 @@ const Staff_BookingRooms = () => {
             dateB.setHours(0, 0, 0, 0);
 
             return (dateA < today && dateB < today) ? dateB - dateA : dateA - dateB;
+    });
 
-            
+    // Hàm nhóm các booking trùng lặp
+    const groupBookings = (bookings) => {
+        const grouped = {};
+        bookings.forEach((booking) => {
+            // Tạo key dựa trên các trường cần so sánh (trừ room_id)
+            const key = `${booking.name}|${booking.email}|${booking.phone}|${booking.room_type}|${booking.number_of_rooms}|${booking.children}|${booking.member}|${new Date(booking.checkin_date).toISOString().split('T')[0]}|${new Date(booking.checkout_date).toISOString().split('T')[0]}|${booking.total_price}`;
 
+            if (!grouped[key]) {
+                grouped[key] = {
+                    name: booking.name,
+                    email: booking.email,
+                    phone: booking.phone,
+                    room_type: booking.room_type,
+                    number_of_rooms: booking.number_of_rooms,
+                    children: booking.children,
+                    member: booking.member,
+                    checkin_date: booking.checkin_date,
+                    checkout_date: booking.checkout_date,
+                    total_price: booking.total_price,
+                    room_ids: [booking.room_id], // Bắt đầu với mảng chứa room_id
+                };
+            } else {
+                // Cộng số lượng phòng và thêm room_id
+                grouped[key].number_of_rooms += booking.number_of_rooms;
+                grouped[key].room_ids.push(booking.room_id);
+            }
         });
-        
-console.log("Start of week:", startOfWeek.toString());
-            console.log("End of week:", endOfWeek.toString());
-            bookings.forEach(b => console.log("Check-in:", b.checkin_date, "Parsed:", new Date(b.checkin_date).toString()));
+
+        // Chuyển đổi thành mảng và thêm key duy nhất cho mỗi nhóm
+        return Object.values(grouped).map((group, index) => ({
+            ...group,
+            id: index, // Tạo id tạm để sử dụng key trong map
+            room_ids: group.room_ids.join(', '), // Chuyển mảng room_ids thành chuỗi
+        }));
+    };
+
+    // Lọc và nhóm danh sách đặt phòng ngày hôm nay
+    const groupedTodayBookings = groupBookings(todayBookings);
+
+    // Lọc, sắp xếp và nhóm danh sách đặt phòng trong tuần này
+    const groupedWeeklyBookings = groupBookings(weeklyBookings);
 
     // Hàm kiểm tra booking đã qua
     const isPastBooking = (checkInDate) => {
@@ -250,7 +285,7 @@ console.log("Start of week:", startOfWeek.toString());
             {/* Hiển thị danh sách đặt phòng ngày hôm nay */}
             <div className="mt-4">
                 <h3>Today's Booking List ({new Date().toLocaleDateString('en-GB', { year: 'numeric', month: '2-digit', day: '2-digit' })})</h3>
-                {todayBookings.length === 0 ? (
+                {groupedTodayBookings.length === 0 ? (
                     <p>No bookings today.</p>
                 ) : (
                     <table className="table table-striped">
@@ -270,7 +305,7 @@ console.log("Start of week:", startOfWeek.toString());
                             </tr>
                         </thead>
                         <tbody>
-                            {todayBookings.map((booking) => (
+                            {groupedTodayBookings.map((booking) => (
                                 <tr key={booking.id}>
                                     <td>{booking.name}</td>
                                     <td>{booking.email}</td>
@@ -282,7 +317,7 @@ console.log("Start of week:", startOfWeek.toString());
                                     <td>{formatDate(booking.checkin_date)}</td>
                                     <td>{formatDate(booking.checkout_date)}</td>
                                     <td>{formatCurrency(booking.total_price)}</td>
-                                    <td>{booking.room_id}</td>
+                                    <td>{booking.room_ids}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -293,7 +328,7 @@ console.log("Start of week:", startOfWeek.toString());
             {/* Hiển thị danh sách đặt phòng trong tuần này */}
             <div className="mt-4">
                 <h3>List of bookings for the current week ({formatDate(startOfWeek)} - {formatDate(endOfWeek)})</h3>
-                {weeklyBookings.length === 0 ? (
+                {groupedWeeklyBookings.length === 0 ? (
                     <p>No bookings for the current week.</p>
                 ) : (
                     <div className="bookingStaff-table-container">
@@ -314,11 +349,11 @@ console.log("Start of week:", startOfWeek.toString());
                                 </tr>
                             </thead>
                             <tbody>
-                                {weeklyBookings.map((booking) => (
+                                {groupedWeeklyBookings.map((booking) => (
                                     <tr
                                         key={booking.id}
                                         style={{
-                                            opacity: isPastBooking(booking.checkin_date) ? 0.3 : 1, // Làm mờ nếu ngày đã qua
+                                            opacity: isPastBooking(booking.checkin_date) ? 0.3 : 1,
                                         }}
                                     >
                                         <td>{booking.name}</td>
@@ -331,7 +366,7 @@ console.log("Start of week:", startOfWeek.toString());
                                         <td>{formatDate(booking.checkin_date)}</td>
                                         <td>{formatDate(booking.checkout_date)}</td>
                                         <td>{formatCurrency(booking.total_price)}</td>
-                                        <td>{booking.room_id}</td>
+                                        <td>{booking.room_ids}</td>
                                     </tr>
                                 ))}
                             </tbody>

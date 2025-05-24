@@ -111,9 +111,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
             setSelectedRoomPrice(0);
             setPriceNotification('');
         }
-    }, [isPopupBookNow]);
 
-    useEffect(() => {
         if (isPopupBookNow && selectedRoomName && roomTypes.length > 0) {
             const defaultRoom = roomTypes.find(room => room.name === selectedRoomName);
             if (defaultRoom) {
@@ -228,7 +226,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
 
             // Kiểm tra số lượng phòng có sẵn
             const availableRooms = rooms.filter(r => r.type === formData.roomType && r.status === 'available').length;
-            if (id === "room" && newValue > availableRooms) {
+            if (id === "room" && parseInt(value) > availableRooms) {
                 window.showNotification(`Only ${availableRooms} room${availableRooms > 1 ? 's' : ''} available`, "error");
             }
 
@@ -296,6 +294,12 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
             return;
         }
 
+        // Kiểm tra số lượng trẻ em không vượt quá sức chứa của phòng
+        if (parseInt(formData.children) > Maxmember(formData.room) || parseInt(formData.children) < 0) {
+            window.showNotification(`Cannot book. Number of children (${formData.children}) exceeds room capacity (${Maxmember(formData.room)}).`, "error");
+            return;
+        }
+
         // kiểm tra không cho book quá 30 ngày
         const daysDifference = CalculatorDays(formData.checkin, formData.checkout);
         if (daysDifference > 30) {
@@ -304,7 +308,7 @@ const PopupBookNow = ({ closePopup, isPopupBookNow, selectedRoomName }) => {
         }
 
         const maxAmount = 9999999999999999.99;
-        const totalAmount = parseFloat(formData.Total_price);
+        const totalAmount = parseFloat(formData.total_price);
         const depositAmount = totalAmount * 0.2;
         const amountToPay = paymentOption === 'deposit' ? depositAmount : totalAmount;
 

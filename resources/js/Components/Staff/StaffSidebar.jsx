@@ -52,6 +52,14 @@ const StaffSidebar = () => {
             </NavLink>
           </li>
           <li className="nav-item">
+            <NavLink
+              className="nav-link text-white d-flex align-items-center btn " to="/staff/StaffCustomerManagement"
+            >
+              <i className="bx bx-list-ul me-2"></i>
+              {isOpen && "Customer Management"}
+            </NavLink>
+          </li>
+          <li className="nav-item">
             <NavLink className="nav-link text-white d-flex align-items-center" to="/staff/StaffRoomManagement">
               <i className="bx bx-door-open me-2"></i>
               {isOpen && "Room Management"}

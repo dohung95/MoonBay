@@ -21,6 +21,8 @@ use App\Http\Controllers\ComplaintsController;
 use App\Http\Controllers\Booking_email_successfullyController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\StaffCustomerManagementController;
+
 
 
 
@@ -77,6 +79,14 @@ Route::post('/follow-email', [FollowEmailController::class, 'store']);
     Route::put('/rooms/{id}', [StaffRoomManagementController::class, 'update']);
     Route::delete('/rooms/{id}', [StaffRoomManagementController::class, 'destroy']);
     Route::post('/rooms', [StaffRoomManagementController::class, 'store']);
+      //Route Staff Customer Infomation
+        Route::get('/staff_customers', [StaffCustomerManagementController::class, 'index']);
+        Route::get('/staff_customers/{id}', [StaffCustomerManagementController::class, 'show']);
+        Route::post('/customer-notes', [StaffCustomerManagementController::class, 'store']);
+        Route::put('/staff_customers/{id}/notes', [StaffCustomerManagementController::class, 'updateNotes']);
+        Route::get('/customer-notes/{user_id}', [StaffCustomerManagementController::class, 'getCustomerNotes']);
+
+
 //=----------------------------------------------
 
 
