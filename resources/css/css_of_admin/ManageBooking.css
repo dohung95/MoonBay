@@ -46,7 +46,7 @@
 
 /* Highlight the current date */
 .booking-show .highlight-today {
- border: 1.5px solid #2a91ff !important; /* Blue border for current date */
+ border: 1.5px solid #2a91ff ; /* Blue border for current date */
 }
 
 /* Dim past dates */
