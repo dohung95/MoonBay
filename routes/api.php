@@ -172,4 +172,3 @@ Route::middleware([RememberTokenAuth::class])->post('/payments', [PaymentControl
 
 //Chatbot
 Route::post('/chatbot', [ChatbotController::class, 'handle']);
-Route::get('/booking', [BookingController::class, 'showBookingPage']);
