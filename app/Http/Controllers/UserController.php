@@ -27,42 +27,6 @@ class UserController extends Controller
         return response()->json(['message' => 'User deleted successfully']);
     }
 
-    public function dataUser(Request $request)
-{
-    $perPage = $request->input('per_page', 20);
-    $page = $request->input('page', 1);
-    $search = $request->input('search');
-
-    try {
-        $query = UserManager::where('role', 'user');
-
-        if (!empty($search)) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%$search%")
-                ->orWhere('email', 'like', "%$search%")
-                ->orWhere('phone', 'like', "%$search%");
-            });
-        }
-
-        $users = $query
-            ->select('id', 'name', 'email', 'role', 'phone', 'email_verified_at', 'status', 'created_at', 'updated_at', 'provider')
-            ->paginate($perPage, ['*'], 'page', $page);
-
-        return response()->json([
-            'data' => $users->items(),
-            'current_page' => $users->currentPage(),
-            'last_page' => $users->lastPage(),
-            'per_page' => $users->perPage(),
-            'total' => $users->total(),
-        ], 200);
-    } catch (\Exception $e) {
-        return response()->json([
-            'message' => 'Lỗi khi lấy danh sách người dùng',
-            'error' => $e->getMessage()
-        ], 500);
-    }
-}
-
     public function show_staff()
     {
         $staff = UserManager::where('role', 'staff')->paginate(10);
