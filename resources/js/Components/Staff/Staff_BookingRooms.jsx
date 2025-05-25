@@ -7,6 +7,8 @@ import { AuthContext } from '../AuthContext.jsx';
 import ManageBookings from '../Admin/ManageBookings.jsx';
 import { useSearch } from './SearchContext.jsx';
 import debounce from 'lodash/debounce';
+import PriceHolidayTet from "../PriceHolidayTet.jsx";
+import dayjs from 'dayjs';
 
 // Hàm định dạng tiền VNĐ
 const formatCurrency = (amount) => {
@@ -39,6 +41,21 @@ const isWithinCurrentWeek = (date) => {
     const checkDate = new Date(date);
     return checkDate >= startOfWeek && checkDate <= endOfWeek;
 };
+
+// Hàm tính tống tiền
+const calculateExactTotalPrice = (basePrice, checkin, checkout) => {
+        if (!checkin || !checkout || !dayjs(checkin).isValid() || !dayjs(checkout).isValid()) {
+            return 0;
+        }
+        const startDate = dayjs(checkin);
+        const endDate = dayjs(checkout);
+        let total = 0;
+        for (let date = startDate; date.isBefore(endDate); date = date.add(1, 'day')) {
+            const adjusted = PriceHolidayTet(basePrice, date.format('YYYY-MM-DD')) || basePrice;
+            total += adjusted;
+        }
+        return total;
+    };
 
 const Staff_BookingRooms = () => {
     const { user } = useContext(AuthContext);
@@ -173,16 +190,63 @@ const Staff_BookingRooms = () => {
     useEffect(() => {
         if (roomTypes.length > 0 && roomType && numberOfRooms && checkIn && checkOut) {
             const selectedRoom = roomTypes.find((room) => room.name === roomType);
-            const pricePerRoom = parseFloat(selectedRoom?.price || 0);
-            setSelectedRoomPrice(pricePerRoom);
+            const basePrice = parseFloat(selectedRoom?.price || 0);
+            setSelectedRoomPrice(basePrice);
 
+            const totalExact = calculateExactTotalPrice(basePrice, checkIn, checkOut);
             const roomsCount = parseInt(numberOfRooms) || 0;
-            const days = calculateDays(checkIn, checkOut);
-            const total = (pricePerRoom) * roomsCount * days;
+            const total = totalExact * roomsCount;
             setValue('total_price', total);
-            setValue('price', pricePerRoom);
+            setValue('price', basePrice);
+        } else {
+            setValue('total_price', 0);
+            setValue('price', 0);
         }
     }, [roomType, numberOfRooms, checkIn, checkOut, roomTypes, setValue]);
+
+    const handleChange = (e) => {
+        if (id === 'roomType' || id === 'checkin' || id === 'checkout') {
+            const selectedRoomType = roomTypes.find((roomType) => roomType.name === (id === 'roomType' ? value : formData.roomType));
+            const basePrice = selectedRoomType ? selectedRoomType.price : 0;
+
+            const totalExact = calculateExactTotalPrice(
+                basePrice,
+                id === 'checkin' ? value : formData.checkin,
+                id === 'checkout' ? value : formData.checkout
+            );
+
+            updatedData.Total_price = (totalExact * updatedData.room).toString();
+            setSelectedRoomPrice(basePrice);
+            updatedData.price = basePrice.toString();
+
+            const checkinDate = id === 'checkin' ? value : formData.checkin;
+            const checkoutDate = id === 'checkout' ? value : formData.checkout;
+            let notification = '';
+
+            if (checkinDate && checkoutDate && dayjs(checkinDate).isValid() && dayjs(checkoutDate).isValid()) {
+                const startDate = dayjs(checkinDate);
+                const endDate = dayjs(checkoutDate);
+                const specialDays = [];
+
+                for (let date = startDate; date.isBefore(endDate); date = date.add(1, 'day')) {
+                    const adjustedPrice = PriceHolidayTet(basePrice, date.format('YYYY-MM-DD'));
+                    const isBasePrice = adjustedPrice === basePrice;
+                    if (!isBasePrice) {
+                        const isWeekend = [5, 6].includes(date.day());
+                        const isHoliday = adjustedPrice / basePrice === 1.5;
+                        if (isWeekend || isHoliday) {
+                            specialDays.push({
+                                date: date.format('DD/MM/YYYY'),
+                                isWeekend,
+                                isHoliday,
+                                price: adjustedPrice,
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     // Tính max capacity dựa trên room_type
     const maxCapacity = roomTypes.length > 0 && roomType
@@ -227,11 +291,11 @@ const Staff_BookingRooms = () => {
             // Fetch lại dữ liệu phòng và booking từ server để đồng bộ
             const bookingsResponse = await axios.get('/api/bookingList', { headers: { Authorization: `Bearer ${token}` } });
             setBookings(bookingsResponse.data.data || []);
-            
+
             resetSearch('');
             setSuccess('Đặt phòng thành công!');
             reset();
-            
+
 
             // Automatically clear success message after 3 seconds
             setTimeout(() => setSuccess(null), 3000);
