@@ -133,7 +133,7 @@ export const ChatbotProvider = ({ children, isOpen: propIsOpen, setIsOpen: propS
                 {messages.length === 1 && (
                   <div className="chatbot-message bot faq-message">
                     <div className="faq-container">
-                    <p>Câu hỏi thường gặp:</p>
+                      <p>Câu hỏi thường gặp:</p>
                       {faqs.map((faq, idx) => (
                         <button
                           key={idx}

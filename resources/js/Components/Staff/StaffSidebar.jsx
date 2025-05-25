@@ -37,14 +37,6 @@ const StaffSidebar = () => {
         <ul className={`nav flex-column mt-3`}>
           <li className="nav-item">
             <NavLink
-              className="nav-link text-white d-flex align-items-center btn " to="/staff/UserData"
-            >
-              <i className="bx bx-user-circle me-2"></i>
-              {isOpen && "List User"}
-            </NavLink>
-          </li>
-          <li className="nav-item">
-            <NavLink
               className="nav-link text-white d-flex align-items-center btn " to="/staff/BookingList"
             >
               <i className="bx bx-list-ul me-2"></i>
@@ -55,7 +47,7 @@ const StaffSidebar = () => {
             <NavLink
               className="nav-link text-white d-flex align-items-center btn " to="/staff/StaffCustomerManagement"
             >
-              <i className="bx bx-list-ul me-2"></i>
+              <i className="bx bx-user-circle me-2"></i>
               {isOpen && "Customer Management"}
             </NavLink>
           </li>

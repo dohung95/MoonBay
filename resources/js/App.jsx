@@ -34,11 +34,11 @@ import ManageComplaints from './Components/Admin/ManageComplaints.jsx';
 import RoomManagement from './Components/Admin/RoomManagement.jsx';
 import Reviews from './Components/Reviews.jsx';
 import ManageBookings from './Components/Admin/ManageBookings.jsx';
+import StaffProfile from './Components/Staff/StaffProfile.jsx';
 //-----------------------------------------------------
 
 //components staff
 import StaffBookingList from './Components/Staff/StaffBookingList.jsx';
-import StaffUser from './Components/Staff/StaffUser.jsx';
 import StaffRooms from './Components/Staff/StaffRooms.jsx';
 import { SearchProvider } from './Components/Staff/SearchContext.jsx'
 import StaffRoomManagement from './Components/Staff/StaffRoomManagement.jsx';
@@ -502,12 +502,6 @@ const App = () => {
                                     index element={<Staff_BookingRooms />}
                                 />
                                 <Route
-                                    path="UserData"
-                                    element={
-                                        <StaffUser />
-                                    }
-                                />
-                                <Route
                                     path="BookingList"
                                     element={
                                         <StaffBookingList />
@@ -530,6 +524,13 @@ const App = () => {
                                     element={
                                         <StaffRoomManagement />
                                     }
+                                />
+                                {/* Thêm route mới cho profile */}
+                                <Route
+                                    path="Profile"
+                                    element={
+                                        <StaffProfile />
+                                }
                                 />
                             </Route>
 

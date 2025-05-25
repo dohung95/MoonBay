@@ -8,6 +8,7 @@ import "simplebar-react/dist/simplebar.min.css";
 import "boxicons/css/boxicons.min.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import { SearchProvider } from "./SearchContext";
 
 const StaffDashboard = () => {
     const { searchQuery, setSearchQuery } = useSearch(); // Quản lý giá trị tìm kiếm
