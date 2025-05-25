@@ -133,22 +133,22 @@ const StaffProfile = () => {
     };
 
     if (!user) {
-        return <div className="container mt-5 text-center">Loading...</div>;
+        return <div className="staff-profile-container mt-5 text-center">Loading...</div>;
     }
 
     return (
         <div className="staff-profile-container">
-            <div className="profile-header">
+            <div className="staff-profile-header">
                 <h2>Staff Profile</h2>
             </div>
             
-            <div className="profile-content">
-                <div className="profile-section">
-                    <div className="profile-info">
-                        <div className="profile-avatar">
-                            <img src={user.avatar} alt="Avatar" className="avatar-img" />
+            <div className="staff-profile-content">
+                <div className="staff-profile-section">
+                    <div className="staff-profile-info">
+                        <div className="staff-profile-avatar">
+                            <img src={user.avatar} alt="Avatar" className="staff-avatar-img" />
                         </div>
-                        <div className="profile-details">
+                        <div className="staff-profile-details">
                             <h3>{user.name}</h3>
                             <p><i className="bx bx-envelope"></i> {user.email}</p>
                             <p><i className="bx bx-phone"></i> {user.phone || 'No phone number'}</p>
@@ -157,11 +157,11 @@ const StaffProfile = () => {
                     </div>
                     
                     {!isEditing && !isChangingPassword && (
-                        <div className="profile-actions">
-                            <button className="btn btn-primary" onClick={() => setIsEditing(true)}>
+                        <div className="staff-profile-actions">
+                            <button className="staff-btn staff-btn-primary" onClick={() => setIsEditing(true)}>
                                 Edit Profile
                             </button>
-                            <button className="btn btn-secondary" onClick={() => setIsChangingPassword(true)}>
+                            <button className="staff-btn staff-btn-secondary" onClick={() => setIsChangingPassword(true)}>
                                 Change Password
                             </button>
                         </div>
@@ -169,14 +169,14 @@ const StaffProfile = () => {
                 </div>
 
                 {isEditing && (
-                    <div className="edit-profile-section">
+                    <div className="staff-edit-profile-section">
                         <h3>Edit Profile</h3>
                         <form onSubmit={handleSubmit}>
                             <div className="mb-3">
-                                <label htmlFor="name" className="form-label">Name</label>
+                                <label htmlFor="name" className="staff-form-label">Name</label>
                                 <input
                                     type="text"
-                                    className="form-control"
+                                    className="staff-form-control"
                                     id="name"
                                     name="name"
                                     value={formData.name}
@@ -185,10 +185,10 @@ const StaffProfile = () => {
                                 />
                             </div>
                             <div className="mb-3">
-                                <label htmlFor="email" className="form-label">Email</label>
+                                <label htmlFor="email" className="staff-form-label">Email</label>
                                 <input
                                     type="email"
-                                    className="form-control"
+                                    className="staff-form-control"
                                     id="email"
                                     name="email"
                                     value={formData.email}
@@ -197,21 +197,21 @@ const StaffProfile = () => {
                                 />
                             </div>
                             <div className="mb-3">
-                                <label htmlFor="phone" className="form-label">Phone</label>
+                                <label htmlFor="phone" className="staff-form-label">Phone</label>
                                 <input
                                     type="text"
-                                    className="form-control"
+                                    className="staff-form-control"
                                     id="phone"
                                     name="phone"
                                     value={formData.phone}
                                     onChange={handleChange}
                                 />
                             </div>
-                            <div className="form-actions">
-                                <button type="submit" className="btn btn-success" disabled={loading}>
+                            <div className="staff-form-actions">
+                                <button type="submit" className="staff-btn staff-btn-success" disabled={loading}>
                                     {loading ? 'Saving...' : 'Save Changes'}
                                 </button>
-                                <button type="button" className="btn btn-danger" onClick={handleCancelEdit}>
+                                <button type="button" className="staff-btn staff-btn-danger" onClick={handleCancelEdit}>
                                     Cancel
                                 </button>
                             </div>
@@ -220,14 +220,14 @@ const StaffProfile = () => {
                 )}
 
                 {isChangingPassword && (
-                    <div className="change-password-section">
+                    <div className="staff-change-password-section">
                         <h3>Change Password</h3>
                         <form onSubmit={handleChangePassword}>
                             <div className="mb-3">
-                                <label htmlFor="current_password" className="form-label">Current Password</label>
+                                <label htmlFor="current_password" className="staff-form-label">Current Password</label>
                                 <input
                                     type="password"
-                                    className="form-control"
+                                    className="staff-form-control"
                                     id="current_password"
                                     name="current_password"
                                     value={passwordData.current_password}
@@ -236,10 +236,10 @@ const StaffProfile = () => {
                                 />
                             </div>
                             <div className="mb-3">
-                                <label htmlFor="new_password" className="form-label">New Password</label>
+                                <label htmlFor="new_password" className="staff-form-label">New Password</label>
                                 <input
                                     type="password"
-                                    className="form-control"
+                                    className="staff-form-control"
                                     id="new_password"
                                     name="new_password"
                                     value={passwordData.new_password}
@@ -248,10 +248,10 @@ const StaffProfile = () => {
                                 />
                             </div>
                             <div className="mb-3">
-                                <label htmlFor="new_password_confirmation" className="form-label">Confirm New Password</label>
+                                <label htmlFor="new_password_confirmation" className="staff-form-label">Confirm New Password</label>
                                 <input
                                     type="password"
-                                    className="form-control"
+                                    className="staff-form-control"
                                     id="new_password_confirmation"
                                     name="new_password_confirmation"
                                     value={passwordData.new_password_confirmation}
@@ -259,11 +259,11 @@ const StaffProfile = () => {
                                     required
                                 />
                             </div>
-                            <div className="form-actions">
-                                <button type="submit" className="btn btn-success" disabled={loading}>
+                            <div className="staff-form-actions">
+                                <button type="submit" className="staff-btn staff-btn-success" disabled={loading}>
                                     {loading ? 'Changing...' : 'Change Password'}
                                 </button>
-                                <button type="button" className="btn btn-danger" onClick={handleCancelPasswordChange}>
+                                <button type="button" className="staff-btn staff-btn-danger" onClick={handleCancelPasswordChange}>
                                     Cancel
                                 </button>
                             </div>

@@ -47,6 +47,7 @@ import StaffCustomerManagement from './Components/Staff/StaffCustomerManagement.
 import Complaints from './Components/Complaints.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { FaRobot } from 'react-icons/fa';
+import '../css/App.css';
 
 // PopupContext để quản lý trạng thái popup
 export const PopupContext = React.createContext();
