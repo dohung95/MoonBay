@@ -7,7 +7,7 @@ import { AuthContext } from '../AuthContext.jsx';
 import ManageBookings from '../Admin/ManageBookings.jsx';
 import { useSearch } from './SearchContext.jsx';
 import debounce from 'lodash/debounce';
-import PriceHolidayTet from "../PriceHolidayTet.jsx";
+import PriceHolidayTet from '../PriceHolidayTet.jsx';
 import dayjs from 'dayjs';
 
 // Hàm định dạng tiền VNĐ
@@ -33,33 +33,24 @@ const formatDate = (date) => {
     });
 };
 
-// Hàm kiểm tra ngày trong tuần hiện tại
-const isWithinCurrentWeek = (date) => {
-    const today = new Date();
-    const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)));
-    const endOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 7));
-    const checkDate = new Date(date);
-    return checkDate >= startOfWeek && checkDate <= endOfWeek;
-};
-
-// Hàm tính tống tiền
+// Hàm tính tổng tiền
 const calculateExactTotalPrice = (basePrice, checkin, checkout) => {
-        if (!checkin || !checkout || !dayjs(checkin).isValid() || !dayjs(checkout).isValid()) {
-            return 0;
-        }
-        const startDate = dayjs(checkin);
-        const endDate = dayjs(checkout);
-        let total = 0;
-        for (let date = startDate; date.isBefore(endDate); date = date.add(1, 'day')) {
-            const adjusted = PriceHolidayTet(basePrice, date.format('YYYY-MM-DD')) || basePrice;
-            total += adjusted;
-        }
-        return total;
-    };
+    if (!checkin || !checkout || !dayjs(checkin).isValid() || !dayjs(checkout).isValid()) {
+        return 0;
+    }
+    const startDate = dayjs(checkin);
+    const endDate = dayjs(checkout);
+    let total = 0;
+    for (let date = startDate; date.isBefore(endDate); date = date.add(1, 'day')) {
+        const adjusted = PriceHolidayTet(basePrice, date.format('YYYY-MM-DD')) || basePrice;
+        total += adjusted;
+    }
+    return total;
+};
 
 const Staff_BookingRooms = () => {
     const { user } = useContext(AuthContext);
-    const { register, handleSubmit, formState: { errors }, control, setValue, reset } = useForm({
+    const { register, handleSubmit, formState: { errors }, control, setValue, reset, getValues } = useForm({
         defaultValues: {
             user_id: user.id,
             name: '',
@@ -80,26 +71,50 @@ const Staff_BookingRooms = () => {
     const [success, setSuccess] = useState(null);
     const [roomTypes, setRoomTypes] = useState([]);
     const [selectedRoomPrice, setSelectedRoomPrice] = useState(0);
-    // const [rooms, setRooms] = useState([]);
-    const [bookings, setBookings] = useState([]); // Danh sách đặt phòng
+    const [bookings, setBookings] = useState([]);
     const { searchUser, searchResults, searchError, resetSearch } = useSearch();
-    const [searchTriggered, setSearchTriggered] = useState(false); // State kiểm soát tìm kiếm
+    const [searchTriggered, setSearchTriggered] = useState(false);
+    const [isSearching, setIsSearching] = useState(false);
+    const [showError, setShowError] = useState(false);
+    const [prevSearchValues, setPrevSearchValues] = useState({ name: '', phone: '', email: '' });
 
-    // Thêm khai báo debouncedSearchUser tại đây
-    const debouncedSearchUser = useCallback(
-        debounce((name, phone) => {
-            if (searchUser) {
-                searchUser(name, phone);
+    // Sử dụng debounce cho handleInputChange
+    const debouncedHandleInputChange = useCallback(
+        debounce(async () => {
+            const { name, phone, email } = getValues();
+
+            if (name === prevSearchValues.name && phone === prevSearchValues.phone && email === prevSearchValues.email) {
+                return;
             }
-        }, 0),
-        [searchUser]
+
+            setPrevSearchValues({ name, phone, email });
+
+            if (searchUser && name && phone && email) {
+                setSearchTriggered(true);
+                setIsSearching(true);
+                resetSearch();
+                try {
+                    await searchUser(name, phone, email);
+                } catch (err) {
+                    console.error('Error searching user:', err);
+                    setShowError(true);
+                } finally {
+                    setIsSearching(false);
+                }
+            } else {
+                setSearchTriggered(false);
+                setValue('user_id', null);
+                setIsSearching(false);
+                resetSearch();
+            }
+        }, 300),
+        [searchUser, setValue, resetSearch, prevSearchValues]
     );
 
     const today = new Date();
     const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)));
     const endOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 7));
 
-    // Theo dõi các giá trị thay đổi
     const roomType = useWatch({ control, name: 'room_type' });
     const numberOfRooms = useWatch({ control, name: 'number_of_rooms' });
     const checkIn = useWatch({ control, name: 'checkin_date' });
@@ -108,8 +123,13 @@ const Staff_BookingRooms = () => {
     const totalPrice = useWatch({ control, name: 'total_price' });
     const name = useWatch({ control, name: 'name' });
     const phone = useWatch({ control, name: 'phone' });
+    const email = useWatch({ control, name: 'email' });
 
-    // Fetch room types từ API
+    useEffect(() => {
+        debouncedHandleInputChange();
+        return () => debouncedHandleInputChange.cancel();
+    }, [name, phone, email, debouncedHandleInputChange]);
+
     useEffect(() => {
         const fetchRoomTypes = async () => {
             try {
@@ -155,16 +175,6 @@ const Staff_BookingRooms = () => {
         fetchBookings();
     }, []);
 
-    useEffect(() => {
-        if (name && phone && searchUser && !searchTriggered) {
-            setSearchTriggered(true); // Đánh dấu đã kích hoạt tìm kiếm
-            debouncedSearchUser(name, phone);
-        } else if (!name || !phone) {
-            setValue('user_id', null);
-            setSearchTriggered(false); // Reset khi không có đủ thông tin
-        }
-    }, [name, phone, searchUser, setValue, debouncedSearchUser, searchTriggered]);
-
     // Cập nhật form khi tìm thấy user
     useEffect(() => {
         if (searchResults) {
@@ -175,16 +185,14 @@ const Staff_BookingRooms = () => {
         }
     }, [searchResults, setValue]);
 
-    const [showError, setShowError] = useState(false);
-
     useEffect(() => {
-        if (searchError && name && phone) {
+        if (searchError && searchTriggered && !isSearching) {
             setShowError(true);
-            const timer = setTimeout(() => setShowError(false), 3000); // Ẩn sau 3 giây
-            return () => clearTimeout(timer); // Dọn dẹp timer
+            const timer = setTimeout(() => setShowError(false), 3000);
+            return () => clearTimeout(timer);
         }
         setShowError(false);
-    }, [searchError, name, phone]);
+    }, [searchError, searchTriggered, isSearching]);
 
     // Tính tổng giá tự động
     useEffect(() => {
@@ -203,50 +211,6 @@ const Staff_BookingRooms = () => {
             setValue('price', 0);
         }
     }, [roomType, numberOfRooms, checkIn, checkOut, roomTypes, setValue]);
-
-    const handleChange = (e) => {
-        if (id === 'roomType' || id === 'checkin' || id === 'checkout') {
-            const selectedRoomType = roomTypes.find((roomType) => roomType.name === (id === 'roomType' ? value : formData.roomType));
-            const basePrice = selectedRoomType ? selectedRoomType.price : 0;
-
-            const totalExact = calculateExactTotalPrice(
-                basePrice,
-                id === 'checkin' ? value : formData.checkin,
-                id === 'checkout' ? value : formData.checkout
-            );
-
-            updatedData.Total_price = (totalExact * updatedData.room).toString();
-            setSelectedRoomPrice(basePrice);
-            updatedData.price = basePrice.toString();
-
-            const checkinDate = id === 'checkin' ? value : formData.checkin;
-            const checkoutDate = id === 'checkout' ? value : formData.checkout;
-            let notification = '';
-
-            if (checkinDate && checkoutDate && dayjs(checkinDate).isValid() && dayjs(checkoutDate).isValid()) {
-                const startDate = dayjs(checkinDate);
-                const endDate = dayjs(checkoutDate);
-                const specialDays = [];
-
-                for (let date = startDate; date.isBefore(endDate); date = date.add(1, 'day')) {
-                    const adjustedPrice = PriceHolidayTet(basePrice, date.format('YYYY-MM-DD'));
-                    const isBasePrice = adjustedPrice === basePrice;
-                    if (!isBasePrice) {
-                        const isWeekend = [5, 6].includes(date.day());
-                        const isHoliday = adjustedPrice / basePrice === 1.5;
-                        if (isWeekend || isHoliday) {
-                            specialDays.push({
-                                date: date.format('DD/MM/YYYY'),
-                                isWeekend,
-                                isHoliday,
-                                price: adjustedPrice,
-                            });
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     // Tính max capacity dựa trên room_type
     const maxCapacity = roomTypes.length > 0 && roomType
@@ -274,7 +238,7 @@ const Staff_BookingRooms = () => {
                     name: data.name,
                     email: data.email,
                     phone: data.phone,
-                    password: '0123456789', // Có thể tạo ngẫu nhiên
+                    password: '0123456789',
                 }, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
@@ -292,19 +256,30 @@ const Staff_BookingRooms = () => {
             const bookingsResponse = await axios.get('/api/bookingList', { headers: { Authorization: `Bearer ${token}` } });
             setBookings(bookingsResponse.data.data || []);
 
-            resetSearch('');
             setSuccess('Đặt phòng thành công!');
-            reset();
+            reset({
+                user_id: user.id,
+                name: '',
+                email: '',
+                phone: '',
+                room_type: '',
+                number_of_rooms: 1,
+                children: 0,
+                member: 1,
+                checkin_date: '',
+                checkout_date: '',
+                total_price: 0,
+                price: '',
+            });
+            resetSearch();
+            setPrevSearchValues({ name: '', phone: '', email: '' });
 
-
-            // Automatically clear success message after 3 seconds
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             const errorMessage = err.response?.data?.message || err.message || 'Lỗi khi tạo đặt phòng';
             setError(errorMessage);
-            console.error("Error details:", err.response ? err.response.data : err.message);
+            console.error('Error details:', err.response ? err.response.data : err.message);
 
-            // Automatically clear error message after 3 seconds
             setTimeout(() => setError(null), 3000);
         } finally {
             setLoading(false);
@@ -327,7 +302,7 @@ const Staff_BookingRooms = () => {
     const weeklyBookings = bookings
         .filter((booking) => {
             const checkInDate = new Date(booking.checkin_date);
-            checkInDate.setHours(0, 0, 0, 0); // chuẩn hóa
+            checkInDate.setHours(0, 0, 0, 0);
             return checkInDate >= startOfWeek && checkInDate <= endOfWeek;
         })
         .sort((a, b) => {
@@ -358,7 +333,7 @@ const Staff_BookingRooms = () => {
                     checkin_date: booking.checkin_date,
                     checkout_date: booking.checkout_date,
                     total_price: booking.total_price,
-                    room_ids: [booking.room_id], // Bắt đầu với mảng chứa room_id
+                    room_ids: [booking.room_id],
                 };
             } else {
                 // Cộng số lượng phòng và thêm room_id
@@ -370,8 +345,8 @@ const Staff_BookingRooms = () => {
         // Chuyển đổi thành mảng và thêm key duy nhất cho mỗi nhóm
         return Object.values(grouped).map((group, index) => ({
             ...group,
-            id: index, // Tạo id tạm để sử dụng key trong map
-            room_ids: group.room_ids.join(', '), // Chuyển mảng room_ids thành chuỗi
+            id: index,
+            room_ids: group.room_ids.join(', '),
         }));
     };
 
@@ -384,9 +359,9 @@ const Staff_BookingRooms = () => {
     // Hàm kiểm tra booking đã qua
     const isPastBooking = (checkInDate) => {
         const bookingDate = new Date(checkInDate);
-        bookingDate.setHours(0, 0, 0, 0); // Đặt giờ về 00:00:00 để so sánh ngày chính xác
+        bookingDate.setHours(0, 0, 0, 0);
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Đặt giờ hôm nay về 00:00:00
+        today.setHours(0, 0, 0, 0);
         return bookingDate < today;
     };
 
@@ -509,7 +484,13 @@ const Staff_BookingRooms = () => {
             </div>
 
             {/* Hiển thị thông tin user nếu tìm thấy */}
-            {searchResults && (
+            {isSearching && (
+                <div className="alert alert-info mt-4" style={{ marginBottom: '20px', textAlign: 'center' }}>
+                    <p>Đang tìm kiếm người dùng...</p>
+                </div>
+            )}
+
+            {searchResults && !isSearching && (
                 <div className="alert alert-info mt-4" style={{ marginBottom: '20px', textAlign: 'center' }}>
                     <h4>User Found</h4>
                     <div style={{ display: 'flex', flexWrap: 'wrap' }}>
@@ -524,7 +505,7 @@ const Staff_BookingRooms = () => {
                     </div>
                 </div>
             )}
-            {showError && (
+            {showError && !isSearching && (
                 <div className="alert alert-warning mt-4" style={{ marginBottom: '20px' }}>
                     <p>User not found. A new user will be created upon submission.</p>
                 </div>

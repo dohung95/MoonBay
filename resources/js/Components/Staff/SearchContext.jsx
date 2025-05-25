@@ -10,7 +10,7 @@ export const SearchProvider = ({ children }) => {
     const [searchResults, setSearchResults] = useState(null);
     const [searchError, setSearchError] = useState(null);
 
-    const searchUser = async (name, phone) => {
+    const searchUser = async (name, phone, email) => {
         try {
             const token = Cookies.get('auth_token');
             if (!token) {
@@ -21,7 +21,7 @@ export const SearchProvider = ({ children }) => {
             setSearchError(null);
 
             const response = await axios.get('/api/findUserbystaff', {
-                params: { name, phone },
+                params: { name, phone, email },
                 headers: { Authorization: `Bearer ${token}` },
             });
 

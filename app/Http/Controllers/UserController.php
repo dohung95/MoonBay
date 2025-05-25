@@ -79,13 +79,15 @@ class UserController extends Controller
         try {
             $name = $request->query('name');
             $phone = $request->query('phone');
+            $emnail = $request->query('email');
 
-            if (!$name || !$phone) {
+            if (!$name || !$phone || !$emnail) {
                 return response()->json(['message' => 'Name and phone are required'], 400);
             }
 
             $user = User::where('name', 'LIKE', "%$name%") // Tìm kiếm linh hoạt
                         ->where('phone', $phone)
+                        ->where('email', $emnail)
                         ->first();
 
             if ($user) {
