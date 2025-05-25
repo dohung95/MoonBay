@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\UserManager;
+use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 
 class UserController extends Controller
@@ -70,5 +71,40 @@ class UserController extends Controller
         $user->update($validated);
 
         return response()->json($user);
+    }
+
+    // app/Http/Controllers/AuthController.php
+    public function findUserbystaff(Request $request)
+    {
+        try {
+            $name = $request->query('name');
+            $phone = $request->query('phone');
+
+            if (!$name || !$phone) {
+                return response()->json(['message' => 'Name and phone are required'], 400);
+            }
+
+            $user = User::where('name', 'LIKE', "%$name%") // Tìm kiếm linh hoạt
+                        ->where('phone', $phone)
+                        ->first();
+
+            if ($user) {
+                return response()->json([
+                    'message' => 'User found',
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'phone' => $user->phone,
+                        'email' => $user->email,
+                        'customer_type' => $user->customer_type, // Trả về customer_type
+                    ],
+                ], 200);
+            }
+
+            return response()->json(['message' => 'User not found'], 404);
+        } catch (\Exception $e) {
+            Log::error('Search User Error: ' . $e->getMessage());
+            return response()->json(['message' => 'Failed to search user'], 500);
+        }
     }
 }

@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import '../../../css/css_of_staff/Staff_BookingRoom.css';
 import { AuthContext } from '../AuthContext.jsx';
 import ManageBookings from '../Admin/ManageBookings.jsx';
+import { useSearch } from './SearchContext.jsx';
+import debounce from 'lodash/debounce';
 
 // Hàm định dạng tiền VNĐ
 const formatCurrency = (amount) => {
@@ -61,8 +63,21 @@ const Staff_BookingRooms = () => {
     const [success, setSuccess] = useState(null);
     const [roomTypes, setRoomTypes] = useState([]);
     const [selectedRoomPrice, setSelectedRoomPrice] = useState(0);
-    const [rooms, setRooms] = useState([]);
+    // const [rooms, setRooms] = useState([]);
     const [bookings, setBookings] = useState([]); // Danh sách đặt phòng
+    const { searchUser, searchResults, searchError, resetSearch } = useSearch();
+    const [searchTriggered, setSearchTriggered] = useState(false); // State kiểm soát tìm kiếm
+
+    // Thêm khai báo debouncedSearchUser tại đây
+    const debouncedSearchUser = useCallback(
+        debounce((name, phone) => {
+            if (searchUser) {
+                searchUser(name, phone);
+            }
+        }, 0),
+        [searchUser]
+    );
+
     const today = new Date();
     const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)));
     const endOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 7));
@@ -74,6 +89,8 @@ const Staff_BookingRooms = () => {
     const checkOut = useWatch({ control, name: 'checkout_date' });
     const price = useWatch({ control, name: 'price' });
     const totalPrice = useWatch({ control, name: 'total_price' });
+    const name = useWatch({ control, name: 'name' });
+    const phone = useWatch({ control, name: 'phone' });
 
     // Fetch room types từ API
     useEffect(() => {
@@ -121,6 +138,37 @@ const Staff_BookingRooms = () => {
         fetchBookings();
     }, []);
 
+    useEffect(() => {
+        if (name && phone && searchUser && !searchTriggered) {
+            setSearchTriggered(true); // Đánh dấu đã kích hoạt tìm kiếm
+            debouncedSearchUser(name, phone);
+        } else if (!name || !phone) {
+            setValue('user_id', null);
+            setSearchTriggered(false); // Reset khi không có đủ thông tin
+        }
+    }, [name, phone, searchUser, setValue, debouncedSearchUser, searchTriggered]);
+
+    // Cập nhật form khi tìm thấy user
+    useEffect(() => {
+        if (searchResults) {
+            setValue('user_id', searchResults.id);
+            setValue('email', searchResults.email);
+        } else {
+            setValue('user_id', null);
+        }
+    }, [searchResults, setValue]);
+
+    const [showError, setShowError] = useState(false);
+
+    useEffect(() => {
+        if (searchError && name && phone) {
+            setShowError(true);
+            const timer = setTimeout(() => setShowError(false), 3000); // Ẩn sau 3 giây
+            return () => clearTimeout(timer); // Dọn dẹp timer
+        }
+        setShowError(false);
+    }, [searchError, name, phone]);
+
     // Tính tổng giá tự động
     useEffect(() => {
         if (roomTypes.length > 0 && roomType && numberOfRooms && checkIn && checkOut) {
@@ -141,6 +189,7 @@ const Staff_BookingRooms = () => {
         ? roomTypes.find((room) => room.name === roomType)?.capacity || 0
         : 1;
     const totalMaxCapacity = maxCapacity * (parseInt(numberOfRooms) || 1);
+    const Maxchildren = (parseInt(numberOfRooms) || 1) * 2;
 
     const onSubmit = async (data) => {
         setLoading(true);
@@ -153,6 +202,23 @@ const Staff_BookingRooms = () => {
                 throw new Error('Không tìm thấy token xác thực');
             }
 
+            let userId = data.user_id;
+
+            // Nếu không tìm thấy user, tạo user mới
+            if (!searchResults) {
+                const userResponse = await axios.post('/api/registerbystaff', {
+                    name: data.name,
+                    email: data.email,
+                    phone: data.phone,
+                    password: '0123456789', // Có thể tạo ngẫu nhiên
+                }, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+
+                userId = userResponse.data.user.id;
+                setValue('user_id', userId);
+            }
+
             // Gửi request đặt phòng
             const response = await axios.post('/api/Staff_booking', data, {
                 headers: { Authorization: `Bearer ${token}` },
@@ -161,9 +227,11 @@ const Staff_BookingRooms = () => {
             // Fetch lại dữ liệu phòng và booking từ server để đồng bộ
             const bookingsResponse = await axios.get('/api/bookingList', { headers: { Authorization: `Bearer ${token}` } });
             setBookings(bookingsResponse.data.data || []);
-
+            
+            resetSearch('');
             setSuccess('Đặt phòng thành công!');
             reset();
+            
 
             // Automatically clear success message after 3 seconds
             setTimeout(() => setSuccess(null), 3000);
@@ -205,7 +273,7 @@ const Staff_BookingRooms = () => {
             dateB.setHours(0, 0, 0, 0);
 
             return (dateA < today && dateB < today) ? dateB - dateA : dateA - dateB;
-    });
+        });
 
     // Hàm nhóm các booking trùng lặp
     const groupBookings = (bookings) => {
@@ -260,7 +328,8 @@ const Staff_BookingRooms = () => {
 
     return (
         <div className="Staff_IndexPage">
-            <div>
+            {/* xem lịch booking của khách hàng */}
+            <div style={{ margin: '0' }}>
                 <ManageBookings />
                 <div className="d-flex flex-wrap justify-content-between align-items-center">
                     <p className="mb-0 mx-2 room-type-block standard-room">from room 101-112: Standard Room</p>
@@ -375,6 +444,29 @@ const Staff_BookingRooms = () => {
                 )}
             </div>
 
+            {/* Hiển thị thông tin user nếu tìm thấy */}
+            {searchResults && (
+                <div className="alert alert-info mt-4" style={{ marginBottom: '20px', textAlign: 'center' }}>
+                    <h4>User Found</h4>
+                    <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                        <div style={{ flex: '1 1 50%', boxSizing: 'border-box', paddingRight: '10px' }}>
+                            <p><strong>Name:</strong> {searchResults.name}</p>
+                            <p><strong>Phone:</strong> {searchResults.phone}</p>
+                        </div>
+                        <div style={{ flex: '1 1 50%', boxSizing: 'border-box' }}>
+                            <p><strong>Email/ID Number:</strong> {searchResults.email}</p>
+                            <p><strong>Customer Type:</strong> {searchResults.customer_type}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {showError && (
+                <div className="alert alert-warning mt-4" style={{ marginBottom: '20px' }}>
+                    <p>User not found. A new user will be created upon submission.</p>
+                </div>
+            )}
+
+            {/* booking trực tiếp hoặc gián cho khách */}
             <div className="Staff_BookingRooms-container container mt-4">
                 <h2 className="Staff_BookingRooms-container-title mb-4">FORM BOOKING ROOM</h2>
                 {success && <div className="alert alert-success">{success}</div>}
@@ -487,6 +579,8 @@ const Staff_BookingRooms = () => {
                             <input
                                 type="number"
                                 id="children"
+                                min={0}
+                                max={Maxchildren}
                                 className={`form-control ${errors.children ? 'is-invalid' : ''}`}
                                 {...register('children', {
                                     required: 'Số trẻ em là bắt buộc',

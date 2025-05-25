@@ -416,5 +416,39 @@ class AuthController extends Controller
     ]);
 }
 
+    public function registerbystaff(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|max:255',
+                'phone' => 'required|numeric|digits_between:10,15|unique:users,phone',
+                'password' => 'required|string|min:8',
+            ]);
+
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'],
+                'password' => Hash::make($validated['password']),
+            ]);
+
+            // Token đã được tự động tạo bởi model User (trong boot method)
+
+            // return response()->json([
+            //     'message' => 'Registration successful',
+            //     'user' => $user,
+            //     'token' => $user->remember_token,
+            // ], 201);
+
+            Log::info('User registered successfully', ['user_id' => $user->id]);
+        } catch (\Exception $e) {
+            Log::error('Registration Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all(),
+            ]);
+            return response()->json(['message' => 'Registration failed: ' . $e->getMessage()], 500);
+        }
+    }
 
 }
