@@ -28,11 +28,23 @@ const Login = ({ isPopupLogin, closePopup, openRegisterPopup, openForgotPassword
         if (!email) {
             isValid = false;
             newErrors.email = "Email is required.";
+            setTimeout(() => {
+                setErrors((prevErrors) => {
+                    const { email, ...rest } = prevErrors;
+                    return rest;
+                });
+            }, 3000); // Thời gian đóng thông báo sau 3 giây
         }
 
         if (!password) {
             isValid = false;
             newErrors.password = "Password is required.";
+            setTimeout(() => {
+                setErrors((prevErrors) => {
+                    const { password, ...rest } = prevErrors;
+                    return rest;
+                });
+            }, 3000); // Thời gian đóng thông báo sau 3 giây
         }
 
         setErrors(newErrors);
@@ -67,16 +79,20 @@ const Login = ({ isPopupLogin, closePopup, openRegisterPopup, openForgotPassword
             }
         } catch (error) {
             console.log("Login error:", error);
-            setErrors({
-                ...newErrors,
+            setErrors((prevErrors) => ({
+                ...prevErrors,
                 general: "Email or password is incorrect.",
-            });
-            window.showNotification("Login failed. Please try again.", "error");
+            }));
+            setTimeout(() => {
+                setErrors((prevErrors) => {
+                    const { general, ...rest } = prevErrors;
+                    return rest;
+                });
+            }, 3000); // Thời gian đóng thông báo sau 3 giây
         } finally {
             setLoading(false);
         }
     };
-
     // Xử lý query string từ redirect Google
     const handleGoogleLogin = async () => {
         setLoading(true);

@@ -230,6 +230,11 @@ body.modal-open {
   /* Padding của Bootstrap đã đủ đẹp */
 }
 
+#avatar-input {
+    margin-top: 10px;
+    padding: 5px;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .container_account .card {

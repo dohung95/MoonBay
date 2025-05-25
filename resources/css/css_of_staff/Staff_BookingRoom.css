@@ -169,6 +169,7 @@
 .bookingStaff-table-container {
     max-height: 700px;
     overflow-y: auto;
+    height: 500px;
 }
 
 .bookingStaff-table-container::-webkit-scrollbar {
@@ -180,6 +181,7 @@
     top: 0;
     background-color: #fff;
     z-index: 1;
+    position: sticky;
 }
 
 

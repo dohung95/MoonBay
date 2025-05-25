@@ -73,6 +73,8 @@ Route::post('/follow-email', [FollowEmailController::class, 'store']);
 // route của staff
     Route::get('/bookingList', [BookingController::class, 'BookingList']);
     Route::post('/Staff_booking', [BookingController::class, 'booking_by_staff']);
+    Route::post('/registerbystaff', [AuthController::class, 'registerbystaff']);
+    Route::get('/findUserbystaff', [UserController::class, 'findUserbystaff']);
     // Route Rooms Management
     Route::get('/rooms', [StaffRoomManagementController::class, 'index']);
     Route::get('/rooms/{id}', [StaffRoomManagementController::class, 'show']);

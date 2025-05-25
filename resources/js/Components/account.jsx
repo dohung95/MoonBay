@@ -24,6 +24,8 @@ const Account = () => {
         new_password_confirmation: '',
     });
     const [latestBooking, setLatestBooking] = useState(null);
+    const [avatarFile, setAvatarFile] = useState(null); // Thêm dòng này
+    const [avatarPreview, setAvatarPreview] = useState(null); // Thêm dòng này
 
     // Function to format date to DD/MM/YYYY
     const formatDate = (dateString) => {
@@ -119,23 +121,63 @@ const Account = () => {
         }));
     };
 
+    const handleAvatarChange = (e) => {
+        const file = e.target.files[0];
+        const maxSize = 2 * 1024 * 1024;
+
+        if (file) {
+
+            // Kiểm tra dung lượng file
+            if (file.size > maxSize) {
+                window.showNotification('Image file exceeds the 2MB limit. Please choose a smaller image!', 'error');
+                setAvatarFile(null);
+                setAvatarPreview(null);
+                e.target.value = ''; // Xóa file đã chọn trong input
+                return;
+            }
+
+            setAvatarFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setAvatarPreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         await axios.get('/sanctum/csrf-cookie');
 
         try {
-            const response = await axios.put(`/api/users/${user.id}`, formData, {
+            const formDataToSend = new FormData();
+            formDataToSend.append('name', formData.name);
+            formDataToSend.append('email', formData.email);
+            formDataToSend.append('phone', formData.phone);
+            if (avatarFile) {
+                formDataToSend.append('avatar', avatarFile);
+            }
+            formDataToSend.append('_method', 'PUT');
+
+            const response = await axios.post(`/api/users/${user.id}`, formDataToSend, {
                 headers: {
                     Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data',
                 },
             });
 
-            updateUser(response.data.user);
+            updateUser(response.data.user); // Cập nhật user trong context
             setIsEditing(false);
-            window.showNotification('Profile updated successfully!', 'success');
+            setAvatarFile(null);
+            setAvatarPreview(null);
+            if(isLocalAccount){
+                window.showNotification('Profile updated successfully and logged in again to load new avarta!', 'success');
+            } else {
+                window.showNotification('Profile updated successfully!', 'success');
+            }
         } catch (err) {
             console.error('Error updating profile:', err.response?.data || err.message);
-            window.showNotification('Failed to update profile', 'error');
+            window.showNotification('Failed to update profile: ' + (err.response?.data?.message || err.message), 'error');
         }
     };
 
@@ -181,6 +223,8 @@ const Account = () => {
             email: user?.email || '',
             phone: user?.phone || '',
         });
+        setAvatarFile(null); // Thêm dòng này
+        setAvatarPreview(null); // Thêm dòng này
     };
 
     const handleCancelPasswordChange = () => {
@@ -238,7 +282,36 @@ const Account = () => {
                 <div className="card">
                     <div className="account-wrapper">
                         <div className="account-left">
-                            <img src={user.avatar || '/images/default-avatar.jpg'} alt="Avatar" className="rounded-circle account-avatar" onError={(e) => (e.target.src = '/images/default-avatar.jpg')} />
+                            {isLocalAccount && isEditing ? (
+                                <>
+                                    <img
+                                        src={avatarPreview || `/storage/${user.avatar}`}
+                                        alt="Avatar Preview"
+                                        className="rounded-circle account-avatar"
+                                        key={Date.now()}
+                                        onError={(e) => {
+                                            e.target.src = '/images/Dat/avatar/default.png';
+                                        }}
+                                    />
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleAvatarChange}
+                                        className="form-control mt-2"
+                                        id="avatar-input"
+                                    />
+                                </>
+                            ) : (
+                                <img
+                                    // src={user.avatar || '/images/Dat/avatar/default.png'} // Không thêm tiền tố /storage/
+                                    src={isLocalAccount ? `/storage/${user.avatar}` : user.avatar}
+                                    alt="Avatar"
+                                    className="rounded-circle account-avatar"
+                                    onError={(e) => {
+                                        e.target.src = '/images/Dat/avatar/default.png';
+                                    }}
+                                />
+                            )}
                             <h2 className="account-name">{user.name || 'Unknown User'}</h2>
                         </div>
                         <div className="account-right">

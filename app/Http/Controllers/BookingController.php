@@ -289,6 +289,7 @@ class BookingController extends Controller
             return response()->json(['message' => 'Failed to create booking.', 'error' => $e->getMessage()], 500);
         }
     }
+
     public function checkAvailableRooms(Request $request)
     {
         try {

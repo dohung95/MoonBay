@@ -29,8 +29,9 @@ class User extends Authenticatable
         'avatar', 
         'role',
         'status', 
-        'provider',
-        'is_banned', 
+        'provider', 
+        'is_banned',
+        'customer_type',
         // 'customer_status',
         // 'special_notes',
     ];
