@@ -88,7 +88,7 @@ const Rooms = ({ checkLogins }) => {
                   <img src={`/storage/${room.image}`} alt={room.name} />
                 </div>
                 <div className="room-info p-4">
-                  <h5 className="mb-3">{room.name}</h5>
+                  <h5 className="mb-3">{room.name} ROOM</h5>
                   <p className="text-muted mb-3">
                     <i className="bi bi-people-fill me-1"></i> {room.capacity} guests
                   </p>

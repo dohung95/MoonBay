@@ -31,6 +31,10 @@ class RememberTokenAuth
             return response()->json(['message' => 'Invalid token'], 401);
         }
 
+        if ($user->is_banned) {
+            return response()->json(['message' => 'Banned users cannot access this resource'], 403);
+        }
+
         Auth::guard('web')->login($user);
         Log::info('User authenticated', ['user_id' => $user->id]);
 

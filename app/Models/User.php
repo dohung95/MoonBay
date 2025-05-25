@@ -29,9 +29,13 @@ class User extends Authenticatable
         'avatar', 
         'role',
         'status', 
-        'provider', 
+        'provider',
+        'is_banned', 
         // 'customer_status',
         // 'special_notes',
+    ];
+    protected $casts = [
+        'is_banned' => 'boolean',
     ];
     
 

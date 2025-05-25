@@ -4,11 +4,14 @@ import '../../css/ourhotel.css';
 import Sitemapmini from './sitemapmini';
 import Slider from './ActivitySlider';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 const Ourhotel = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showGalleryModal, setShowGalleryModal] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalReviews, setTotalReviews] = useState(0);
 
   const moonBaySitemap = [
     { label: 'Home', link: '/' },
@@ -28,8 +31,6 @@ const Ourhotel = () => {
       "/images/Huy/hotel_huy/beach.jpg"
     ],
     mainImage: "/images/Huy/hotel_huy/main.jpg",
-    rating: 5,
-    reviews: 256,
     price: "400,000 VND",
     amenities: [
       { name: "Air Conditioning", icon: "❄️" },
@@ -73,7 +74,36 @@ const Ourhotel = () => {
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1000);
+    const fetchReviews = async () => {
+      try {
+        const response = await axios.get('/api/reviews', {
+          params: {
+            page: 1 // Lấy trang đầu tiên, đủ để tính trung bình
+          }
+        });
+        const reviews = response.data.reviews.data;
+        const total = response.data.reviews.total || 0;
+        if (reviews && reviews.length > 0) {
+          const totalRating = reviews.reduce((sum, review) => sum + parseInt(review.rating), 0);
+          const avgRating = (totalRating / reviews.length).toFixed(1);
+          setAverageRating(parseFloat(avgRating));
+        } else {
+          setAverageRating(0);
+        }
+        setTotalReviews(total);
+      } catch (err) {
+        console.error("Lỗi khi tải đánh giá:", err);
+        setAverageRating(0);
+        setTotalReviews(0);
+      }
+    };
+
+    fetchReviews();
+
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -84,6 +114,32 @@ const Ourhotel = () => {
   const nextImage = () => setActiveImage((prev) => (prev + 1) % hotelInfo.images.length);
   const prevImage = () => setActiveImage((prev) => (prev - 1 + hotelInfo.images.length) % hotelInfo.images.length);
 
+  // Hàm hiển thị sao (bao gồm nửa sao)
+  const renderStars = (rating) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const decimal = rating - fullStars;
+
+    // Thêm sao đầy
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(<span key={i} style={{ color: '#FFD700' }}>★</span>);
+    }
+
+    // Thêm nửa sao nếu decimal từ 0.3 đến 0.7
+    if (decimal >= 0.3 && decimal <= 0.7) {
+      stars.push(<span key="half" style={{ color: '#FFD700' }}>✯</span>);
+    } else if (decimal > 0.7) {
+      stars.push(<span key="full" style={{ color: '#FFD700' }}>★</span>);
+    }
+
+    // Thêm sao rỗng để đủ 5 sao
+    while (stars.length < 5) {
+      stars.push(<span key={stars.length} style={{ color: '#888' }}>★</span>);
+    }
+
+    return stars;
+  };
+
   if (isLoading) {
     return (
       <>
@@ -92,7 +148,7 @@ const Ourhotel = () => {
           <Sitemapmini items={moonBaySitemap} />
           <div className="text-center my-5">
             <div className="spinner-border text-primary" role="status" style={{ width: '3rem', height: '3rem' }}>
-              <span className="visually-hidden">Loading...</span>
+              <span className="visually-hidden">Đang tải...</span>
             </div>
           </div>
         </div>
@@ -132,12 +188,10 @@ const Ourhotel = () => {
                     <div className="hotel-location-huy">📍 {hotelInfo.location}</div>
                     <div className="hotel-rating-huy">
                       <div className="stars-huy">
-                        {[...Array(5)].map((_, i) => (
-                          <span key={i} style={{ color: i < Math.floor(hotelInfo.rating) ? '#FFD700' : '#888' }}>★</span>
-                        ))}
+                        {renderStars(averageRating)}
                       </div>
-                      <span className="rating-number-huy">{hotelInfo.rating}</span>
-                      <span className="reviews-count-huy">({hotelInfo.reviews} reviews)</span>
+                      <span className="rating-number-huy">{averageRating}</span>
+                      <span className="reviews-count-huy">({totalReviews} reviews)</span>
                     </div>
                     <div className="hotel-description-huy"><p>{hotelInfo.description}</p></div>
                     <div className="hotel-price-huy">
@@ -169,7 +223,7 @@ const Ourhotel = () => {
             <div className="activities-intro-huy">
               <h5>Explore Nam Du with Our Exclusive Tour Activities</h5>
               <p>
-                Experience the best of Nam Du Island with our curated selection of local tours and activities. Whether you're seeking adventure, culture, or relaxation, our guided experiences promise unforgettable memories amidst breathtaking island scenery.
+              Experience the best of Nam Du Island with our curated selection of local tours and activities. Whether you're seeking adventure, culture, or relaxation, our guided experiences promise unforgettable memories amidst breathtaking island scenery.
               </p>
             </div>
 
@@ -188,6 +242,7 @@ const Ourhotel = () => {
                 <div className="tour-price-huy">
                   <strong>Tour Price:</strong> {hotelInfo.priceTour}
                 </div>
+                <p>👉 Please contact the front desk to register for tours and activities.</p>
               </div>
               <div className="col-md-6">
                 <div className="activity-image-huy">
@@ -196,8 +251,6 @@ const Ourhotel = () => {
               </div>
             </div>
           </div>
-
-
         </div>
       </section>
 
@@ -207,7 +260,7 @@ const Ourhotel = () => {
           <div className="gallery-modal-huy">
             <button className="gallery-close-btn-huy" onClick={() => setShowGalleryModal(false)}>X</button>
             <div className="gallery-content-huy">
-              <img src={hotelInfo.images[activeImage]} alt={`Gallery ${activeImage + 1}`} className="gallery-main-image-huy" />
+              <img src={hotelInfo.images[activeImage]} alt={`Thư viện ảnh ${activeImage + 1}`} className="gallery-main-image-huy" />
               <div className="gallery-navigation-huy">
                 <button className="gallery-nav-btn-huy prev-huy" onClick={prevImage}>{"<"}</button>
                 <div className="gallery-indicator-huy">{activeImage + 1} / {hotelInfo.images.length}</div>

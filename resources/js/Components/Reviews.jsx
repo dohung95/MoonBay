@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import axios from "axios";
+import axios from 'axios';
 import { AuthContext } from "./AuthContext";
 import { FaStar, FaRegStar } from "react-icons/fa";
 import SortStart from "./SortStart";
@@ -29,34 +29,25 @@ const Reviews = ({ checkLogins }) => {
     { label: 'Reviews' }
   ];
 
-  axios.defaults.withCredentials = true;
-  axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
-
-  useEffect(() => {
-    setReviewForm((prev) => ({
-      ...prev,
-      user_id: user?.id || "",
-      email: user?.email || "",
-    }));
-  }, [user]);
-
   const fetchReviews = async (page = 1) => {
     try {
-      const response = await axios.get(`/api/reviews`, {
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const response = await axios.get('http://localhost:8000/api/reviews', {
         params: {
           page,
           filter_rating: filterRating,
         },
+        headers,
       });
 
       const paginated = response.data.reviews;
-
       setReviews(paginated.data);
       setLastPage(paginated.last_page);
       setRatingsCount(response.data.ratingsCount || {});
       setTotalReviews(response.data.reviews.total);
     } catch (err) {
-      console.error("Error loading reviews:", err);
+      console.error("Error loading reviews:", err.response?.data || err.message);
+      toast.error("Failed to load reviews. Please try again.");
     }
   };
 
@@ -79,20 +70,16 @@ const Reviews = ({ checkLogins }) => {
 
     try {
       setLoading(true);
-
+      const headers = { Authorization: `Bearer ${token}` };
       await axios.post(
-        "/api/reviews",
+        "http://localhost:8000/api/reviews",
         {
           user_id: user?.id,
           email: user?.email,
           rating: reviewForm.rating,
           comment: reviewForm.comment,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers }
       );
 
       toast.success("Thank you for submitting your review!");
@@ -107,17 +94,17 @@ const Reviews = ({ checkLogins }) => {
         comment: "",
       });
     } catch (err) {
-      console.error("Error submitting review:", err);
-      toast.error("Unable to submit review, please try again!");
+      console.error("Error submitting review:", err.response?.data || err.message);
+      toast.error("Unable to submit review. You may have been banned. Please try again or contact staff for assistance.");
     } finally {
       setLoading(false);
     }
   };
 
-  const toggleComment = (id) => {
+  const toggleComment = (id, type) => {
     setExpandedComments((prev) => ({
       ...prev,
-      [id]: !prev[id],
+      [`${type}-${id}`]: !prev[`${type}-${id}`],
     }));
   };
 
@@ -228,7 +215,7 @@ const Reviews = ({ checkLogins }) => {
                   key={review.id}
                   className="border rounded p-3 mb-3"
                   style={{
-                    height: "150px",
+                    height: "auto",
                     overflow: "hidden",
                     position: "relative",
                     alignContent: "center",
@@ -243,12 +230,12 @@ const Reviews = ({ checkLogins }) => {
                     )
                   )}
                   <p className="mt-2" style={{ textAlign: "center" }}>
-                    {expandedComments[review.id] ? (
+                    {expandedComments[`comment-${review.id}`] ? (
                       <>
                         {review.comment}
                         <button
                           className="btn btn-link p-0 ms-2"
-                          onClick={() => toggleComment(review.id)}
+                          onClick={() => toggleComment(review.id, 'comment')}
                         >
                           Hide
                         </button>
@@ -261,7 +248,7 @@ const Reviews = ({ checkLogins }) => {
                         {review.comment.length > 100 && (
                           <button
                             className="btn btn-link p-0 ms-2"
-                            onClick={() => toggleComment(review.id)}
+                            onClick={() => toggleComment(review.id, 'comment')}
                           >
                             Read more
                           </button>
@@ -269,6 +256,35 @@ const Reviews = ({ checkLogins }) => {
                       </>
                     )}
                   </p>
+                  {review.admin_reply && (
+                    <p className="mt-2 text-green-600" style={{ textAlign: "center" }}>
+                      <b style={{ color: "red" }}>Moonbay Hotel:</b> {expandedComments[`admin_reply-${review.id}`] ? (
+                        <>
+                          {review.admin_reply}
+                          <button
+                            className="btn btn-link p-0 ms-2"
+                            onClick={() => toggleComment(review.id, 'admin_reply')}
+                          >
+                            Hide
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          {review.admin_reply.length > 100
+                            ? `${review.admin_reply.slice(0, 100)}...`
+                            : review.admin_reply}
+                          {review.admin_reply.length > 100 && (
+                            <button
+                              className="btn btn-link p-0 ms-2"
+                              onClick={() => toggleComment(review.id, 'admin_reply')}
+                            >
+                              Read more
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
