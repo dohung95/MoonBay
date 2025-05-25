@@ -30,8 +30,7 @@ class User extends Authenticatable
         'role',
         'status', 
         'provider', 
-        // 'customer_status',
-        // 'special_notes',
+        'customer_type',
     ];
     
 
