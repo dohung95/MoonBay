@@ -11,6 +11,7 @@ use Laravel\Socialite\Facades\Socialite;
 use App\Models\Booking;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 
 class AuthController extends Controller
@@ -181,58 +182,80 @@ class AuthController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
-    {
+   public function update(Request $request, $id)
+{
+    $user = User::findOrFail($id);
 
-        $user = User::findOrFail($id);
-
-        try {
-            // Lấy token từ header Authorization
-            $token = $request->bearerToken();
-            if (!$token) {
-                return response()->json(['message' => 'Token not provided'], 401);
-            }
-
-            // Tìm user dựa trên token trong cột remember_token
-            $user = User::where('remember_token', $token)->first();
-            if (!$user) {
-                return response()->json(['message' => 'Invalid token'], 401);
-            }
-
-            // Kiểm tra xem user có quyền cập nhật thông tin không
-            if ($user->id != $id) {
-                return response()->json(['message' => 'Unauthorized'], 403);
-            }
-
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|max:255|unique:users,email,' . $id,
-                'phone' => 'nullable|string|max:20',
-            ]);
-
-            // Cập nhật thông tin người dùng trong bảng users
-            $user->update([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'phone' => $validated['phone'],
-            ]);
-
-            // Cập nhật thông tin người dùng trong bảng booking_rooms
-            Booking::where('user_id', $id)->update([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'phone' => $validated['phone'],
-            ]);
-
-            return response()->json([
-                'message' => 'User updated successfully',
-                'user' => $user,
-            ], 200);
-        } catch (\Exception $e) {
-            Log::error('Update User Error: ' . $e->getMessage());
-            return response()->json(['message' => 'Failed to update user: ' . $e->getMessage()], 500);
+    try {
+        $token = $request->bearerToken();
+        if (!$token) {
+            return response()->json(['message' => 'Token not provided'], 401);
         }
+
+        $user = User::where('remember_token', $token)->first();
+        if (!$user) {
+            return response()->json(['message' => 'Invalid token'], 401);
+        }
+
+        if ($user->id != $id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $id,
+            'phone' => 'nullable|string|max:20',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $userData = [
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+        ];
+
+        // Chỉ cập nhật avatar nếu có file mới
+        if ($request->hasFile('avatar')) {
+            Log::info('Avatar file detected:', ['file' => $request->file('avatar')->getClientOriginalName()]);
+
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+                Log::info('Old avatar deleted:', ['path' => $user->avatar]);
+            }
+
+            $path = $request->file('avatar')->store('avarta_user', 'public');
+            Log::info('New avatar stored:', ['path' => $path]);
+            $userData['avatar'] = $path;
+        }
+
+        $user->update($userData);
+        $updatedUser = User::find($id);
+        Log::info('User updated in database:', ['user' => $updatedUser->toArray()]);
+
+        Booking::where('user_id', $id)->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+        ]);
+
+        // Sử dụng giá trị avatar từ database, nếu null thì giữ giá trị cũ từ prevUser
+        $avatarUrl = !empty($updatedUser->avatar)
+            ? url('/storage/' . $updatedUser->avatar)
+            : ($user->avatar ? url('/storage/' . $user->avatar) : '/images/Dat/avatar/default.png');
+
+        Log::info('Avatar URL:', ['url' => $avatarUrl]);
+
+        return response()->json([
+            'message' => 'User updated successfully',
+            'user' => array_merge($updatedUser->toArray(), [
+                'avatar' => $avatarUrl,
+            ]),
+        ], 200);
+    } catch (\Exception $e) {
+        Log::error('Update User Error: ' . $e->getMessage());
+        return response()->json(['message' => 'Failed to update user: ' . $e->getMessage()], 500);
     }
+}
 
     public function changePassword(Request $request, $id)
     {
@@ -393,5 +416,39 @@ class AuthController extends Controller
     ]);
 }
 
+    public function registerbystaff(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|max:255',
+                'phone' => 'required|numeric|digits_between:10,15|unique:users,phone',
+                'password' => 'required|string|min:8',
+            ]);
+
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'],
+                'password' => Hash::make($validated['password']),
+            ]);
+
+            // Token đã được tự động tạo bởi model User (trong boot method)
+
+            // return response()->json([
+            //     'message' => 'Registration successful',
+            //     'user' => $user,
+            //     'token' => $user->remember_token,
+            // ], 201);
+
+            Log::info('User registered successfully', ['user_id' => $user->id]);
+        } catch (\Exception $e) {
+            Log::error('Registration Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all(),
+            ]);
+            return response()->json(['message' => 'Registration failed: ' . $e->getMessage()], 500);
+        }
+    }
 
 }

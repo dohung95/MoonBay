@@ -22,6 +22,7 @@ use App\Http\Controllers\Booking_email_successfullyController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\StaffCustomerManagementController;
+use App\Http\Controllers\AdminController;
 
 
 
@@ -72,6 +73,8 @@ Route::post('/follow-email', [FollowEmailController::class, 'store']);
 // route của staff
     Route::get('/bookingList', [BookingController::class, 'BookingList']);
     Route::post('/Staff_booking', [BookingController::class, 'booking_by_staff']);
+    Route::post('/registerbystaff', [AuthController::class, 'registerbystaff']);
+    Route::get('/findUserbystaff', [UserController::class, 'findUserbystaff']);
     // Route Rooms Management
     Route::get('/rooms', [StaffRoomManagementController::class, 'index']);
     Route::get('/rooms/{id}', [StaffRoomManagementController::class, 'show']);
@@ -139,6 +142,9 @@ Route::get('/reviews', [ReviewController::class, 'indexUser']);
 //Review Admin
 Route::get('/admin/reviews', [ReviewController::class, 'indexAdmin']);
 Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
+Route::post('/admin/reviews/{id}/reply', [ReviewController::class, 'reply']);
+Route::post('/admin/users/{userId}/ban', [AdminController::class, 'banUser']);
+Route::post('/admin/users/{userId}/unban', [AdminController::class, 'unbanUser']);
 
 //Complaint
 Route::middleware([RememberTokenAuth::class])->group(function () {

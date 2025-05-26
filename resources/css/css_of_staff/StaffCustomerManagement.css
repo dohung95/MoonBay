@@ -100,16 +100,16 @@
   box-shadow: 0 1px 4px #43cea233;
 }
 
-/* Status badges */
-.staff-badge-check_in {
+/* Status badges - chỉ giữ 3 class đúng chuẩn hóa */
+.staff-badge-checkin {
   background: #43cea2;
   color: #fff !important;
 }
-.staff-badge-check_out {
+.staff-badge-checkout {
   background: #185a9d;
   color: #fff !important;
 }
-.staff-badge-not_check_in {
+.staff-badge-notcheckin {
   background: #bf5f5f;
   color: #fff !important;
 }
@@ -196,7 +196,7 @@
   min-width: 420px;
   max-width: 98vw;
   max-height: 90vh;
-  overflow-y: auto;
+  /*overflow-y: auto;*/
   position: relative;
   animation: staff-modalIn 0.25s cubic-bezier(.4,2,.6,1) both;
 }

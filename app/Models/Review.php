@@ -15,7 +15,8 @@ class Review extends Model
         'user_id',
         'email',
         'rating',
-        'comment'
+        'comment',
+        'admin_reply'
     ];
 
     public function user()

@@ -1,10 +1,14 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import '../../../css/css_of_staff/Staff_BookingRoom.css';
 import { AuthContext } from '../AuthContext.jsx';
 import ManageBookings from '../Admin/ManageBookings.jsx';
+import { useSearch } from './SearchContext.jsx';
+import debounce from 'lodash/debounce';
+import PriceHolidayTet from '../PriceHolidayTet.jsx';
+import dayjs from 'dayjs';
 
 // Hàm định dạng tiền VNĐ
 const formatCurrency = (amount) => {
@@ -29,18 +33,24 @@ const formatDate = (date) => {
     });
 };
 
-// Hàm kiểm tra ngày trong tuần hiện tại
-const isWithinCurrentWeek = (date) => {
-    const today = new Date();
-    const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)));
-    const endOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 7));
-    const checkDate = new Date(date);
-    return checkDate >= startOfWeek && checkDate <= endOfWeek;
+// Hàm tính tổng tiền
+const calculateExactTotalPrice = (basePrice, checkin, checkout) => {
+    if (!checkin || !checkout || !dayjs(checkin).isValid() || !dayjs(checkout).isValid()) {
+        return 0;
+    }
+    const startDate = dayjs(checkin);
+    const endDate = dayjs(checkout);
+    let total = 0;
+    for (let date = startDate; date.isBefore(endDate); date = date.add(1, 'day')) {
+        const adjusted = PriceHolidayTet(basePrice, date.format('YYYY-MM-DD')) || basePrice;
+        total += adjusted;
+    }
+    return total;
 };
 
 const Staff_BookingRooms = () => {
     const { user } = useContext(AuthContext);
-    const { register, handleSubmit, formState: { errors }, control, setValue, reset } = useForm({
+    const { register, handleSubmit, formState: { errors }, control, setValue, reset, getValues } = useForm({
         defaultValues: {
             user_id: user.id,
             name: '',
@@ -61,21 +71,65 @@ const Staff_BookingRooms = () => {
     const [success, setSuccess] = useState(null);
     const [roomTypes, setRoomTypes] = useState([]);
     const [selectedRoomPrice, setSelectedRoomPrice] = useState(0);
-    const [rooms, setRooms] = useState([]);
-    const [bookings, setBookings] = useState([]); // Danh sách đặt phòng
+    const [bookings, setBookings] = useState([]);
+    const { searchUser, searchResults, searchError, resetSearch } = useSearch();
+    const [searchTriggered, setSearchTriggered] = useState(false);
+    const [isSearching, setIsSearching] = useState(false);
+    const [showError, setShowError] = useState(false);
+    const [prevSearchValues, setPrevSearchValues] = useState({ name: '', phone: '', email: '' });
+
+    // Sử dụng debounce cho handleInputChange
+    const debouncedHandleInputChange = useCallback(
+        debounce(async () => {
+            const { name, phone, email } = getValues();
+
+            if (name === prevSearchValues.name && phone === prevSearchValues.phone && email === prevSearchValues.email) {
+                return;
+            }
+
+            setPrevSearchValues({ name, phone, email });
+
+            if (searchUser && name && phone && email) {
+                setSearchTriggered(true);
+                setIsSearching(true);
+                resetSearch();
+                try {
+                    await searchUser(name, phone, email);
+                } catch (err) {
+                    console.error('Error searching user:', err);
+                    setShowError(true);
+                } finally {
+                    setIsSearching(false);
+                }
+            } else {
+                setSearchTriggered(false);
+                setValue('user_id', null);
+                setIsSearching(false);
+                resetSearch();
+            }
+        }, 300),
+        [searchUser, setValue, resetSearch, prevSearchValues]
+    );
+
     const today = new Date();
     const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)));
     const endOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 7));
 
-    // Theo dõi các giá trị thay đổi
     const roomType = useWatch({ control, name: 'room_type' });
     const numberOfRooms = useWatch({ control, name: 'number_of_rooms' });
     const checkIn = useWatch({ control, name: 'checkin_date' });
     const checkOut = useWatch({ control, name: 'checkout_date' });
     const price = useWatch({ control, name: 'price' });
     const totalPrice = useWatch({ control, name: 'total_price' });
+    const name = useWatch({ control, name: 'name' });
+    const phone = useWatch({ control, name: 'phone' });
+    const email = useWatch({ control, name: 'email' });
 
-    // Fetch room types từ API
+    useEffect(() => {
+        debouncedHandleInputChange();
+        return () => debouncedHandleInputChange.cancel();
+    }, [name, phone, email, debouncedHandleInputChange]);
+
     useEffect(() => {
         const fetchRoomTypes = async () => {
             try {
@@ -121,18 +175,40 @@ const Staff_BookingRooms = () => {
         fetchBookings();
     }, []);
 
+    // Cập nhật form khi tìm thấy user
+    useEffect(() => {
+        if (searchResults) {
+            setValue('user_id', searchResults.id);
+            setValue('email', searchResults.email);
+        } else {
+            setValue('user_id', null);
+        }
+    }, [searchResults, setValue]);
+
+    useEffect(() => {
+        if (searchError && searchTriggered && !isSearching) {
+            setShowError(true);
+            const timer = setTimeout(() => setShowError(false), 3000);
+            return () => clearTimeout(timer);
+        }
+        setShowError(false);
+    }, [searchError, searchTriggered, isSearching]);
+
     // Tính tổng giá tự động
     useEffect(() => {
         if (roomTypes.length > 0 && roomType && numberOfRooms && checkIn && checkOut) {
             const selectedRoom = roomTypes.find((room) => room.name === roomType);
-            const pricePerRoom = parseFloat(selectedRoom?.price || 0);
-            setSelectedRoomPrice(pricePerRoom);
+            const basePrice = parseFloat(selectedRoom?.price || 0);
+            setSelectedRoomPrice(basePrice);
 
+            const totalExact = calculateExactTotalPrice(basePrice, checkIn, checkOut);
             const roomsCount = parseInt(numberOfRooms) || 0;
-            const days = calculateDays(checkIn, checkOut);
-            const total = (pricePerRoom) * roomsCount * days;
+            const total = totalExact * roomsCount;
             setValue('total_price', total);
-            setValue('price', pricePerRoom);
+            setValue('price', basePrice);
+        } else {
+            setValue('total_price', 0);
+            setValue('price', 0);
         }
     }, [roomType, numberOfRooms, checkIn, checkOut, roomTypes, setValue]);
 
@@ -141,6 +217,7 @@ const Staff_BookingRooms = () => {
         ? roomTypes.find((room) => room.name === roomType)?.capacity || 0
         : 1;
     const totalMaxCapacity = maxCapacity * (parseInt(numberOfRooms) || 1);
+    const Maxchildren = (parseInt(numberOfRooms) || 1) * 2;
 
     const onSubmit = async (data) => {
         setLoading(true);
@@ -153,6 +230,23 @@ const Staff_BookingRooms = () => {
                 throw new Error('Không tìm thấy token xác thực');
             }
 
+            let userId = data.user_id;
+
+            // Nếu không tìm thấy user, tạo user mới
+            if (!searchResults) {
+                const userResponse = await axios.post('/api/registerbystaff', {
+                    name: data.name,
+                    email: data.email,
+                    phone: data.phone,
+                    password: '0123456789',
+                }, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+
+                userId = userResponse.data.user.id;
+                setValue('user_id', userId);
+            }
+
             // Gửi request đặt phòng
             const response = await axios.post('/api/Staff_booking', data, {
                 headers: { Authorization: `Bearer ${token}` },
@@ -163,16 +257,29 @@ const Staff_BookingRooms = () => {
             setBookings(bookingsResponse.data.data || []);
 
             setSuccess('Đặt phòng thành công!');
-            reset();
+            reset({
+                user_id: user.id,
+                name: '',
+                email: '',
+                phone: '',
+                room_type: '',
+                number_of_rooms: 1,
+                children: 0,
+                member: 1,
+                checkin_date: '',
+                checkout_date: '',
+                total_price: 0,
+                price: '',
+            });
+            resetSearch();
+            setPrevSearchValues({ name: '', phone: '', email: '' });
 
-            // Automatically clear success message after 3 seconds
             setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             const errorMessage = err.response?.data?.message || err.message || 'Lỗi khi tạo đặt phòng';
             setError(errorMessage);
-            console.error("Error details:", err.response ? err.response.data : err.message);
+            console.error('Error details:', err.response ? err.response.data : err.message);
 
-            // Automatically clear error message after 3 seconds
             setTimeout(() => setError(null), 3000);
         } finally {
             setLoading(false);
@@ -195,7 +302,7 @@ const Staff_BookingRooms = () => {
     const weeklyBookings = bookings
         .filter((booking) => {
             const checkInDate = new Date(booking.checkin_date);
-            checkInDate.setHours(0, 0, 0, 0); // chuẩn hóa
+            checkInDate.setHours(0, 0, 0, 0);
             return checkInDate >= startOfWeek && checkInDate <= endOfWeek;
         })
         .sort((a, b) => {
@@ -205,7 +312,7 @@ const Staff_BookingRooms = () => {
             dateB.setHours(0, 0, 0, 0);
 
             return (dateA < today && dateB < today) ? dateB - dateA : dateA - dateB;
-    });
+        });
 
     // Hàm nhóm các booking trùng lặp
     const groupBookings = (bookings) => {
@@ -226,7 +333,7 @@ const Staff_BookingRooms = () => {
                     checkin_date: booking.checkin_date,
                     checkout_date: booking.checkout_date,
                     total_price: booking.total_price,
-                    room_ids: [booking.room_id], // Bắt đầu với mảng chứa room_id
+                    room_ids: [booking.room_id],
                 };
             } else {
                 // Cộng số lượng phòng và thêm room_id
@@ -238,8 +345,8 @@ const Staff_BookingRooms = () => {
         // Chuyển đổi thành mảng và thêm key duy nhất cho mỗi nhóm
         return Object.values(grouped).map((group, index) => ({
             ...group,
-            id: index, // Tạo id tạm để sử dụng key trong map
-            room_ids: group.room_ids.join(', '), // Chuyển mảng room_ids thành chuỗi
+            id: index,
+            room_ids: group.room_ids.join(', '),
         }));
     };
 
@@ -252,15 +359,16 @@ const Staff_BookingRooms = () => {
     // Hàm kiểm tra booking đã qua
     const isPastBooking = (checkInDate) => {
         const bookingDate = new Date(checkInDate);
-        bookingDate.setHours(0, 0, 0, 0); // Đặt giờ về 00:00:00 để so sánh ngày chính xác
+        bookingDate.setHours(0, 0, 0, 0);
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Đặt giờ hôm nay về 00:00:00
+        today.setHours(0, 0, 0, 0);
         return bookingDate < today;
     };
 
     return (
         <div className="Staff_IndexPage">
-            <div>
+            {/* xem lịch booking của khách hàng */}
+            <div style={{ margin: '0' }}>
                 <ManageBookings />
                 <div className="d-flex flex-wrap justify-content-between align-items-center">
                     <p className="mb-0 mx-2 room-type-block standard-room">from room 101-112: Standard Room</p>
@@ -375,6 +483,35 @@ const Staff_BookingRooms = () => {
                 )}
             </div>
 
+            {/* Hiển thị thông tin user nếu tìm thấy */}
+            {isSearching && (
+                <div className="alert alert-info mt-4" style={{ marginBottom: '20px', textAlign: 'center' }}>
+                    <p>Đang tìm kiếm người dùng...</p>
+                </div>
+            )}
+
+            {searchResults && !isSearching && (
+                <div className="alert alert-info mt-4" style={{ marginBottom: '20px', textAlign: 'center' }}>
+                    <h4>User Found</h4>
+                    <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                        <div style={{ flex: '1 1 50%', boxSizing: 'border-box', paddingRight: '10px' }}>
+                            <p><strong>Name:</strong> {searchResults.name}</p>
+                            <p><strong>Phone:</strong> {searchResults.phone}</p>
+                        </div>
+                        <div style={{ flex: '1 1 50%', boxSizing: 'border-box' }}>
+                            <p><strong>Email/ID Number:</strong> {searchResults.email}</p>
+                            <p><strong>Customer Type:</strong> {searchResults.customer_type}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {showError && !isSearching && (
+                <div className="alert alert-warning mt-4" style={{ marginBottom: '20px' }}>
+                    <p>User not found. A new user will be created upon submission.</p>
+                </div>
+            )}
+
+            {/* booking trực tiếp hoặc gián cho khách */}
             <div className="Staff_BookingRooms-container container mt-4">
                 <h2 className="Staff_BookingRooms-container-title mb-4">FORM BOOKING ROOM</h2>
                 {success && <div className="alert alert-success">{success}</div>}
@@ -487,6 +624,8 @@ const Staff_BookingRooms = () => {
                             <input
                                 type="number"
                                 id="children"
+                                min={0}
+                                max={Maxchildren}
                                 className={`form-control ${errors.children ? 'is-invalid' : ''}`}
                                 {...register('children', {
                                     required: 'Số trẻ em là bắt buộc',

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Review;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class ReviewController extends Controller
 {
@@ -34,7 +34,7 @@ class ReviewController extends Controller
 
 public function indexAdmin(Request $request)
 {
-    $query = Review::query();
+    $query = Review::with('user');
 
     if ($request->has('filter_rating') && is_numeric($request->filter_rating)) {
         $query->where('rating', $request->filter_rating);
@@ -74,6 +74,10 @@ public function indexAdmin(Request $request)
         return response()->json(['message' => 'Unauthorized'], 401);
     }
 
+    if ($user->is_banned) {
+        return response()->json(['message' => 'You are banned and cannot submit reviews. Contact support for assistance.'], 403);
+    }
+
     $validated = $request->validate([
         'rating' => 'required|integer|min:1|max:5',
         'comment' => 'required|string',
@@ -101,6 +105,28 @@ public function destroy($id)
 
     return response()->json(['message' => 'Review đã được xóa thành công']);
 }
+
+public function reply(Request $request, $id)
+    {
+        $review = Review::find($id);
+
+        if (!$review) {
+            return response()->json(['message' => 'Review not found'], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'admin_reply' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Reply is required'], 400);
+        }
+
+        $review->admin_reply = $request->admin_reply;
+        $review->save();
+
+        return response()->json(['message' => 'Reply submitted successfully', 'review' => $review]);
+    }
 
 public function getReviewsByUserID($id)
     {

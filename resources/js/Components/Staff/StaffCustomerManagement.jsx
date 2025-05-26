@@ -131,6 +131,15 @@ const StaffCustomerManagement = () => {
     setNoteList([]);
   };
 
+  // Chuẩn hóa status cho Stay History
+  const normalizeStatus = (status) => {
+    if (!status) return { className: 'notcheckin', text: 'Not check in' };
+    const s = status.trim().toLowerCase().replace(/\s+/g, '');
+    if (s === 'checkin' || s === 'checkedin') return { className: 'checkin', text: 'Check in' };
+    if (s === 'checkout' || s === 'checkedout') return { className: 'checkout', text: 'Check out' };
+    return { className: 'notcheckin', text: 'Not check in' };
+  };
+
   if (loading) {
     return <div className="loading">Loading data...</div>;
   }
@@ -288,27 +297,28 @@ const StaffCustomerManagement = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {stayHistory.map(stay => (
-                        <tr key={stay.id}>
-                          <td>{stay.id}</td>
-                          <td>{stay.number_of_rooms}</td>
-                          <td>{stay.member}</td>
-                          <td>{stay.children}</td>
-                          <td>{new Date(stay.checkin_date).toLocaleDateString('vi-VN')}</td>
-                          <td>{new Date(stay.checkout_date).toLocaleDateString('vi-VN')}</td>
-                          <td className="staff-room-info">{stay.room_id ? `P${stay.room_id} - ${stay.room_type}` : stay.room_type}</td>
-                          <td className="staff-price">{stay.total_price?.toLocaleString('vi-VN')}đ</td>
-                          <td>
-                            <span className={`staff-badge staff-badge-${stay.check_status || 'not_check_in'}`}>
-                              {stay.check_status === 'check_in' ? 'Check in' :
-                                stay.check_status === 'check_out' ? 'Check out' :
-                                'Not check in'}
-                            </span>
-                          </td>
-                          <td>{selectedCustomer.customer_type === 'vip' ? 'VIP' : 
-                              selectedCustomer.customer_type === 'special' ? 'Special' : 'Regular'}</td>
-                        </tr>
-                      ))}
+                      {stayHistory.map(stay => {
+                        const statusObj = normalizeStatus(stay.check_status);
+                        return (
+                          <tr key={stay.id}>
+                            <td>{stay.id}</td>
+                            <td>{stay.number_of_rooms}</td>
+                            <td>{stay.member}</td>
+                            <td>{stay.children}</td>
+                            <td>{new Date(stay.checkin_date).toLocaleDateString('vi-VN')}</td>
+                            <td>{new Date(stay.checkout_date).toLocaleDateString('vi-VN')}</td>
+                            <td className="staff-room-info">{stay.room_id ? `P${stay.room_id} - ${stay.room_type}` : stay.room_type}</td>
+                            <td className="staff-price">{stay.total_price?.toLocaleString('vi-VN')}đ</td>
+                            <td>
+                              <span className={`staff-badge staff-badge-${statusObj.className}`}>
+                                {statusObj.text}
+                              </span>
+                            </td>
+                            <td>{selectedCustomer.customer_type === 'vip' ? 'VIP' : 
+                                selectedCustomer.customer_type === 'special' ? 'Special' : 'Regular'}</td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -323,7 +333,7 @@ const StaffCustomerManagement = () => {
       {/* Note Modal */}
       {isNoteModalOpen && selectedCustomer && (
         <div className="staff-modal-backdrop" onClick={closeNoteModal}>
-          <div className="staff-modal staff-note-modal" style={{maxHeight: 'none', overflow: 'visible'}} onClick={e => e.stopPropagation()}>
+          <div className="staff-modal staff-note-modal" style={{maxHeight: 'none'}} onClick={e => e.stopPropagation()}>
             <div className="staff-modal-header staff-modal-header-note">
               <h3 className="staff-modal-title-center">Note Timeline</h3>
               <button className="close-btn staff-close-btn-wow" onClick={closeNoteModal} aria-label="Close Note Modal">

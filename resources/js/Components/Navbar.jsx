@@ -73,6 +73,8 @@ const Navbar = ({ openLoginPopup }) => {
     dropdownTrigger.addEventListener("click");
   });
 
+  const isLocalAccount = user && user.provider !== 'google';
+
   return (
     <nav
       className={`navbar navbar-expand-lg sticky-top ${isVisible ? 'visible' : 'hidden'} ${isAtTop && !isMenuOpen ? 'navbar-transparent' : 'navbar-colored'
@@ -204,11 +206,12 @@ const Navbar = ({ openLoginPopup }) => {
                   onClick={() => document.getElementById("userDropdownMenu").classList.toggle("show")}
                 >
                   <img
-                    src={user.avatar}
+                    src={isLocalAccount ? `/storage/${user.avatar}` : user.avatar}
                     alt="Avatar"
                     width="40"
                     height="40"
                     className="rounded-circle me-1"
+                    onError={(e) => (e.target.src = '/images/Dat/avatar/default.png')}
                   />
                   <span className="user-name text-white">{user.name}</span>
                 </a>
