@@ -23,9 +23,7 @@ use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\StaffCustomerManagementController;
 use App\Http\Controllers\AdminController;
-
-
-
+use App\Http\Middleware\RememberTokenAuthNoBanCheck;
 
 /*
 |--------------------------------------------------------------------------
@@ -147,7 +145,7 @@ Route::post('/admin/users/{userId}/ban', [AdminController::class, 'banUser']);
 Route::post('/admin/users/{userId}/unban', [AdminController::class, 'unbanUser']);
 
 //Complaint
-Route::middleware([RememberTokenAuth::class])->group(function () {
+Route::middleware([RememberTokenAuthNoBanCheck::class])->group(function () {
     Route::get('/user-info', function (Request $request) {
         $user = Auth::user();
 
