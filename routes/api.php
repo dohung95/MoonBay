@@ -165,6 +165,7 @@ Route::middleware([RememberTokenAuthNoBanCheck::class])->group(function () {
     });
 
     Route::post('/complaints', [ComplaintsController::class, 'store']);
+    Route::get('/bookings/active/{userId}', [ComplaintsController::class, 'checkActiveBooking']);
 });
 
 //Complaint Admin

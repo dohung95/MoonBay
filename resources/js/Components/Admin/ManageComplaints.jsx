@@ -151,22 +151,130 @@ const ManageComplaints = () => {
       <ToastContainer />
       <h2 className="text-center mb-4 fw-bold">Manage Complaints</h2>
 
+      <style>
+        {`
+          /* Điều chỉnh độ rộng cột */
+          .custom-table th, .custom-table td {
+            vertical-align: middle;
+            text-align: center;
+            white-space: nowrap; /* Ngăn wrap nội dung */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Hiển thị ... nếu nội dung quá dài */
+          }
+
+          /* Độ rộng cố định cho từng cột */
+          .custom-table th:nth-child(1), .custom-table td:nth-child(1) {
+            width: 50px; /* ID */
+          }
+          .custom-table th:nth-child(2), .custom-table td:nth-child(2) {
+            width: 60px; /* UserID */
+          }
+          .custom-table th:nth-child(3), .custom-table td:nth-child(3) {
+            width: 80px; /* Name */
+          }
+          .custom-table th:nth-child(4), .custom-table td:nth-child(4) {
+            width: 120px; /* Email */
+          }
+          .custom-table th:nth-child(5), .custom-table td:nth-child(5) {
+            width: 100px; /* Phone Number */
+          }
+          .custom-table th:nth-child(6), .custom-table td:nth-child(6) {
+            width: 100px; /* Complaint Type */
+          }
+          .custom-table th:nth-child(7), .custom-table td:nth-child(7) {
+            width: 150px; /* Description */
+          }
+          .custom-table th:nth-child(8), .custom-table td:nth-child(8) {
+            width: 80px; /* Contact Preference */
+          }
+          .custom-table th:nth-child(9), .custom-table td:nth-child(9) {
+            width: 100px; /* Created Date */
+          }
+          .custom-table th:nth-child(10), .custom-table td:nth-child(10) {
+            width: 150px; /* Status */
+          }
+          .custom-table th:nth-child(11), .custom-table td:nth-child(11) {
+            width: 150px; /* Handler */
+          }
+          .custom-table th:nth-child(12), .custom-table td:nth-child(12) {
+            width: 120px; /* Action */
+          }
+
+          /* Đảm bảo dropdown hiển thị đầy đủ nội dung */
+          .custom-table .form-select {
+            width: 100%;
+            min-width: 120px;
+            padding: 5px;
+          }
+
+          /* Responsive cho màn hình nhỏ */
+          @media (max-width: 768px) {
+            .custom-table th, .custom-table td {
+              font-size: 14px;
+              padding: 8px 4px; /* Giảm padding trên mobile */
+            }
+            .custom-table th:nth-child(1), .custom-table td:nth-child(1) {
+              width: 40px;
+            }
+            .custom-table th:nth-child(2), .custom-table td:nth-child(2) {
+              width: 50px;
+            }
+            .custom-table th:nth-child(3), .custom-table td:nth-child(3) {
+              width: 60px;
+            }
+            .custom-table th:nth-child(4), .custom-table td:nth-child(4) {
+              width: 100px;
+            }
+            .custom-table th:nth-child(5), .custom-table td:nth-child(5) {
+              width: 80px;
+            }
+            .custom-table th:nth-child(6), .custom-table td:nth-child(6) {
+              width: 80px;
+            }
+            .custom-table th:nth-child(7), .custom-table td:nth-child(7) {
+              width: 120px;
+            }
+            .custom-table th:nth-child(8), .custom-table td:nth-child(8) {
+              width: 60px;
+            }
+            .custom-table th:nth-child(9), .custom-table td:nth-child(9) {
+              width: 80px;
+            }
+            .custom-table th:nth-child(10), .custom-table td:nth-child(10) {
+              width: 120px;
+            }
+            .custom-table th:nth-child(11), .custom-table td:nth-child(11) {
+              width: 120px;
+            }
+            .custom-table th:nth-child(12), .custom-table td:nth-child(12) {
+              width: 100px;
+            }
+          }
+
+          /* Đảm bảo các nút Save/Delete không bị co lại */
+          .custom-table .btn-sm {
+            padding: 5px 10px;
+            font-size: 14px;
+          }
+        `}
+      </style>
+
       <div className="table-responsive">
-        <table className="table table-striped table-bordered table-hover align-middle">
+        <table className="table table-striped table-bordered table-hover align-middle custom-table">
           <thead className="table-light">
             <tr className="text-center">
-              <th scope="col" className="px-3 py-2">ID</th>
-              <th scope="col" className="px-3 py-2">UserID</th>
-              <th scope="col" className="px-3 py-2">Name</th>
-              <th scope="col" className="px-3 py-2">Email</th>
-              <th scope="col" className="px-3 py-2">Phone Number</th>
-              <th scope="col" className="px-3 py-2">Complaint Type</th>
-              <th scope="col" className="px-3 py-2">Description</th>
-              <th scope="col" className="px-3 py-2">Contact Preference</th>
-              <th scope="col" className="px-3 py-2">Created Date</th>
-              <th scope="col" className="px-3 py-2">Status</th>
-              <th scope="col" className="px-3 py-2">Handler</th>
-              <th scope="col" className="px-3 py-2">Action</th>
+              <th scope="col">ID</th>
+              <th scope="col">UserID</th>
+              <th scope="col">Name</th>
+              <th scope="col">Email</th>
+              <th scope="col">Phone Number</th>
+              <th scope="col">Complaint Type</th>
+              <th scope="col">Description</th>
+              <th scope="col">Contact Preference</th>
+              <th scope="col">Created Date</th>
+              <th scope="col">Status</th>
+              <th scope="col">Handler</th>
+              <th scope="col">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -177,16 +285,16 @@ const ManageComplaints = () => {
 
               return (
                 <tr key={c.id} className="text-center">
-                  <td className="px-3 py-2">{c.id}</td>
-                  <td className="px-3 py-2">{c.user_id}</td>
-                  <td className="px-3 py-2">{c.name}</td>
-                  <td className="px-3 py-2">{c.customer_email}</td>
-                  <td className="px-3 py-2">{c.customer_phone}</td>
-                  <td className="px-3 py-2">{c.complaint_type}</td>
-                  <td className="px-3 py-2">{c.description}</td>
-                  <td className="px-3 py-2">{c.contact_preference}</td>
-                  <td className="px-3 py-2">{new Date(c.created_at).toLocaleDateString()}</td>
-                  <td className="px-3 py-2">
+                  <td>{c.id}</td>
+                  <td>{c.user_id}</td>
+                  <td>{c.name}</td>
+                  <td>{c.customer_email}</td>
+                  <td>{c.customer_phone}</td>
+                  <td>{c.complaint_type}</td>
+                  <td>{c.description}</td>
+                  <td>{c.contact_preference}</td>
+                  <td>{new Date(c.created_at).toLocaleDateString()}</td>
+                  <td>
                     <select
                       value={status}
                       onChange={(e) => handleChangeLocal(c.id, 'status', e.target.value)}
@@ -197,7 +305,7 @@ const ManageComplaints = () => {
                       <option value="rejected">Rejected</option>
                     </select>
                   </td>
-                  <td className="px-3 py-2">
+                  <td>
                     <select
                       value={handler_name}
                       onChange={(e) => handleChangeLocal(c.id, 'handler_name', e.target.value)}
@@ -211,7 +319,7 @@ const ManageComplaints = () => {
                       ))}
                     </select>
                   </td>
-                  <td className="px-3 py-2">
+                  <td>
                     <div className="d-flex justify-content-center gap-2">
                       <button
                         onClick={() => handleSave(c.id)}
