@@ -539,7 +539,6 @@ const App = () => {
                                     />
                                 </Route>
 
-<<<<<<< HEAD
                         {/* Route Admin */}
                         <Route
                             path="/admin"
@@ -646,11 +645,6 @@ const App = () => {
                         </Routes>
                     </Router>
                 </SearchProvider>
-=======
-                            </Routes>
-                        </Router>
-                    </SearchProvider>
->>>>>>> 59e9838b9a371c11050b2d573970169c3e5fbee3
                 </ChatbotProvider>
             </AuthProvider>
         </PopupContext.Provider>

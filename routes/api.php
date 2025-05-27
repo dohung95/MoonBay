@@ -22,16 +22,10 @@ use App\Http\Controllers\Booking_email_successfullyController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\StaffCustomerManagementController;
-use App\Http\Controllers\AdminController;
-<<<<<<< HEAD
 use App\Http\Controllers\ServiceController;
-
-
-
-=======
+use App\Http\Controllers\AdminController;
 use App\Http\Middleware\RememberTokenAuthNoBanCheck;
 use App\Http\Controllers\ChartController;
->>>>>>> 59e9838b9a371c11050b2d573970169c3e5fbee3
 
 /*
 |--------------------------------------------------------------------------
