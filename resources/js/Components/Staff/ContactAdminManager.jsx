@@ -83,7 +83,7 @@ function ContactAdminManager() {
     return (
         <div className="contact-admin-container">
             <h2 className="contact-admin-title">Contact Management</h2>
-            <p className="contact-admin-description">Xem, lọc và xử lý các tin nhắn liên hệ từ khách hàng gửi về hệ thống.</p>
+            <p className="contact-admin-description">Manage customer contact messages efficiently.</p>
             <div className="contact-admin-search-filter-row">
                 <div className="contact-admin-filter-container">
                     <select

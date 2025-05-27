@@ -13,7 +13,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id')->nullable();
             $table->unsignedBigInteger('staff_id')->nullable();
             $table->string('staff_name');
-            $table->text('note');
+            $table->text('note')->nullable();
             $table->string('customer_type');
             $table->timestamps();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
