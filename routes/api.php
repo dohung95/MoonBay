@@ -23,10 +23,15 @@ use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\StaffCustomerManagementController;
 use App\Http\Controllers\AdminController;
+<<<<<<< HEAD
 use App\Http\Controllers\ServiceController;
 
 
 
+=======
+use App\Http\Middleware\RememberTokenAuthNoBanCheck;
+use App\Http\Controllers\ChartController;
+>>>>>>> 59e9838b9a371c11050b2d573970169c3e5fbee3
 
 /*
 |--------------------------------------------------------------------------
@@ -126,6 +131,8 @@ Route::get('/special-offers', [SpecialOfferController::class, 'index']);
 Route::put('/special-offers/{id}', [SpecialOfferController::class, 'update']);
 Route::post('/send-offers', [OfferController::class, 'sendOffers']);
 Route::post('/Send_booking_email_successfully', [Booking_email_successfullyController::class, 'sendEmail']);
+Route::get('/chart/bookings-ratio/{year}', [ChartController::class, 'bookingsRatio']);
+Route::get('/chart/revenue/{year}', [ChartController::class, 'revenue']);
 
 //Review User
 Route::middleware([RememberTokenAuth::class])->group(function () {
@@ -160,7 +167,7 @@ Route::post('/admin/users/{userId}/ban', [AdminController::class, 'banUser']);
 Route::post('/admin/users/{userId}/unban', [AdminController::class, 'unbanUser']);
 
 //Complaint
-Route::middleware([RememberTokenAuth::class])->group(function () {
+Route::middleware([RememberTokenAuthNoBanCheck::class])->group(function () {
     Route::get('/user-info', function (Request $request) {
         $user = Auth::user();
 
@@ -177,6 +184,7 @@ Route::middleware([RememberTokenAuth::class])->group(function () {
     });
 
     Route::post('/complaints', [ComplaintsController::class, 'store']);
+    Route::get('/bookings/active/{userId}', [ComplaintsController::class, 'checkActiveBooking']);
 });
 
 //Complaint Admin

@@ -24,7 +24,7 @@ import ProtectedStaffRoute from './Components/ProtectedStaffRoute.jsx';
 import ResetPassword from './Components/ResetPassword.jsx';
 import AdminDashboard from './Components/Admin/AdminDashboard.jsx';
 import StaffDashboard from './Components/Staff/StaffDashboard.jsx';
-import {ChatbotProvider} from './Components/Chatbot.jsx';
+import { ChatbotProvider } from './Components/Chatbot.jsx';
 import UserManagement from './Components/Admin/UserManagement.jsx';
 import RoomListManagement from './Components/Admin/RoomListManagement.jsx';
 import EmployeeListManagement from './Components/Admin/EmployeeListManagement.jsx';
@@ -34,6 +34,7 @@ import ManageComplaints from './Components/Admin/ManageComplaints.jsx';
 import RoomManagement from './Components/Admin/RoomManagement.jsx';
 import Reviews from './Components/Reviews.jsx';
 import ManageBookings from './Components/Admin/ManageBookings.jsx';
+import Chart from './Components/Admin/Chart.jsx';
 import StaffProfile from './Components/Staff/StaffProfile.jsx';
 //-----------------------------------------------------
 
@@ -200,247 +201,345 @@ const App = () => {
         <PopupContext.Provider value={{ closePopup }}>
             <AuthProvider>
                 <ChatbotProvider isOpen={isChatOpen} setIsOpen={setIsChatOpen}>
-                <SearchProvider>
-                    <Router>
-                        <AuthHandler />
-                        <button
-                            onClick={toggleChatbot}
-                            style={{
-                                position: 'fixed',
-                                bottom: '2%',
-                                right: '6%',
-                                zIndex: 10000,
-                                background: '#007bff',
-                                color: '#fff',
-                                border: 'none',
-                                borderRadius: '50%',
-                                width: '60px',
-                                height: '60px',
-                                fontSize: '24px',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.background = "#0056b3";
-                                e.currentTarget.style.transform = "scale(1.1)";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.background = "#007bff";
-                                e.currentTarget.style.transform = "scale(1)";
-                              }}
-                        >
-                            <FaRobot />
-                        </button>
-                        <Routes>
-                            <Route path="/reset-password" element={<ResetPassword openLoginPopup={openLoginPopup}/>} />
-                            {/* Các route công khai */}
-                            <Route
-                                path="/"
-                                element={
-                                    <PublicLayout
-                                        openLoginPopup={openLoginPopup}
-                                        isPopupLogin={isPopupLogin}
-                                        isPopupRegister={isPopupRegister}
-                                        isPopupForgotPassword={isPopupForgotPassword}
-                                        isPopupBookNow={isPopupBookNow}
-                                        closePopup={closePopup}
-                                        openRegisterPopup={openRegisterPopup}
-                                        openForgotPassword={openForgotPassword}
-                                        selectedRoomName={selectedRoomName}
-                                    >
-                                        <Home />
-                                    </PublicLayout>
-                                }
-                            />
-                            <Route
-                                path="/booking"
-                                element={
-                                    <PublicLayout
-                                        openLoginPopup={openLoginPopup}
-                                        isPopupLogin={isPopupLogin}
-                                        isPopupRegister={isPopupRegister}
-                                        isPopupForgotPassword={isPopupForgotPassword}
-                                        isPopupBookNow={isPopupBookNow}
-                                        closePopup={closePopup}
-                                        openRegisterPopup={openRegisterPopup}
-                                        openForgotPassword={openForgotPassword}
-                                        selectedRoomName={selectedRoomName}
-                                    >
-                                        <Booking
-                                            checkLogin={checkLogin}
-                                            checkLogins={checkLogins}
+                    <SearchProvider>
+                        <Router>
+                            <AuthHandler />
+                            <button
+                                onClick={toggleChatbot}
+                                style={{
+                                    position: 'fixed',
+                                    bottom: '2%',
+                                    right: '6%',
+                                    zIndex: 10000,
+                                    background: '#007bff',
+                                    color: '#fff',
+                                    border: 'none',
+                                    borderRadius: '50%',
+                                    width: '60px',
+                                    height: '60px',
+                                    fontSize: '24px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = "#0056b3";
+                                    e.currentTarget.style.transform = "scale(1.1)";
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = "#007bff";
+                                    e.currentTarget.style.transform = "scale(1)";
+                                }}
+                            >
+                                <FaRobot />
+                            </button>
+                            <Routes>
+                                <Route path="/reset-password" element={<ResetPassword openLoginPopup={openLoginPopup} />} />
+                                {/* Các route công khai */}
+                                <Route
+                                    path="/"
+                                    element={
+                                        <PublicLayout
+                                            openLoginPopup={openLoginPopup}
+                                            isPopupLogin={isPopupLogin}
+                                            isPopupRegister={isPopupRegister}
+                                            isPopupForgotPassword={isPopupForgotPassword}
                                             isPopupBookNow={isPopupBookNow}
                                             closePopup={closePopup}
-                                        />
-                                    </PublicLayout>
-                                }
-                            />
-                            <Route
-                                path="/account"
-                                element={
-                                    <PublicLayout
-                                        openLoginPopup={openLoginPopup}
-                                        isPopupLogin={isPopupLogin}
-                                        isPopupRegister={isPopupRegister}
-                                        isPopupForgotPassword={isPopupForgotPassword}
-                                        isPopupBookNow={isPopupBookNow}
-                                        closePopup={closePopup}
-                                        openRegisterPopup={openRegisterPopup}
-                                        openForgotPassword={openForgotPassword}
-                                        selectedRoomName={selectedRoomName}
-                                    >
-                                        <Account openLoginPopup={openLoginPopup} />
-                                    </PublicLayout>
-                                }
-                            />
-                            <Route
-                                path="/About"
-                                element={
-                                    <PublicLayout
-                                        openLoginPopup={openLoginPopup}
-                                        isPopupLogin={isPopupLogin}
-                                        isPopupRegister={isPopupRegister}
-                                        isPopupForgotPassword={isPopupForgotPassword}
-                                        isPopupBookNow={isPopupBookNow}
-                                        closePopup={closePopup}
-                                        openRegisterPopup={openRegisterPopup}
-                                        openForgotPassword={openForgotPassword}
-                                        selectedRoomName={selectedRoomName}
-                                    >
-                                        <AboutUs />
-                                    </PublicLayout>
-                                }
-                            />
-                            <Route
-                                path="/Ourhotels"
-                                element={
-                                    <PublicLayout
-                                        openLoginPopup={openLoginPopup}
-                                        isPopupLogin={isPopupLogin}
-                                        isPopupRegister={isPopupRegister}
-                                        isPopupForgotPassword={isPopupForgotPassword}
-                                        isPopupBookNow={isPopupBookNow}
-                                        closePopup={closePopup}
-                                        openRegisterPopup={openRegisterPopup}
-                                        openForgotPassword={openForgotPassword}
-                                        selectedRoomName={selectedRoomName}
-                                    >
-                                        <OurHotels />
-                                    </PublicLayout>
-                                }
-                            />
-                            <Route
-                                path="/Rooms"
-                                element={
-                                    <PublicLayout
-                                        openLoginPopup={openLoginPopup}
-                                        isPopupLogin={isPopupLogin}
-                                        isPopupRegister={isPopupRegister}
-                                        isPopupForgotPassword={isPopupForgotPassword}
-                                        isPopupBookNow={isPopupBookNow}
-                                        closePopup={closePopup}
-                                        openRegisterPopup={openRegisterPopup}
-                                        openForgotPassword={openForgotPassword}
-                                        selectedRoomName={selectedRoomName}
-                                    >
-                                        <Rooms checkLogins={checkLogins} />
-                                    </PublicLayout>
-                                }
-                            />
-                            <Route
-                                path="/Contact"
-                                element={
-                                    <PublicLayout
-                                        openLoginPopup={openLoginPopup}
-                                        isPopupLogin={isPopupLogin}
-                                        isPopupRegister={isPopupRegister}
-                                        isPopupForgotPassword={isPopupForgotPassword}
-                                        isPopupBookNow={isPopupBookNow}
-                                        closePopup={closePopup}
-                                        openRegisterPopup={openRegisterPopup}
-                                        openForgotPassword={openForgotPassword}
-                                        selectedRoomName={selectedRoomName}
-                                    >
-                                        <Contact />
-                                    </PublicLayout>
-                                }
-                            />
-                            <Route
-                                path="/Services"
-                                element={
-                                    <PublicLayout
-                                        openLoginPopup={openLoginPopup}
-                                        isPopupLogin={isPopupLogin}
-                                        isPopupRegister={isPopupRegister}
-                                        isPopupForgotPassword={isPopupForgotPassword}
-                                        isPopupBookNow={isPopupBookNow}
-                                        closePopup={closePopup}
-                                        openRegisterPopup={openRegisterPopup}
-                                        openForgotPassword={openForgotPassword}
-                                        selectedRoomName={selectedRoomName}
-                                    >
-                                        <ServicePage />
-                                    </PublicLayout>
-                                }
-                            />
-                            <Route
-                            path="/review"
-                            element={
-                                <PublicLayout
-                                    openLoginPopup={openLoginPopup}
-                                    isPopupLogin={isPopupLogin}
-                                    isPopupRegister={isPopupRegister}
-                                    isPopupForgotPassword={isPopupForgotPassword}
-                                    isPopupBookNow={isPopupBookNow}
-                                    closePopup={closePopup}
-                                    openRegisterPopup={openRegisterPopup}
-                                    openForgotPassword={openForgotPassword}
-                                    selectedRoomName={selectedRoomName}
-                                >
-                                    <Reviews checkLogins={checkLogin} />
-                                </PublicLayout>
-                            }
-                        />
-                        <Route
-                            path="/complaint"
-                            element={
-                                <PublicLayout
-                                    openLoginPopup={openLoginPopup}
-                                    isPopupLogin={isPopupLogin}
-                                    isPopupRegister={isPopupRegister}
-                                    isPopupForgotPassword={isPopupForgotPassword}
-                                    isPopupBookNow={isPopupBookNow}
-                                    closePopup={closePopup}
-                                    openRegisterPopup={openRegisterPopup}
-                                    openForgotPassword={openForgotPassword}
-                                    selectedRoomName={selectedRoomName}
-                                >
-                                    <Complaints checkLogins={checkLogin} />
-                                </PublicLayout>
-                            }
-                        />
-                        <Route
-                            path="*"
-                            element={
-                                <PublicLayout
-                                    openLoginPopup={openLoginPopup}
-                                    isPopupLogin={isPopupLogin}
-                                    isPopupRegister={isPopupRegister}
-                                    isPopupForgotPassword={isPopupForgotPassword}
-                                    isPopupBookNow={isPopupBookNow}
-                                    closePopup={closePopup}
-                                    openRegisterPopup={openRegisterPopup}
-                                    openForgotPassword={openForgotPassword}
-                                    selectedRoomName={selectedRoomName}
-                                >
-                                    <Home />
-                                </PublicLayout>
-                            }
-                        />
+                                            openRegisterPopup={openRegisterPopup}
+                                            openForgotPassword={openForgotPassword}
+                                            selectedRoomName={selectedRoomName}
+                                        >
+                                            <Home />
+                                        </PublicLayout>
+                                    }
+                                />
+                                <Route
+                                    path="/booking"
+                                    element={
+                                        <PublicLayout
+                                            openLoginPopup={openLoginPopup}
+                                            isPopupLogin={isPopupLogin}
+                                            isPopupRegister={isPopupRegister}
+                                            isPopupForgotPassword={isPopupForgotPassword}
+                                            isPopupBookNow={isPopupBookNow}
+                                            closePopup={closePopup}
+                                            openRegisterPopup={openRegisterPopup}
+                                            openForgotPassword={openForgotPassword}
+                                            selectedRoomName={selectedRoomName}
+                                        >
+                                            <Booking
+                                                checkLogin={checkLogin}
+                                                checkLogins={checkLogins}
+                                                isPopupBookNow={isPopupBookNow}
+                                                closePopup={closePopup}
+                                            />
+                                        </PublicLayout>
+                                    }
+                                />
+                                <Route
+                                    path="/account"
+                                    element={
+                                        <PublicLayout
+                                            openLoginPopup={openLoginPopup}
+                                            isPopupLogin={isPopupLogin}
+                                            isPopupRegister={isPopupRegister}
+                                            isPopupForgotPassword={isPopupForgotPassword}
+                                            isPopupBookNow={isPopupBookNow}
+                                            closePopup={closePopup}
+                                            openRegisterPopup={openRegisterPopup}
+                                            openForgotPassword={openForgotPassword}
+                                            selectedRoomName={selectedRoomName}
+                                        >
+                                            <Account openLoginPopup={openLoginPopup} />
+                                        </PublicLayout>
+                                    }
+                                />
+                                <Route
+                                    path="/About"
+                                    element={
+                                        <PublicLayout
+                                            openLoginPopup={openLoginPopup}
+                                            isPopupLogin={isPopupLogin}
+                                            isPopupRegister={isPopupRegister}
+                                            isPopupForgotPassword={isPopupForgotPassword}
+                                            isPopupBookNow={isPopupBookNow}
+                                            closePopup={closePopup}
+                                            openRegisterPopup={openRegisterPopup}
+                                            openForgotPassword={openForgotPassword}
+                                            selectedRoomName={selectedRoomName}
+                                        >
+                                            <AboutUs />
+                                        </PublicLayout>
+                                    }
+                                />
+                                <Route
+                                    path="/Ourhotels"
+                                    element={
+                                        <PublicLayout
+                                            openLoginPopup={openLoginPopup}
+                                            isPopupLogin={isPopupLogin}
+                                            isPopupRegister={isPopupRegister}
+                                            isPopupForgotPassword={isPopupForgotPassword}
+                                            isPopupBookNow={isPopupBookNow}
+                                            closePopup={closePopup}
+                                            openRegisterPopup={openRegisterPopup}
+                                            openForgotPassword={openForgotPassword}
+                                            selectedRoomName={selectedRoomName}
+                                        >
+                                            <OurHotels />
+                                        </PublicLayout>
+                                    }
+                                />
+                                <Route
+                                    path="/Rooms"
+                                    element={
+                                        <PublicLayout
+                                            openLoginPopup={openLoginPopup}
+                                            isPopupLogin={isPopupLogin}
+                                            isPopupRegister={isPopupRegister}
+                                            isPopupForgotPassword={isPopupForgotPassword}
+                                            isPopupBookNow={isPopupBookNow}
+                                            closePopup={closePopup}
+                                            openRegisterPopup={openRegisterPopup}
+                                            openForgotPassword={openForgotPassword}
+                                            selectedRoomName={selectedRoomName}
+                                        >
+                                            <Rooms checkLogins={checkLogins} />
+                                        </PublicLayout>
+                                    }
+                                />
+                                <Route
+                                    path="/Contact"
+                                    element={
+                                        <PublicLayout
+                                            openLoginPopup={openLoginPopup}
+                                            isPopupLogin={isPopupLogin}
+                                            isPopupRegister={isPopupRegister}
+                                            isPopupForgotPassword={isPopupForgotPassword}
+                                            isPopupBookNow={isPopupBookNow}
+                                            closePopup={closePopup}
+                                            openRegisterPopup={openRegisterPopup}
+                                            openForgotPassword={openForgotPassword}
+                                            selectedRoomName={selectedRoomName}
+                                        >
+                                            <Contact />
+                                        </PublicLayout>
+                                    }
+                                />
+                                <Route
+                                    path="/Services"
+                                    element={
+                                        <PublicLayout
+                                            openLoginPopup={openLoginPopup}
+                                            isPopupLogin={isPopupLogin}
+                                            isPopupRegister={isPopupRegister}
+                                            isPopupForgotPassword={isPopupForgotPassword}
+                                            isPopupBookNow={isPopupBookNow}
+                                            closePopup={closePopup}
+                                            openRegisterPopup={openRegisterPopup}
+                                            openForgotPassword={openForgotPassword}
+                                            selectedRoomName={selectedRoomName}
+                                        >
+                                            <ServicePage />
+                                        </PublicLayout>
+                                    }
+                                />
+                                <Route
+                                    path="/review"
+                                    element={
+                                        <PublicLayout
+                                            openLoginPopup={openLoginPopup}
+                                            isPopupLogin={isPopupLogin}
+                                            isPopupRegister={isPopupRegister}
+                                            isPopupForgotPassword={isPopupForgotPassword}
+                                            isPopupBookNow={isPopupBookNow}
+                                            closePopup={closePopup}
+                                            openRegisterPopup={openRegisterPopup}
+                                            openForgotPassword={openForgotPassword}
+                                            selectedRoomName={selectedRoomName}
+                                        >
+                                            <Reviews checkLogins={checkLogin} />
+                                        </PublicLayout>
+                                    }
+                                />
+                                <Route
+                                    path="/complaint"
+                                    element={
+                                        <PublicLayout
+                                            openLoginPopup={openLoginPopup}
+                                            isPopupLogin={isPopupLogin}
+                                            isPopupRegister={isPopupRegister}
+                                            isPopupForgotPassword={isPopupForgotPassword}
+                                            isPopupBookNow={isPopupBookNow}
+                                            closePopup={closePopup}
+                                            openRegisterPopup={openRegisterPopup}
+                                            openForgotPassword={openForgotPassword}
+                                            selectedRoomName={selectedRoomName}
+                                        >
+                                            <Complaints checkLogins={checkLogin} />
+                                        </PublicLayout>
+                                    }
+                                />
+                                <Route
+                                    path="*"
+                                    element={
+                                        <PublicLayout
+                                            openLoginPopup={openLoginPopup}
+                                            isPopupLogin={isPopupLogin}
+                                            isPopupRegister={isPopupRegister}
+                                            isPopupForgotPassword={isPopupForgotPassword}
+                                            isPopupBookNow={isPopupBookNow}
+                                            closePopup={closePopup}
+                                            openRegisterPopup={openRegisterPopup}
+                                            openForgotPassword={openForgotPassword}
+                                            selectedRoomName={selectedRoomName}
+                                        >
+                                            <Home />
+                                        </PublicLayout>
+                                    }
+                                />
 
+                                {/* Route Admin */}
+                                <Route
+                                    path="/admin"
+                                    element={
+                                        <ProtectedAdminRoute>
+                                            <AdminLayout>
+                                                <AdminDashboard />
+                                            </AdminLayout>
+                                        </ProtectedAdminRoute>
+                                    }
+                                >
+                                    <Route path="UserManagement" element={<UserManagement />} />
+                                    <Route path="RoomListManagement" element={<RoomListManagement />} />
+                                    <Route path="EmployeeListManagement" element={<EmployeeListManagement />} />
+                                    <Route path="EditOffer" element={<EditOffer />} />
+                                    <Route path="ManageBookings" element={<ManageBookings />} />
+                                    <Route path="Chart" element={<Chart />} />
+                                    <Route path="ReviewsManagement" element={<ReviewsManagement />} />
+                                    <Route path="ManageComplaints" element={<ManageComplaints />} />
+                                    <Route path="RoomManagement" element={<RoomManagement />} />
+                                </Route>
+                                <Route
+                                    path="/admin/users"
+                                    element={
+                                        <ProtectedAdminRoute>
+                                            <AdminLayout>
+                                            </AdminLayout>
+                                        </ProtectedAdminRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/admin/bookings"
+                                    element={
+                                        <ProtectedAdminRoute>
+                                            <AdminLayout>
+                                            </AdminLayout>
+                                        </ProtectedAdminRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/admin/rooms"
+                                    element={
+                                        <ProtectedAdminRoute>
+                                            <AdminLayout>
+                                            </AdminLayout>
+                                        </ProtectedAdminRoute>
+                                    }
+                                />
+
+                                {/* Route Staff */}
+
+                                <Route
+                                    path="/staff"
+                                    element={
+                                        <ProtectedStaffRoute>
+                                            <StaffLayout>
+                                                <StaffDashboard />
+                                            </StaffLayout>
+                                        </ProtectedStaffRoute>
+                                    }
+                                >
+                                    <Route
+                                        index element={<Staff_BookingRooms />}
+                                    />
+                                    <Route
+                                        path="BookingList"
+                                        element={
+                                            <StaffBookingList />
+                                        }
+                                    />
+                                    <Route
+                                        path="RoomList"
+                                        element={
+                                            <StaffRooms />
+                                        }
+                                    />
+                                    <Route
+                                        path="StaffCustomerManagement"
+                                        element={
+                                            <StaffCustomerManagement />
+                                        }
+                                    />
+                                    <Route
+                                        path="StaffRoomManagement"
+                                        element={
+                                            <StaffRoomManagement />
+                                        }
+                                    />
+                                    {/* Thêm route mới cho profile */}
+                                    <Route
+                                        path="Profile"
+                                        element={
+                                            <StaffProfile />
+                                        }
+                                    />
+                                </Route>
+
+<<<<<<< HEAD
                         {/* Route Admin */}
                         <Route
                             path="/admin"
@@ -547,6 +646,11 @@ const App = () => {
                         </Routes>
                     </Router>
                 </SearchProvider>
+=======
+                            </Routes>
+                        </Router>
+                    </SearchProvider>
+>>>>>>> 59e9838b9a371c11050b2d573970169c3e5fbee3
                 </ChatbotProvider>
             </AuthProvider>
         </PopupContext.Provider>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BookingManager;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class BookingManagerController extends Controller
 {
@@ -29,24 +30,33 @@ class BookingManagerController extends Controller
                 'total' => $bookings->total(),
             ], 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to fetch bookings: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Failed to fetch bookings: ' + $e->getMessage()], 500);
         }
     }
 
     public function update(Request $request, $id)
     {
         try {
-            $request->validate([
+            $validator = Validator::make($request->all(), [
                 'checkin_date' => 'required|date',
                 'checkout_date' => 'required|date|after_or_equal:checkin_date',
                 'check_status' => 'required|in:not checked in,checked in,checked out',
+                'actual_check_in' => 'nullable|date',
+                'actual_check_out' => 'nullable|date|after_or_equal:actual_check_in',
             ]);
 
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 422);
+            }
+
             $booking = BookingManager::findOrFail($id);
-            $booking->checkin_date = $request->input('checkin_date');
-            $booking->checkout_date = $request->input('checkout_date');
-            $booking->check_status = $request->input('check_status');
-            $booking->save();
+            $booking->update($request->only([
+                'checkin_date',
+                'checkout_date',
+                'check_status',
+                'actual_check_in',
+                'actual_check_out',
+            ]));
 
             return response()->json($booking, 200);
         } catch (\Exception $e) {

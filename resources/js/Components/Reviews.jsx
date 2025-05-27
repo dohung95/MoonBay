@@ -95,7 +95,11 @@ const Reviews = ({ checkLogins }) => {
       });
     } catch (err) {
       console.error("Error submitting review:", err.response?.data || err.message);
-      toast.error("Unable to submit review. You may have been banned. Please try again or contact staff for assistance.");
+      if (err.response?.data?.message === 'Banned users cannot access this resource') {
+        toast.error("You are banned from submitting reviews. Please contact support.");
+      } else {
+        toast.error("Unable to submit review. Please try again or contact support.");
+      }
     } finally {
       setLoading(false);
     }
@@ -130,6 +134,40 @@ const Reviews = ({ checkLogins }) => {
     setCurrentPage(1);
   };
 
+  // StarRating Component
+  const StarRating = () => {
+    const [hoverRating, setHoverRating] = useState(0);
+
+    const handleRatingClick = (rating) => {
+      setReviewForm({ ...reviewForm, rating: rating.toString() });
+    };
+
+    return (
+      <div className="star-rating mb-2">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <span
+            key={star}
+            className={`star ${
+              star <= (hoverRating || parseInt(reviewForm.rating) || 0) ? 'filled' : ''
+            }`}
+            onClick={() => handleRatingClick(star)}
+            onMouseEnter={() => setHoverRating(star)}
+            onMouseLeave={() => setHoverRating(0)}
+            role="button"
+            tabIndex={0}
+            aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
+          >
+            {star <= (hoverRating || parseInt(reviewForm.rating) || 0) ? (
+              <FaStar color="#F59E0B" />
+            ) : (
+              <FaRegStar color="#F59E0B" />
+            )}
+          </span>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <>
       <Banner />
@@ -151,19 +189,7 @@ const Reviews = ({ checkLogins }) => {
               readOnly
             />
 
-            <select
-              className="form-select mb-2"
-              value={reviewForm.rating}
-              onChange={(e) => setReviewForm({ ...reviewForm, rating: e.target.value })}
-              required
-            >
-              <option value="">Select star rating</option>
-              <option value="5">⭐⭐⭐⭐⭐</option>
-              <option value="4">⭐⭐⭐⭐</option>
-              <option value="3">⭐⭐⭐</option>
-              <option value="2">⭐⭐</option>
-              <option value="1">⭐</option>
-            </select>
+            <StarRating />
 
             <textarea
               className="form-control mb-2"
@@ -313,6 +339,25 @@ const Reviews = ({ checkLogins }) => {
           <p className="mb-4">No reviews yet.</p>
         )}
       </div>
+
+      {/* Inline CSS for StarRating */}
+      <style>
+        {`
+          .star-rating {
+            display: flex;
+            gap: 5px;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+          }
+          .star {
+            cursor: pointer;
+            transition: transform 0.2s ease;
+          }
+          .star:hover {
+            transform: scale(1.1);
+          }
+        `}
+      </style>
     </>
   );
 };

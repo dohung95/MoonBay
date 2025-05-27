@@ -231,8 +231,8 @@ body.modal-open {
 }
 
 #avatar-input {
-    margin-top: 10px;
-    padding: 5px;
+  margin-top: 10px;
+  padding: 5px;
 }
 
 /* Responsive Design */
@@ -584,13 +584,6 @@ body.modal-open {
 .reviews-list,
 .complaints-list {
   scrollbar-width: thin;
-  scrollbar-color: #888 #f1f1f1;
-}
-
-/* Tùy chỉnh thanh cuộn cho Chrome, Safari, Edge */
-.reviews-list::-webkit-scrollbar,
-.complaints-list::-webkit-scrollbar {
-  width: 8px;
 }
 
 .reviews-list::-webkit-scrollbar-track,
@@ -643,6 +636,9 @@ body.modal-open {
   color: #555;
   line-height: 1.5;
   margin-top: 5px;
+  overflow-y: auto;
+  margin-bottom: 0;
+  text-align: justify;
 }
 
 .review-room,
@@ -655,6 +651,17 @@ body.modal-open {
 .complaint-card {
   border-left: 3px solid #dc3545;
   /* Đường viền đỏ để phân biệt complaints */
+}
+
+.complaint-card,
+.review-card {
+  height: auto;
+  max-height: 200px;
+}
+
+.review-comment::-webkit-scrollbar,
+.complaint-comment::-webkit-scrollbar {
+  display: none !important;
 }
 
 /* Responsive Design */
