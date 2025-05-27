@@ -17,7 +17,10 @@ export const ChatbotProvider = ({ children, isOpen: propIsOpen, setIsOpen: propS
     "Giá phòng bao nhiêu?",
     "Sức chứa tối đa của phòng là bao nhiêu?",
     "Có ưu đãi nào đang áp dụng không?",
-    "Làm thế nào để đặt phòng?"
+    "Làm thế nào để đặt phòng?",
+    "Phòng rẻ nhất là phòng nào?",
+    "Phòng cao cấp nhất là gì?",
+    "Tôi nên chọn phòng nào cho 4 người?"
   ];
 
   useEffect(() => {
@@ -26,7 +29,7 @@ export const ChatbotProvider = ({ children, isOpen: propIsOpen, setIsOpen: propS
 
   const toggleChatbot = () => {
     propSetIsOpen((prev) => !prev);
-  }
+  };
 
   const handleInputChange = (e) => setUserInput(e.target.value);
 
@@ -41,14 +44,15 @@ export const ChatbotProvider = ({ children, isOpen: propIsOpen, setIsOpen: propS
 
     try {
       const response = await axios.post("/api/chatbot", { prompt: inputText });
-      console.log("Chatbot response:", response.data.response);
-      const botMsg = { sender: "bot", text: response.data.response };
+      console.log("Backend response:", response.data);
+      const botMsg = { sender: "bot", text: response.data.response || "Xin lỗi, không nhận được phản hồi từ hệ thống." };
       setMessages((prev) => [...prev, botMsg]);
     } catch (err) {
-      console.error("Chatbot error:", err);
+      console.error("Chatbot error:", err.response?.data || err.message);
+      const errorMessage = err.response?.data?.response || err.response?.data?.error || "Xin lỗi, đã xảy ra lỗi khi xử lý yêu cầu.";
       setMessages((prev) => [
         ...prev,
-        { sender: "bot", text: "Xin lỗi, đã xảy ra lỗi khi xử lý yêu cầu." },
+        { sender: "bot", text: errorMessage },
       ]);
     } finally {
       setUserInput("");
@@ -74,10 +78,8 @@ export const ChatbotProvider = ({ children, isOpen: propIsOpen, setIsOpen: propS
         parts.push(text.slice(lastIndex, startIndex));
       }
 
-      // Kiểm tra nếu URL là hình ảnh (dựa vào đuôi file)
       const isImage = /\.(jpg|jpeg|png|gif)$/i.test(url);
       if (isImage) {
-        // Đảm bảo đường dẫn đầy đủ (thêm /storage/ nếu cần)
         const fullUrl = url.startsWith('/') ? `/storage${url}` : `/storage/${url}`;
         parts.push(
           <div key={startIndex} className="chatbot-image">
@@ -156,7 +158,7 @@ export const ChatbotProvider = ({ children, isOpen: propIsOpen, setIsOpen: propS
                 ))}
                 {isLoading && (
                   <div className="chatbot-message bot">
-                    <p>Đang xử lý...</p>
+                    <p>Đang xử lý câu hỏi của bạn <span className="typing-dots">...</span></p>
                   </div>
                 )}
               </div>
@@ -165,7 +167,7 @@ export const ChatbotProvider = ({ children, isOpen: propIsOpen, setIsOpen: propS
                   type="text"
                   value={userInput}
                   onChange={handleInputChange}
-                  placeholder="Hỏi về phòng, giá, sức chứa..."
+                  placeholder="Hỏi về phòng, giá, sức chứa... hoặc bất kỳ câu hỏi nào!"
                   disabled={isLoading}
                 />
                 <button type="submit" disabled={isLoading}>
