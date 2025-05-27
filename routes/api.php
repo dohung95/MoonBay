@@ -24,6 +24,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\StaffCustomerManagementController;
 use App\Http\Controllers\AdminController;
 use App\Http\Middleware\RememberTokenAuthNoBanCheck;
+use App\Http\Controllers\ChartController;
 
 /*
 |--------------------------------------------------------------------------
@@ -111,6 +112,8 @@ Route::get('/special-offers', [SpecialOfferController::class, 'index']);
 Route::put('/special-offers/{id}', [SpecialOfferController::class, 'update']);
 Route::post('/send-offers', [OfferController::class, 'sendOffers']);
 Route::post('/Send_booking_email_successfully', [Booking_email_successfullyController::class, 'sendEmail']);
+Route::get('/chart/bookings-ratio/{year}', [ChartController::class, 'bookingsRatio']);
+Route::get('/chart/revenue/{year}', [ChartController::class, 'revenue']);
 
 //Review User
 Route::middleware([RememberTokenAuth::class])->group(function () {

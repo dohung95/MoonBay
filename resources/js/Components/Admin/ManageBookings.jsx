@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { format, getDaysInMonth, addMonths, subMonths, startOfDay, isSameDay, isAfter, isBefore } from 'date-fns';
+import { format, getDaysInMonth, addMonths, subMonths, startOfDay, isSameDay, isAfter, isBefore, isWithinInterval } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -16,7 +16,11 @@ const ManageBookings = () => {
   const [formData, setFormData] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [showToast, setShowToast] = useState(false);
-  const [searchPhone, setSearchPhone] = useState(''); // State for search query
+  const [searchPhone, setSearchPhone] = useState('');
+  const [actionType, setActionType] = useState(''); // 'checkin' or 'manage'
+  const [selectedAction, setSelectedAction] = useState(''); // 'checkout' or 'extend'
+  const checkoutDateRef = useRef(null); // Ref for checkout_date input
+  const actualCheckOutRef = useRef(null); // Ref for actual_check_out input
   const tableRef = useRef(null);
 
   // Fetch all rooms from paginated API
@@ -96,12 +100,13 @@ const ManageBookings = () => {
             checkin_date: new Date(booking.checkin_date),
             checkout_date: new Date(booking.checkout_date),
             check_status: booking.check_status || 'not checked in',
+            actual_check_in: booking.actual_check_in ? new Date(booking.actual_check_in) : null,
+            actual_check_out: booking.actual_check_out ? new Date(booking.actual_check_out) : null,
           }))];
 
           if (page >= last_page || data.length < perPage) break;
           page++;
         }
-        console.log('Bookings:', allBookings);
         setBookings(allBookings);
       } catch (error) {
         console.error('Error fetching booking list:', error);
@@ -120,7 +125,11 @@ const ManageBookings = () => {
     if (tableRef.current) {
       const tooltipTriggerList = tableRef.current.querySelectorAll('[data-bs-toggle="tooltip"]');
       tooltipTriggerList.forEach(tooltipTriggerEl => {
-        new Tooltip(tooltipTriggerEl);
+        new Tooltip(tooltipTriggerEl, {
+          boundary: document.body,
+          placement: 'top',
+          customClass: 'custom-tooltip',
+        });
       });
     }
   }, [bookings, rooms]);
@@ -135,6 +144,15 @@ const ManageBookings = () => {
     }
   }, [showToast]);
 
+  // Focus on appropriate input based on selected action
+  useEffect(() => {
+    if (selectedAction === 'extend' && checkoutDateRef.current) {
+      checkoutDateRef.current.focus();
+    } else if (selectedAction === 'checkout' && actualCheckOutRef.current) {
+      actualCheckOutRef.current.focus();
+    }
+  }, [selectedAction]);
+
   // Handle search input change
   const handleSearchChange = (e) => {
     setSearchPhone(e.target.value);
@@ -147,15 +165,28 @@ const ManageBookings = () => {
 
   // Handle cell click to open modal
   const handleCellClick = (booking) => {
-    if (booking) {
-      setSelectedBooking(booking);
+    if (!booking || booking.check_status === 'checked out') return;
+    const now = new Date();
+    setSelectedBooking(booking);
+    if (booking.check_status === 'not checked in') {
+      setActionType('checkin');
       setFormData({
         checkin_date: format(booking.checkin_date, 'yyyy-MM-dd'),
         checkout_date: format(booking.checkout_date, 'yyyy-MM-dd'),
-        check_status: booking.check_status || 'not checked in',
+        actual_check_in: format(now, 'yyyy-MM-dd HH:mm:ss'),
       });
-      setShowModal(true);
+      setSelectedAction('');
+    } else if (booking.check_status === 'checked in') {
+      setActionType('manage');
+      setFormData({
+        checkin_date: format(booking.checkin_date, 'yyyy-MM-dd'),
+        checkout_date: format(booking.checkout_date, 'yyyy-MM-dd'),
+        actual_check_in: booking.actual_check_in ? format(booking.actual_check_in, 'yyyy-MM-dd HH:mm:ss') : '',
+        actual_check_out: format(now, 'yyyy-MM-dd HH:mm:ss'),
+      });
+      setSelectedAction('checkout'); // Default to checkout
     }
+    setShowModal(true);
   };
 
   // Handle modal close
@@ -163,6 +194,9 @@ const ManageBookings = () => {
     setShowModal(false);
     setSelectedBooking(null);
     setFormData({});
+    setActionType('');
+    setSelectedAction('');
+    setError(null);
   };
 
   // Handle form input change
@@ -171,37 +205,104 @@ const ManageBookings = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // Handle checkbox change
+  const handleCheckboxChange = (action) => {
+    setSelectedAction(prev => (prev === action ? '' : action));
+    setError(null); // Clear error when changing action
+  };
+
   // Handle form submission to update booking
   const handleUpdateBooking = async (e) => {
     e.preventDefault();
-    if (!selectedBooking) return;
+    if (!selectedBooking || (!selectedAction && actionType !== 'checkin')) {
+      setError('Please select an action');
+      return;
+    }
 
     try {
       setIsLoading(true);
       setError(null);
 
-      const originalCheckin = new Date(selectedBooking.checkin_date);
-      const originalCheckout = new Date(selectedBooking.checkout_date);
+      let payload;
+      if (actionType === 'checkin') {
+        payload = {
+          checkin_date: format(new Date(selectedBooking.checkin_date), 'yyyy-MM-dd HH:mm:ss'),
+          checkout_date: format(new Date(selectedBooking.checkout_date), 'yyyy-MM-dd HH:mm:ss'),
+          check_status: 'checked in',
+          actual_check_in: formData.actual_check_in,
+          actual_check_out: null,
+        };
+      } else if (selectedAction === 'checkout') {
+        const actualCheckOut = new Date(formData.actual_check_out);
+        const checkInDate = new Date(selectedBooking.checkin_date);
+        const actualCheckIn = new Date(formData.actual_check_in);
+        const currentCheckOut = new Date(selectedBooking.checkout_date);
 
-      const newCheckinDate = new Date(formData.checkin_date);
-      const newCheckoutDate = new Date(formData.checkout_date);
+        // Validate actual_check_out
+        if (isBefore(actualCheckOut, checkInDate) || isBefore(actualCheckOut, actualCheckIn)) {
+          setError('Actual check-out must be after check-in and actual check-in dates');
+          setIsLoading(false);
+          return;
+        }
 
-      newCheckinDate.setHours(
-        originalCheckin.getHours(),
-        originalCheckin.getMinutes(),
-        originalCheckin.getSeconds()
-      );
-      newCheckoutDate.setHours(
-        originalCheckout.getHours(),
-        originalCheckout.getMinutes(),
-        originalCheckout.getSeconds()
-      );
+        // Show confirmation if actual_check_out is between checkin_date and checkout_date
+        if (isBefore(actualCheckOut, currentCheckOut) && isAfter(actualCheckOut, checkInDate)) {
+          const confirmMessage = `The actual check-out time (${format(actualCheckOut, 'yyyy-MM-dd HH:mm:ss')}) is earlier than the scheduled check-out time (${format(currentCheckOut, 'yyyy-MM-dd HH:mm:ss')}). Do you want to proceed with check-out?`;
+          if (!window.confirm(confirmMessage)) {
+            setIsLoading(false);
+            return;
+          }
+        }
 
-      const response = await axios.put(`http://localhost:8000/api/booking_manager/${selectedBooking.id}`, {
-        checkin_date: format(newCheckinDate, 'yyyy-MM-dd HH:mm:ss'),
-        checkout_date: format(newCheckoutDate, 'yyyy-MM-dd HH:mm:ss'),
-        check_status: formData.check_status,
-      });
+        payload = {
+          checkin_date: format(new Date(selectedBooking.checkin_date), 'yyyy-MM-dd HH:mm:ss'),
+          checkout_date: format(new Date(selectedBooking.checkout_date), 'yyyy-MM-dd HH:mm:ss'),
+          check_status: 'checked out',
+          actual_check_in: formData.actual_check_in,
+          actual_check_out: format(actualCheckOut, 'yyyy-MM-dd HH:mm:ss'),
+        };
+      } else if (selectedAction === 'extend') {
+        const newCheckOut = new Date(formData.checkout_date + ' 12:00:00');
+        const checkInDate = new Date(selectedBooking.checkin_date);
+        const actualCheckIn = new Date(formData.actual_check_in);
+        const currentCheckOut = new Date(selectedBooking.checkout_date);
+
+        // Validate new check-out date
+        if (isBefore(newCheckOut, checkInDate) || isBefore(newCheckOut, actualCheckIn) || isBefore(newCheckOut, currentCheckOut)) {
+          setError('New check-out date must be after check-in, actual check-in, and current check-out dates');
+          setIsLoading(false);
+          return;
+        }
+
+        // Check for conflicts with other bookings for the same room
+        const conflictingBooking = bookings.find(booking => {
+          if (booking.id === selectedBooking.id || booking.room_id !== selectedBooking.room_id) {
+            return false;
+          }
+          const existingCheckIn = new Date(booking.checkin_date);
+          const existingCheckOut = new Date(booking.checkout_date);
+          return isWithinInterval(newCheckOut, {
+            start: existingCheckIn,
+            end: existingCheckOut,
+          }) || isAfter(newCheckOut, existingCheckIn);
+        });
+
+        if (conflictingBooking) {
+          setError(`The new check-out date conflicts with another booking for this room from ${format(conflictingBooking.checkin_date, 'yyyy-MM-dd HH:mm:ss')} to ${format(conflictingBooking.checkout_date, 'yyyy-MM-dd HH:mm:ss')}`);
+          setIsLoading(false);
+          return;
+        }
+
+        payload = {
+          checkin_date: format(new Date(selectedBooking.checkin_date), 'yyyy-MM-dd HH:mm:ss'),
+          checkout_date: format(newCheckOut, 'yyyy-MM-dd HH:mm:ss'),
+          check_status: 'checked in',
+          actual_check_in: formData.actual_check_in,
+          actual_check_out: null,
+        };
+      }
+
+      const response = await axios.put(`http://localhost:8000/api/booking_manager/${selectedBooking.id}`, payload);
 
       setBookings(prev =>
         prev.map(b => (b.id === selectedBooking.id ? {
@@ -210,12 +311,16 @@ const ManageBookings = () => {
           checkin_date: new Date(response.data.checkin_date),
           checkout_date: new Date(response.data.checkout_date),
           check_status: response.data.check_status,
+          actual_check_in: response.data.actual_check_in ? new Date(response.data.actual_check_in) : null,
+          actual_check_out: response.data.actual_check_out ? new Date(response.data.actual_check_out) : null,
         } : b))
       );
 
       setShowModal(false);
       setSelectedBooking(null);
       setFormData({});
+      setActionType('');
+      setSelectedAction('');
       setShowToast(true);
     } catch (error) {
       console.error('Error updating booking:', error);
@@ -278,16 +383,18 @@ const ManageBookings = () => {
   // Format booking info for tooltip
   const formatBookingInfo = (booking, status) => {
     if (status === 'maintenance') {
-      return `<div style="text-align: left;">Room under maintenance</div>`;
+      return `<div class="tooltip-content">Room under maintenance</div>`;
     }
     if (!booking) return '';
     return `
-      <div style="text-align: left;">
-        <strong>Name:</strong> ${booking.name}<br>
-        <strong>Phone:</strong> ${booking.phone}<br>
-        <strong>Check-in:</strong> ${format(booking.checkin_date, 'yyyy-MM-dd HH:mm:ss')}<br>
-        <strong>Check-out:</strong> ${format(booking.checkout_date, 'yyyy-MM-dd HH:mm:ss')}<br>
-        <strong>Status:</strong> ${booking.check_status}<br>
+      <div class="tooltip-content">
+        <div><strong>Name:</strong> ${booking.name}</div>
+        <div><strong>Phone:</strong> ${booking.phone}</div>
+        <div><strong>Check-in:</strong> ${format(booking.checkin_date, 'yyyy-MM-dd HH:mm:ss')}</div>
+        <div><strong>Check-out:</strong> ${format(booking.checkout_date, 'yyyy-MM-dd HH:mm:ss')}</div>
+        <div><strong>Status:</strong> ${booking.check_status}</div>
+        ${booking.actual_check_in ? `<div><strong>Actual Check-in:</strong> ${format(booking.actual_check_in, 'yyyy-MM-dd HH:mm:ss')}</div>` : ''}
+        ${booking.actual_check_out ? `<div><strong>Actual Check-out:</strong> ${format(booking.actual_check_out, 'yyyy-MM-dd HH:mm:ss')}</div>` : ''}
       </div>
     `;
   };
@@ -296,9 +403,8 @@ const ManageBookings = () => {
   const renderCalendar = () => {
     const daysInMonth = getDaysInMonth(currentDate);
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-    const today = startOfDay(new Date()); // Current date for comparison
+    const today = startOfDay(new Date());
 
-    // Determine if a cell should be highlighted based on search
     const isCellHighlighted = (booking, day) => {
       if (!searchPhone?.trim() || !booking) return false;
       const targetDate = startOfDay(new Date(currentDate.getFullYear(), currentDate.getMonth(), day));
@@ -311,7 +417,6 @@ const ManageBookings = () => {
       );
     };
 
-    // Check if a date is today or in the past
     const isToday = (day) => {
       const targetDate = startOfDay(new Date(currentDate.getFullYear(), currentDate.getMonth(), day));
       return isSameDay(targetDate, today);
@@ -324,7 +429,6 @@ const ManageBookings = () => {
 
     return (
       <>
-        {/* Search Bar - Cố định ngoài bảng */}
         <div className="search-container sticky-top bg-white py-2" style={{ zIndex: 1000 }}>
           <div className="d-flex align-items-center" style={{ maxWidth: '300px' }}>
             <input
@@ -349,7 +453,6 @@ const ManageBookings = () => {
             <div className="text-center mt-3">Loading...</div>
           ) : (
             <>
-              {/* Toast Notification */}
               {showToast && (
                 <div
                   className="toast show position-fixed top-0 end-0 m-3"
@@ -440,12 +543,12 @@ const ManageBookings = () => {
                               style={{
                                 height: '30px',
                                 fontSize: '0.7rem',
-                                cursor: status === 'booked' ? 'pointer' : 'default',
+                                cursor: status === 'booked' && check_status !== 'checked out' ? 'pointer' : 'default',
                               }}
                               data-column={day}
                               onMouseEnter={() => handleMouseEnter(day.toString())}
                               onMouseLeave={() => handleMouseLeave(day.toString())}
-                              onClick={() => status === 'booked' && handleCellClick(booking)}
+                              onClick={() => status === 'booked' && check_status !== 'checked out' && handleCellClick(booking)}
                               data-bs-toggle={status === 'booked' || status === 'maintenance' ? 'tooltip' : ''}
                               data-bs-html="true"
                               data-bs-title={formatBookingInfo(booking, status)}
@@ -466,13 +569,14 @@ const ManageBookings = () => {
                 </tbody>
               </table>
 
-              {/* Custom React Modal */}
               {showModal && (
                 <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} tabIndex="-1">
                   <div className="modal-dialog">
                     <div className="modal-content">
                       <div className="modal-header">
-                        <h5 className="modal-title">Edit Booking</h5>
+                        <h5 className="modal-title">
+                          {actionType === 'checkin' ? 'Check-in Booking' : 'Manage Booking'}
+                        </h5>
                         <button
                           type="button"
                           className="btn-close"
@@ -481,11 +585,12 @@ const ManageBookings = () => {
                         ></button>
                       </div>
                       <div className="modal-body">
+                        {error && <div className="alert alert-danger">{error}</div>}
                         {selectedBooking && (
                           <form onSubmit={handleUpdateBooking}>
                             <div className="mb-3">
                               <label htmlFor="checkin_date" className="form-label">
-                                Check-in Date
+                                Check-in Date (Scheduled)
                               </label>
                               <input
                                 type="date"
@@ -493,13 +598,12 @@ const ManageBookings = () => {
                                 id="checkin_date"
                                 name="checkin_date"
                                 value={formData.checkin_date || ''}
-                                onChange={handleInputChange}
-                                required
+                                readOnly
                               />
                             </div>
                             <div className="mb-3">
                               <label htmlFor="checkout_date" className="form-label">
-                                Check-out Date
+                                Check-out Date (Scheduled)
                               </label>
                               <input
                                 type="date"
@@ -507,31 +611,86 @@ const ManageBookings = () => {
                                 id="checkout_date"
                                 name="checkout_date"
                                 value={formData.checkout_date || ''}
+                                readOnly={selectedAction !== 'extend'}
                                 onChange={handleInputChange}
-                                required
+                                ref={checkoutDateRef}
                               />
                             </div>
                             <div className="mb-3">
-                              <label htmlFor="check_status" className="form-label">
-                                Check Status
+                              <label htmlFor="actual_check_in" className="form-label">
+                                Actual Check-in
                               </label>
-                              <select
+                              <input
+                                type="datetime-local"
                                 className="form-control"
-                                id="check_status"
-                                name="check_status"
-                                value={formData.check_status || ''}
-                                onChange={handleInputChange}
-                                required
-                              >
-                                <option value="">Select status</option>
-                                <option value="not checked in">Not checked in</option>
-                                <option value="checked in">Checked in</option>
-                                <option value="checked out">Checked out</option>
-                              </select>
+                                id="actual_check_in"
+                                name="actual_check_in"
+                                value={formData.actual_check_in || ''}
+                                readOnly
+                              />
                             </div>
-                            <button type="submit" className="btn btn-primary" disabled={isLoading}>
-                              {isLoading ? 'Updating...' : 'Update Booking'}
-                            </button>
+                            {actionType === 'manage' && selectedAction === 'checkout' && (
+                              <div className="mb-3">
+                                <label htmlFor="actual_check_out" className="form-label">
+                                  Actual Check-out
+                                </label>
+                                <input
+                                  type="datetime-local"
+                                  className="form-control"
+                                  id="actual_check_out"
+                                  name="actual_check_out"
+                                  value={formData.actual_check_out || ''}
+                                  readOnly
+                                  ref={actualCheckOutRef}
+                                />
+                              </div>
+                            )}
+                            {actionType === 'manage' && (
+                              <div className="mb-3">
+                                <label className="form-label">Action</label>
+                                <div className="form-check">
+                                  <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    id="checkout"
+                                    checked={selectedAction === 'checkout'}
+                                    onChange={() => handleCheckboxChange('checkout')}
+                                  />
+                                  <label className="form-check-label" htmlFor="checkout">
+                                    Check Out
+                                  </label>
+                                </div>
+                                <div className="form-check">
+                                  <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    id="extend"
+                                    checked={selectedAction === 'extend'}
+                                    onChange={() => handleCheckboxChange('extend')}
+                                  />
+                                  <label className="form-check-label" htmlFor="extend">
+                                    Extend Check-out
+                                  </label>
+                                </div>
+                              </div>
+                            )}
+                            <div className="d-flex justify-content-between">
+                              <button
+                                type="submit"
+                                className="btn btn-primary"
+                                disabled={isLoading || (actionType === 'manage' && !selectedAction)}
+                              >
+                                {isLoading ? 'Updating...' : 'Submit'}
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-secondary"
+                                onClick={handleCloseModal}
+                                disabled={isLoading}
+                              >
+                                Cancel
+                              </button>
+                            </div>
                           </form>
                         )}
                       </div>

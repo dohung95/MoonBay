@@ -26,12 +26,16 @@ class BookingManager extends Model
         'checkin_date',
         'checkout_date',
         'room_id',
-        'check_status'
+        'check_status',
+        'actual_check_in',
+        'actual_check_out',
     ];
 
     protected $casts = [
         'checkin_date' => 'datetime',
         'checkout_date' => 'datetime',
+        'actual_check_in' => 'datetime',
+        'actual_check_out' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

@@ -438,7 +438,7 @@ const EmployeeListManagement = () => {
                                 </div>
                                 <div className="col-md-6" align="center">
                                     <button type="submit" className="btn btn-primary " style={{ width: '130px', height: '40px' }}>
-                                        Save Changes
+                                        Save
                                     </button>
                                 </div>
 

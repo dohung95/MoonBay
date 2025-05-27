@@ -7,8 +7,8 @@ const AdminDashboard = () => {
     const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
     const location = useLocation();
 
-    const features = ['User Management', 'Room list', 'Employee List','Edit Offer', 'Manage Bookings', 'Manage Reviews', 'Manage Complaints', 'Manage Room Info'];
-    const routes = ['UserManagement', 'RoomListManagement', 'EmployeeListManagement','EditOffer', 'ManageBookings', 'ReviewsManagement', 'ManageComplaints', 'RoomManagement'];
+    const features = ['User Management', 'Room list', 'Employee List','Edit Offer', 'Manage Bookings','Chart', 'Manage Reviews', 'Manage Complaints', 'Manage Room Info'];
+    const routes = ['UserManagement', 'RoomListManagement', 'EmployeeListManagement','EditOffer', 'ManageBookings','Chart', 'ReviewsManagement', 'ManageComplaints', 'RoomManagement'];
 
     const isDashboardHome = location.pathname === '/admin';
 
