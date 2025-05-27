@@ -20,7 +20,11 @@ const StaffCustomerManagement = () => {
   const [currentType, setCurrentType] = useState('regular');
   const { searchQuery, setSearchQuery } = useSearch();
 
-  const itemsPerPage = 7;
+  const itemsPerPage = 6;
+
+  // Sort state
+  const [sortField, setSortField] = useState('');
+  const [sortOrder, setSortOrder] = useState('asc'); // 'asc' hoặc 'desc'
 
   // Fetch customers data
   useEffect(() => {
@@ -60,11 +64,42 @@ const StaffCustomerManagement = () => {
     }
   }, [searchQuery, customers]);
 
+  // Sort handler
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
+
+  // Sort logic
+  const getSortedCustomers = (list) => {
+    if (!sortField) return list;
+    return [...list].sort((a, b) => {
+      let aValue = a[sortField] || '';
+      let bValue = b[sortField] || '';
+      if (sortField === 'customer_type') {
+        // Đảm bảo VIP > Special > Regular
+        const typeOrder = { vip: 3, special: 2, regular: 1 };
+        aValue = typeOrder[a.customer_type] || 0;
+        bValue = typeOrder[b.customer_type] || 0;
+        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+      }
+      return 0;
+    });
+  };
+
   // Pagination calculation
+  const sortedCustomers = getSortedCustomers(filteredCustomers);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentCustomers = filteredCustomers.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+  const currentCustomers = sortedCustomers.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(sortedCustomers.length / itemsPerPage);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -93,7 +128,7 @@ const StaffCustomerManagement = () => {
   // Fetch all notes for customer
   const fetchCustomerNotes = async (customerId) => {
     try {
-      const token = Cookies.get('auth_token');      
+      const token = Cookies.get('auth_token');
       const res = await axios.get(`/api/customer-notes/${customerId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -145,9 +180,9 @@ const StaffCustomerManagement = () => {
   }
 
   return (
-      <div className="staff-customer-management">
+    <div className="staff-customer-management">
       <h2 className="staff-title">Customer Management</h2>
-      
+        <p className="staff-customer-description">Manage customer information, view stay history, and add notes.</p>
       <div className="staff-search-container">
         <input
           type="text"
@@ -163,10 +198,25 @@ const StaffCustomerManagement = () => {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Name</th>
-              <th>Email</th>
+              <th style={{cursor:'pointer', userSelect:'none'}} onClick={() => handleSort('name')}>
+                Name
+                <span style={{marginLeft:4, opacity: sortField === 'name' ? 1 : 0.3}}>
+                  {sortField === 'name' ? (sortOrder === 'asc' ? '▲' : '▼') : '▲'}
+                </span>
+              </th>
+              <th style={{cursor:'pointer', userSelect:'none'}} onClick={() => handleSort('email')}>
+                Email
+                <span style={{marginLeft:4, opacity: sortField === 'email' ? 1 : 0.3}}>
+                  {sortField === 'email' ? (sortOrder === 'asc' ? '▲' : '▼') : '▲'}
+                </span>
+              </th>
               <th>Phone</th>
-              <th>Type</th>
+              <th style={{cursor:'pointer', userSelect:'none'}} onClick={() => handleSort('customer_type')}>
+                Type
+                <span style={{marginLeft:4, opacity: sortField === 'customer_type' ? 1 : 0.3}}>
+                  {sortField === 'customer_type' ? (sortOrder === 'asc' ? '▲' : '▼') : '▲'}
+                </span>
+              </th>
               <th>Action</th>
             </tr>
           </thead>
@@ -243,7 +293,7 @@ const StaffCustomerManagement = () => {
                 <span className="staff-close-x">&times;</span>
               </button>
             </div>
-            
+
             <div className="staff-customer-info">
               <div className="staff-info-item">
                 <span className="staff-info-label">ID:</span>
@@ -271,7 +321,7 @@ const StaffCustomerManagement = () => {
                 </span>
               </div>
             </div>
-            
+
             <div className="staff-stay-history">
               <h4>List of Stays</h4>
               {historyLoading ? (
@@ -314,8 +364,8 @@ const StaffCustomerManagement = () => {
                                 {statusObj.text}
                               </span>
                             </td>
-                            <td>{selectedCustomer.customer_type === 'vip' ? 'VIP' : 
-                                selectedCustomer.customer_type === 'special' ? 'Special' : 'Regular'}</td>
+                            <td>{selectedCustomer.customer_type === 'vip' ? 'VIP' :
+                              selectedCustomer.customer_type === 'special' ? 'Special' : 'Regular'}</td>
                           </tr>
                         );
                       })}
@@ -333,21 +383,21 @@ const StaffCustomerManagement = () => {
       {/* Note Modal */}
       {isNoteModalOpen && selectedCustomer && (
         <div className="staff-modal-backdrop" onClick={closeNoteModal}>
-          <div className="staff-modal staff-note-modal" style={{maxHeight: 'none'}} onClick={e => e.stopPropagation()}>
+          <div className="staff-modal staff-note-modal" style={{ maxHeight: 'none' }} onClick={e => e.stopPropagation()}>
             <div className="staff-modal-header staff-modal-header-note">
               <h3 className="staff-modal-title-center">Note Timeline</h3>
               <button className="close-btn staff-close-btn-wow" onClick={closeNoteModal} aria-label="Close Note Modal">
                 <span className="staff-close-x">&times;</span>
               </button>
             </div>
-            
+
             <div className="staff-customer-info">
               <div className="staff-info-item"><span className="staff-info-label">ID:</span> <span className="staff-info-value">{selectedCustomer.id}</span></div>
               <div className="staff-info-item"><span className="staff-info-label">Name:</span> <span className="staff-info-value">{selectedCustomer.name}</span></div>
               <div className="staff-info-item"><span className="staff-info-label">Email:</span> <span className="staff-info-value">{selectedCustomer.email}</span></div>
               <div className="staff-info-item"><span className="staff-info-label">Phone:</span> <span className="staff-info-value">{selectedCustomer.phone || 'N/A'}</span></div>
             </div>
-            
+
             {/* Note History */}
             <div className="staff-notes-section">
               <h4>Note History</h4>
@@ -356,12 +406,12 @@ const StaffCustomerManagement = () => {
               ) : (
                 <ul className="staff-note-list staff-note-list-scrollable">
                   {Array.isArray(noteList) && noteList.map((note, idx) => (
-                    <li key={note.id} className={`staff-note-item ${idx === 0 ? 'newest' : ''}`}> 
+                    <li key={note.id} className={`staff-note-item ${idx === 0 ? 'newest' : ''}`}>
                       <div className="staff-note-header">
                         <span className={`staff-badge staff-badge-${note.customer_type}`}>
-                          {note.customer_type === 'vip' ? '🌟 VIP' : 
-                           note.customer_type === 'special' ? '💎 Special' : 
-                           '👤 Regular'}
+                          {note.customer_type === 'vip' ? '🌟 VIP' :
+                            note.customer_type === 'special' ? '💎 Special' :
+                              '👤 Regular'}
                         </span>
                         <span className="staff-note-staff">{note.staff_name}</span>
                         <span className="staff-note-date">{new Date(note.created_at).toLocaleString('en-US')}</span>
@@ -374,7 +424,7 @@ const StaffCustomerManagement = () => {
                 </ul>
               )}
             </div>
-            
+
             {/* Add New Note */}
             <div className="staff-add-note">
               <h4>Add New Note</h4>
@@ -384,8 +434,8 @@ const StaffCustomerManagement = () => {
                 onChange={e => setNewNote(e.target.value)}
                 placeholder="Enter new note (allergies, special requests, etc.)"
               ></textarea>
-              <div className="staff-change-type-row" style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', margin: '12px 0'}}>
-                <div className="staff-change-type-label" style={{fontWeight: 500, color: '#1976d2'}}>Change customer type</div>
+              <div className="staff-change-type-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', margin: '12px 0' }}>
+                <div className="staff-change-type-label" style={{ fontWeight: 500, color: '#1976d2' }}>Change customer type</div>
                 <select
                   value={newType}
                   onChange={e => {
@@ -393,17 +443,17 @@ const StaffCustomerManagement = () => {
                     setCurrentType(e.target.value); // cập nhật luôn currentType để giao diện phản ánh ngay
                   }}
                   className="staff-type-select"
-                  style={{margin: 0}}
+                  style={{ margin: 0 }}
                 >
                   <option value="regular">👤 Regular</option>
                   <option value="vip">🌟 VIP</option>
                   <option value="special">💎 Special</option>
                 </select>
               </div>
-              <div style={{display: 'flex', justifyContent: 'center', marginTop: '10px'}}>
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
                 <button
                   className="save-btn staff-save-btn"
-                  style={{minWidth: '160px', fontWeight: 600, fontSize: '1.08em', borderRadius: '8px', boxShadow: '0 2px 8px #1976d21a'}}
+                  style={{ minWidth: '160px', fontWeight: 600, fontSize: '1.08em', borderRadius: '8px', boxShadow: '0 2px 8px #1976d21a' }}
                   onClick={async () => {
                     try {
                       const token = Cookies.get('auth_token');

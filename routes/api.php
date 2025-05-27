@@ -23,6 +23,7 @@ use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\StaffCustomerManagementController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ServiceController;
 
 
 
@@ -70,6 +71,8 @@ Route::post('/contact', [App\Http\Controllers\ContactController::class, 'send'])
 
 Route::post('/follow-email', [FollowEmailController::class, 'store']);
 
+// Route Services
+Route::get('/services', [ServiceController::class, 'index']);
 // route của staff
     Route::get('/bookingList', [BookingController::class, 'BookingList']);
     Route::post('/Staff_booking', [BookingController::class, 'booking_by_staff']);
@@ -82,12 +85,22 @@ Route::post('/follow-email', [FollowEmailController::class, 'store']);
     Route::delete('/rooms/{id}', [StaffRoomManagementController::class, 'destroy']);
     Route::post('/rooms', [StaffRoomManagementController::class, 'store']);
       //Route Staff Customer Infomation
-        Route::get('/staff_customers', [StaffCustomerManagementController::class, 'index']);
-        Route::get('/staff_customers/{id}', [StaffCustomerManagementController::class, 'show']);
-        Route::post('/customer-notes', [StaffCustomerManagementController::class, 'store']);
-        Route::put('/staff_customers/{id}/notes', [StaffCustomerManagementController::class, 'updateNotes']);
-        Route::get('/customer-notes/{user_id}', [StaffCustomerManagementController::class, 'getCustomerNotes']);
-
+    Route::get('/staff_customers', [StaffCustomerManagementController::class, 'index']);
+    Route::get('/staff_customers/{id}', [StaffCustomerManagementController::class, 'show']);
+    Route::post('/customer-notes', [StaffCustomerManagementController::class, 'store']);
+    Route::put('/staff_customers/{id}/notes', [StaffCustomerManagementController::class, 'updateNotes']);
+    Route::get('/customer-notes/{user_id}', [StaffCustomerManagementController::class, 'getCustomerNotes']);
+    // Route Staff Service Management
+    Route::get('/services', [ServiceController::class, 'index']);
+    Route::post('/services', [ServiceController::class, 'store']);
+    Route::put('/services/{id}', [ServiceController::class, 'update']);
+    Route::delete('/services/{id}', [ServiceController::class, 'destroy']);
+    Route::post('/service_pricing', [ServiceController::class, 'addPricing']);
+    Route::delete('/service_pricing/by-service/{serviceId}', [ServiceController::class, 'deleteAllPricing']);
+    Route::post('/upload-service-image', [ServiceController::class, 'uploadServiceImage']);
+    // Quản lý liên hệ cho staff/admin
+    Route::get('/contact-messages', [ContactController::class, 'index']);
+    Route::patch('/contact-messages/{id}', [ContactController::class, 'updateStatus']);
 
 //=----------------------------------------------
 

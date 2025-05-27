@@ -1,53 +1,61 @@
 /* StaffBookings.css */
 .staff-bookinglist {
-    width: 100%;
-    padding: 10px 0;
-    padding-left: 10px;
-    max-height: calc(100vh - 50px);
-    display: flex;
-    flex-direction: column;
+    max-width: 1100px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    padding: 32px 36px 36px 36px;
+    font-family: 'Segoe UI', Arial, sans-serif;
 }
 
 .staff-bookinglist .table-wrapper {
     overflow-x: auto;
+    border-radius: 10px;
+    background: #f8fafc;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
 
 .staff-bookinglist-table {
     width: 100%;
     border-collapse: collapse;
-    background-color: #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: #f8fafc;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
 
-.staff-bookinglist-table th,
-.staff-bookinglist-table td {
-    padding: 12px 15px;
+.staff-bookinglist-table th, .staff-bookinglist-table td {
+    padding: 12px 14px;
     text-align: left;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 1rem;
 }
-
 .staff-bookinglist-table th {
-    background-color: #343a40;
-    color: #fff;
-    font-weight: 500;
-    text-transform: uppercase;
-    font-size: 14px;
+    background: #e9f1fa;
+    color: #2d3a4a;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: none;
+    font-size: 1rem;
 }
-
+.staff-bookinglist-table tr:last-child td {
+    border-bottom: none;
+}
 .staff-bookinglist-table td {
-    font-size: 14px;
-    color: #333;
+    color: #22223b;
+    font-size: 1rem;
 }
-
 .staff-bookinglist-table tbody tr:hover {
-    background-color: #f4f4f4;
+    background: #e3f2fd;
+    transition: background 0.18s;
 }
 
 .staff-bookinglist .no-data {
     text-align: center;
-    padding: 20px;
-    color: #6c757d;
+    color: #888;
     font-style: italic;
+    padding: 18px 0;
 }
 
 /* Pagination styles */
@@ -55,65 +63,80 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 10px;
-    margin: 10px 0;
+    margin: 22px 0 0 0;
+    gap: 6px;
 }
-
 .pagination-booklist-staff .pagination-btn {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 8px 15px;
-    font-size: 14px;
-    border-radius: 30px;
-    transition: background-color 0.3s;
+    background: #f3f4f6;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-size: 1rem;
+    color: #374151;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s;
+    box-shadow: 0 1px 4px #1976d233;
+    font-weight: 600;
 }
-
+.pagination-booklist-staff .pagination-btn.active, .pagination-booklist-staff .pagination-btn:hover {
+    background: #0077ff;
+    color: #fff;
+}
 .pagination-booklist-staff .pagination-btn:disabled {
-    background-color: #e9ecef;
+    background: #e5e7eb;
+    color: #bdbdbd;
     cursor: not-allowed;
 }
-
 .pagination-booklist-staff .pagination-page {
-    font-size: 14px;
-    color: #333;
+    font-size: 1rem;
+    color: #2d3a4a;
+    font-weight: 500;
 }
-
 .pagination-booklist-staff .page-input {
     width: 60px;
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 20px;
+    padding: 7px 10px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
     text-align: center;
     margin: 0 10px;
+    font-size: 1rem;
+    background: #fff;
+    color: #22223b;
+    transition: border 0.18s;
 }
-
 .pagination-booklist-staff .page-input:focus {
     outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    border-color: #0077ff;
+    box-shadow: 0 0 5px #1976d233;
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
-
-    .staff-bookinglist-table th,
-    .staff-bookinglist-table td {
-        padding: 8px 10px;
-        font-size: 12px;
+@media (max-width: 900px) {
+    .staff-bookinglist {
+        padding: 18px 6px 24px 6px;
     }
-
+    .staff-bookinglist-table th, .staff-bookinglist-table td {
+        padding: 7px 4px;
+        font-size: 0.95rem;
+    }
+}
+@media (max-width: 600px) {
+    .staff-bookinglist {
+        padding: 6px 2px 12px 2px;
+    }
+    .staff-bookinglist-table th, .staff-bookinglist-table td {
+        padding: 5px 2px;
+        font-size: 0.92rem;
+    }
     .pagination-booklist-staff .pagination-btn {
         padding: 6px 10px;
-        font-size: 12px;
+        font-size: 0.95rem;
     }
-
     .pagination-booklist-staff .pagination-page {
-        font-size: 12px;
+        font-size: 0.95rem;
     }
-
     .pagination-booklist-staff .page-input {
-        width: 50px;
-        font-size: 12px;
+        width: 44px;
+        font-size: 0.95rem;
     }
 }

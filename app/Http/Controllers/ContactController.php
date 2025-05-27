@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ContactFormMail;
 use Illuminate\Support\Facades\Log;
+use App\Models\ContactMessage;
 
 class ContactController extends Controller
 {
@@ -23,6 +24,9 @@ class ContactController extends Controller
             ]);
 
             Log::info('Contact form validation passed', $validated);
+
+            // Lưu vào bảng contact_messages
+            ContactMessage::create($validated);
 
             // Check if mail configuration is set
             if (empty(config('mail.mailers.smtp.host'))) {
@@ -70,5 +74,44 @@ class ContactController extends Controller
                   ->header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
                   ->header('Access-Control-Allow-Headers', 'Content-Type, Accept');
         }
+    }
+
+    public function index(Request $request)
+    {
+        $query = ContactMessage::query();
+
+        // Search
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+                  ->orWhere('email', 'like', "%$search%")
+                  ->orWhere('message', 'like', "%$search%")
+                  ->orWhere('subject', 'like', "%$search%") ;
+            });
+        }
+        // Filter by status
+        if ($request->has('status') && $request->status) {
+            $query->where('status', $request->status);
+        }
+        // Sort
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortDir = $request->get('sort_dir', 'desc');
+        $query->orderBy($sortBy, $sortDir);
+        // Pagination
+        $perPage = intval($request->get('per_page', 10));
+        $messages = $query->paginate($perPage);
+        return response()->json($messages);
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:new,read,responded,archived,pending,spam'
+        ]);
+        $msg = ContactMessage::findOrFail($id);
+        $msg->status = $request->status;
+        $msg->save();
+        return response()->json(['success' => true]);
     }
 }

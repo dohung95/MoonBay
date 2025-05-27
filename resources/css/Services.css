@@ -27,6 +27,19 @@ a:focus {
     color: black;
 }
 
+/* WOW EFFECTS for Services page */
+.services_area {
+  background: linear-gradient(120deg, #f8fafc 80%, #e0f7fa 100%);
+  min-height: 100vh;
+  padding-top: 80px;
+  animation: wowFadeIn 1s cubic-bezier(.4,2,.6,1);
+}
+
+@keyframes wowFadeIn {
+  0% { opacity: 0; transform: translateY(-30px) scale(0.98); }
+  100% { opacity: 1; transform: none; }
+}
+
 h1,
 h2,
 h3,
@@ -170,18 +183,10 @@ h6 {
     background: #fff;
 }
 
-.description-long {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
 /* End of CSS */
 
 /* Style cho Popup Service */
-  /* Style cho Popup Service */
 .service-popup-overlay {
   position: fixed;
   top: 0;
@@ -209,6 +214,37 @@ h6 {
   flex-direction: column;
   animation: scaleIn 0.3s ease;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Tăng shadow để nổi bật hơn */
+  overflow-x: clip !important; /* Ngăn mọi tràn ngang, loại bỏ thanh cuộn ngang triệt để */
+  box-sizing: border-box;
+}
+
+.service-popup-content::-webkit-scrollbar {
+  height: 7px;
+  background: #f0f0f0;
+  border-radius: 6px;
+}
+.service-popup-content::-webkit-scrollbar-thumb {
+  background: #b3c0d1;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.service-popup-content::-webkit-scrollbar-thumb:hover {
+  background: #7fa1c7;
+}
+
+.service-popup-content {
+  scrollbar-width: thin;
+  scrollbar-color: #b3c0d1 #f0f0f0;
+}
+
+.service-popup-body,
+.service-popup-image,
+.service-popup-description {
+  min-width: 0 !important;
+  max-width: 100%;
+  box-sizing: border-box;
+  word-break: break-word;
+  overflow-x: clip;
 }
 
 .service-popup-header {
@@ -247,11 +283,13 @@ h6 {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  min-width: 0; /* Ngăn chặn flex con làm tràn chiều ngang */
 }
 
 @media (min-width: 768px) {
   .service-popup-body {
     flex-direction: row;
+    min-width: 0 !important;
   }
 }
 
@@ -290,6 +328,18 @@ h6 {
   margin: 0;
   line-height: 1.6;
   color: #666;
+}
+
+.service-info p {
+  color: #666;
+  font-size: 1rem;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 3.2em;
 }
 
 .service-details-extra h3,
@@ -431,27 +481,33 @@ h6 {
 /* Service Navigation */
 .service-nav-horizontal {
   max-width: 1000px;
-  margin: 0 auto;
+  margin: 0 auto 30px auto;
   display: flex;
   justify-content: center;
   gap: 15px;
   flex-wrap: wrap;
   padding: 10px 0;
   border-bottom: 1px solid #ddd;
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .service-nav-horizontal .nav-item {
   background: none;
-  border: none;
-  font-size: 1rem;
   color: #333;
-  cursor: pointer;
-  padding: 5px 10px;
+  font-weight: 500;
+  font-size: 1rem;
+  border-radius: 0;
   transition: color 0.3s ease;
+  padding: 5px 10px;
+  border: none; /* Bỏ border xung quanh các lựa chọn nav */
 }
 
 .service-nav-horizontal .nav-item:hover {
   color: #007bff;
+  background: none;
+  transform: none;
 }
 
 /* Service List */
@@ -468,6 +524,20 @@ h6 {
   transform: translateY(-5px);
 }
 
+.service-item {
+  background: linear-gradient(120deg, #fff 80%, #e0f7fa 100%);
+  border-radius: 18px;
+  box-shadow: 0 8px 32px #43cea233;
+  transition: box-shadow 0.3s, transform 0.3s;
+  overflow: hidden;
+  border: 2px solid #e0e7ef;
+}
+.service-item:hover {
+  box-shadow: 0 16px 48px #43cea244;
+  transform: translateY(-8px) scale(1.02);
+  border-color: #43cea2;
+}
+
 .service-image {
   flex: 0 0 50%;
   padding: 10px;
@@ -480,27 +550,46 @@ h6 {
   border-radius: 10px;
 }
 
+.service-image img {
+  border-radius: 16px;
+  box-shadow: 0 4px 16px #185a9d22;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.service-image img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 32px #185a9d33;
+}
+
 .service-info {
   flex: 0 0 50%;
   padding: 20px;
 }
 
 .service-info h5 {
-  font-size: 1.75rem;
-  font-weight: bold;
-  color: #333;
-  text-transform: uppercase;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #222;
+  text-transform: none;
+  background: none;
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: initial;
+  background-clip: initial;
+  /* Xóa hiệu ứng gradient và animation */
+  letter-spacing: 0;
+  margin-bottom: 18px;
+  animation: none;
 }
 
 .service-info p {
   color: #666;
   font-size: 1rem;
   line-height: 1.6;
-}
-
-.service-info .text-muted {
-  font-size: 0.9rem;
-  color: #888;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 3.2em;
 }
 
 /* Service Popup */
@@ -525,6 +614,31 @@ h6 {
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px #43cea233;
+  border: 2px solid #e0e7ef;
+  animation: wowFadeIn 0.5s cubic-bezier(.4,2,.6,1);
+  overflow-x: clip !important; /* Ngăn mọi tràn ngang, loại bỏ thanh cuộn ngang triệt để */
+  box-sizing: border-box;
+}
+
+.service-popup-content::-webkit-scrollbar {
+  height: 7px;
+  background: #f0f0f0;
+  border-radius: 6px;
+}
+.service-popup-content::-webkit-scrollbar-thumb {
+  background: #b3c0d1;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.service-popup-content::-webkit-scrollbar-thumb:hover {
+  background: #7fa1c7;
+}
+
+.service-popup-content {
+  scrollbar-width: thin;
+  scrollbar-color: #b3c0d1 #f0f0f0;
 }
 
 .service-popup-header {
@@ -537,6 +651,14 @@ h6 {
 .service-popup-header h2 {
   margin: 0;
   color: #333;
+  background: linear-gradient(90deg, #43cea2 60%, #185a9d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
 }
 
 .close-btn {
@@ -550,6 +672,7 @@ h6 {
 .service-popup-body {
   display: flex;
   gap: 20px;
+  min-width: 0; /* Ngăn chặn flex con làm tràn chiều ngang */
 }
 
 .service-popup-image {

@@ -9,10 +9,14 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up() : void
     {
-        Schema::create('staff_customer_notes', function (Blueprint $table) {
+        Schema::create('service_pricing', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('service_id');
+            $table->string('type');
+            $table->string('value');
+            $table->foreign('service_id')->references('id')->on('services')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -22,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('staff_customer_notes');
+        Schema::dropIfExists('service_pricing');
     }
 };

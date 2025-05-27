@@ -57,6 +57,23 @@ const StaffSidebar = () => {
               {isOpen && "Room Management"}
             </NavLink>
           </li>
+          <li className="nav-item">
+            <NavLink
+              className="nav-link text-white d-flex align-items-center btn " to="/staff/StaffServiceManager"
+            >
+              <i className="bx bx-cog me-2"></i>
+              {isOpen && "Service Management"}
+            </NavLink>
+          </li>
+          <li className="nav-item">
+            <NavLink
+              className="nav-link text-white d-flex align-items-center btn "
+              to="/staff/ContactAdminManager"
+            >
+              <i className="bx bx-envelope me-2"></i>
+              {isOpen && "Quản lý liên hệ"}
+            </NavLink>
+          </li>
           {/* Add other menu items here */}
         </ul>
       </div>

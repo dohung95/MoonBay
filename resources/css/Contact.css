@@ -18,6 +18,17 @@
   margin-bottom: 15px;
   position: relative;
   display: inline-block;
+  background: linear-gradient(90deg, #0f4c81 60%, #43cea2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 1.5px;
+  animation: wowFadeIn 1s cubic-bezier(.4,2,.6,1);
+}
+
+@keyframes wowFadeIn {
+  0% { opacity: 0; transform: translateY(-30px) scale(0.98); }
+  100% { opacity: 1; transform: none; }
 }
 
 .contact-header h2:after {
@@ -46,8 +57,10 @@
   margin-bottom: 60px;
   background: #fff;
   border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(15,76,129,0.13), 0 2px 8px rgba(67,206,162,0.08);
+  border: 2px solid #e0e7ef;
+  background: linear-gradient(120deg, #f8fafc 80%, #e0f7fa 100%);
+  transition: box-shadow 0.3s, border 0.3s;
 }
 
 /* Contact Info Section */
@@ -59,6 +72,11 @@
   display: flex;
   flex-direction: column;
   gap: 30px;
+  background: linear-gradient(120deg, #0f4c81 80%, #43cea2 100%);
+  box-shadow: 0 4px 24px rgba(15,76,129,0.08);
+  border-radius: 16px 0 0 16px;
+  position: relative;
+  overflow: hidden;
 }
 
 .contact-info-card {
@@ -66,6 +84,17 @@
   align-items: flex-start;
   gap: 15px;
   color: #fff;
+  background: rgba(255,255,255,0.08);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(67,206,162,0.08);
+  padding: 18px 16px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.contact-info-card:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 8px 24px #43cea233;
+  background: rgba(255,255,255,0.18);
 }
 
 .info-icon {
@@ -76,11 +105,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  background: linear-gradient(135deg, #43cea2 40%, #0f4c81 100%);
+  box-shadow: 0 2px 8px #43cea233;
+  border: 2px solid #fff;
 }
 
 .info-icon i {
-  font-size: 20px;
+  font-size: 26px;
   color: #fff;
+  filter: drop-shadow(0 2px 4px #0f4c81cc);
 }
 
 .info-content h3 {
@@ -105,12 +138,21 @@
   flex: 2;
   min-width: 400px;
   padding: 40px;
+  background: #fff;
+  border-radius: 0 16px 16px 0;
+  box-shadow: 0 4px 24px rgba(67,206,162,0.08);
+  position: relative;
 }
 
 .contact-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  background: rgba(255,255,255,0.95);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px #0f4c8133;
+  padding: 24px 18px;
+  animation: wowFadeIn 0.8s cubic-bezier(.4,2,.6,1);
 }
 
 .form-row {
@@ -137,13 +179,16 @@
   border: 1px solid #e0e0e0;
   border-radius: 6px;
   font-size: 16px;
-  transition: all 0.3s ease;
+  background: #f8fafc;
+  border: 1.5px solid #e0e7ef;
+  box-shadow: 0 1px 4px #43cea233;
+  transition: border 0.2s, box-shadow 0.2s;
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
-  border-color: #0f4c81;
-  box-shadow: 0 0 0 2px rgba(15, 76, 129, 0.1);
+  border-color: #43cea2;
+  box-shadow: 0 0 0 3px #43cea233;
   outline: none;
 }
 
@@ -153,30 +198,63 @@
 }
 
 .submit-button {
-  background: #0f4c81;
+  background: linear-gradient(90deg, #0f4c81 60%, #43cea2 100%);
   color: #fff;
   border: none;
-  border-radius: 6px;
-  padding: 16px 30px;
-  font-size: 16px;
-  font-weight: 600;
+  border-radius: 30px;
+  padding: 16px 36px;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  transition: all 0.3s ease;
+  transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
   align-self: flex-end;
   margin-top: 10px;
 }
 
 .submit-button:hover {
-  background: #0d3d68;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(15, 76, 129, 0.3);
+  background: linear-gradient(90deg, #43cea2 60%, #0f4c81 100%);
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 8px 24px #43cea233;
 }
 
 .submit-button i {
+  font-size: 18px;
+}
+
+.contact-submit-button {
+  padding: 8px 0;
+  font-size: 14px;
+  border-radius: 20px;
+  width: 180px; /* mở rộng nút để đủ chỗ cho cả text và icon trên 1 dòng */
+  max-width: 220px;
+  height: 40px;
+  justify-content: center;
+  background: linear-gradient(90deg, #0f4c81 60%, #43cea2 100%);
+  color: #fff;
+  border: none;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+  margin: 20px auto 0 auto;
+  white-space: nowrap; /* đảm bảo text và icon không bị xuống dòng */
+}
+
+.contact-submit-button:hover {
+  background: linear-gradient(90deg, #43cea2 60%, #0f4c81 100%);
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 8px 24px #43cea233;
+}
+
+.contact-submit-button i {
   font-size: 18px;
 }
 
@@ -189,6 +267,9 @@
   text-align: center;
   height: 100%;
   padding: 40px;
+  background: linear-gradient(120deg, #e0f7fa 80%, #f8fafc 100%);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px #43cea233;
 }
 
 .success-icon {
@@ -200,6 +281,8 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 20px;
+  background: linear-gradient(135deg, #43cea2 40%, #0f4c81 100%);
+  box-shadow: 0 2px 8px #43cea233;
 }
 
 .success-icon i {

@@ -26,11 +26,11 @@ const StaffBookings = () => {
     const [pagination, setPagination] = useState({
         currentPage: 1,
         lastPage: 1,
-        perPage: 30,
+        perPage: 7,
         total: 0,
     });
     const { searchQuery } = useSearch(); // Lấy searchQuery từ SearchContext
-    const itemsPerPage = 30;
+    const itemsPerPage = 7;
 
     useEffect(() => {
         const fetchBookings = async () => {

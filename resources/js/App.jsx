@@ -48,6 +48,8 @@ import Complaints from './Components/Complaints.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { FaRobot } from 'react-icons/fa';
 import '../css/App.css';
+import StaffServiceManager from './Components/Staff/StaffServiceManager.jsx';
+import ContactAdminManager from './Components/Staff/ContactAdminManager.jsx';
 
 // PopupContext để quản lý trạng thái popup
 export const PopupContext = React.createContext();
@@ -526,15 +528,22 @@ const App = () => {
                                         <StaffRoomManagement />
                                     }
                                 />
+                                <Route
+                                    path="StaffServiceManager"
+                                    element={
+                                        <StaffServiceManager />
+                                    }
+                                />
+                                <Route
+                                    path="ContactAdminManager"
+                                    element={<ContactAdminManager />}
+                                />
                                 {/* Thêm route mới cho profile */}
                                 <Route
                                     path="Profile"
-                                    element={
-                                        <StaffProfile />
-                                }
+                                    element={<StaffProfile />}
                                 />
                             </Route>
-
                         </Routes>
                     </Router>
                 </SearchProvider>
