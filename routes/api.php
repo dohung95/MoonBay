@@ -55,6 +55,9 @@ Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallbac
 
 Route::get('/users/{id}/bookings', [BookingController::class, 'getUserBookings']);
 Route::put('/users/{id}', [AuthController::class, 'update']);
+
+// thay avatar ở StaffDashboard 
+Route::post('/users/{id}/update', [AuthController::class, 'update']); // Alternative route for FormData
 Route::post('/users/{id}/change-password', [AuthController::class, 'changePassword']);
 Route::delete('/bookings/{id}', [BookingController::class, 'destroy']);
 Route::get('/reviews/{id}', [ReviewController::class, 'getReviewsByUserID']);

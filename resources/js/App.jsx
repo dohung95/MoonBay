@@ -40,7 +40,6 @@ import StaffProfile from './Components/Staff/StaffProfile.jsx';
 
 //components staff
 import StaffBookingList from './Components/Staff/StaffBookingList.jsx';
-import StaffRooms from './Components/Staff/StaffRooms.jsx';
 import { SearchProvider } from './Components/Staff/SearchContext.jsx'
 import StaffRoomManagement from './Components/Staff/StaffRoomManagement.jsx';
 import Staff_BookingRooms from './Components/Staff/Staff_BookingRooms.jsx';
@@ -513,12 +512,6 @@ const App = () => {
                                         }
                                     />
                                     <Route
-                                        path="RoomList"
-                                        element={
-                                            <StaffRooms />
-                                        }
-                                    />
-                                    <Route
                                         path="StaffCustomerManagement"
                                         element={
                                             <StaffCustomerManagement />
@@ -606,12 +599,6 @@ const App = () => {
                                     path="BookingList"
                                     element={
                                         <StaffBookingList />
-                                    }
-                                />
-                                <Route
-                                    path="RoomList"
-                                    element={
-                                        <StaffRooms />
                                     }
                                 />
                                 <Route

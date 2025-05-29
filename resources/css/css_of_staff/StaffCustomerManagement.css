@@ -24,22 +24,54 @@
 }
 
 .staff-search-container {
-  margin-bottom: 10px;
+  margin-bottom: 18px;
   display: flex;
   justify-content: flex-end;
 }
 
+.search-input-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
 .staff-search-input {
-  padding: 8px 16px;
+  padding: 8px 40px 8px 16px;
   border: 1.5px solid #d1d5db;
   border-radius: 8px;
   font-size: 1rem;
   width: 320px;
-  transition: border 0.2s;
+  transition: all 0.2s ease;
+  margin-bottom: 0; /* Remove margin bottom to avoid extra space */
 }
 .staff-search-input:focus {
   border: 1.5px solid #0077ff;
   outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 119, 255, 0.1);
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.clear-search-btn:hover {
+  background: #f3f4f6;
+  color: #374151;
 }
 
 .staff-table-container {
@@ -172,6 +204,7 @@
   color: #374151;
   cursor: pointer;
   transition: background 0.18s, color 0.18s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 .staff-page-btn.active, .staff-page-btn:hover {
   background: #0077ff;
@@ -181,6 +214,36 @@
   background: #e5e7eb;
   color: #bdbdbd;
   cursor: not-allowed;
+}
+
+/* Staff Customer Management specific pagination */
+.staff-customer-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 22px 0 0 0;
+  gap: 6px;
+}
+.staff-customer-page-btn {
+  background: #f3f4f6;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 1rem;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  font-weight: 500;
+}
+.staff-customer-page-btn.active, .staff-customer-page-btn:hover {
+  background: #0077ff;
+  color: #fff;
+}
+.staff-customer-page-btn:disabled {
+  background: #e5e7eb;
+  color: #bdbdbd;
+  cursor: not-allowed;  
 }
 
 /* Modal styles */
@@ -452,4 +515,41 @@
     padding: 7px 4px;
     font-size: 0.95rem;
   }
+}
+
+/* Search spinner indicator */
+.search-indicator {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #0077ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Search results information */
+.search-results-info {
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background-color: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 6px;
+  color: #0369a1;
+  font-size: 0.9rem;
+  text-align: center;
 }

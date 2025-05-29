@@ -26,15 +26,53 @@ const StaffBookings = () => {
     const [pagination, setPagination] = useState({
         currentPage: 1,
         lastPage: 1,
-        perPage: 7,
+        perPage: 6,
         total: 0,
     });
-    const { searchQuery } = useSearch(); // Lấy searchQuery từ SearchContext
-    const itemsPerPage = 7;
+    const { searchQuery, setSearchQuery } = useSearch(); // Lấy searchQuery và setSearchQuery từ SearchContext
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
+    const [isSearching, setIsSearching] = useState(false);
+
+    // Debounce search query to improve performance
+    useEffect(() => {
+        if (searchQuery !== debouncedSearchQuery) {
+            setIsSearching(true);
+        }
+        
+        const timer = setTimeout(() => {
+            setDebouncedSearchQuery(searchQuery);
+            setIsSearching(false);
+        }, 300); // 300ms debounce - nhanh hơn cho search
+
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    // Handle search with debounce effect
+    const handleSearchChange = (e) => {
+        const value = e.target.value;
+        setSearchQuery(value);
+        // Reset to first page when searching
+        setPagination(prev => ({ ...prev, currentPage: 1 }));
+    };
+
+    // Clear search
+    const clearSearch = () => {
+        setSearchQuery('');
+        setPagination(prev => ({ ...prev, currentPage: 1 }));
+    };
 
     useEffect(() => {
         const fetchBookings = async () => {
-            setLoading(true);
+            // Chỉ show loading khi lần đầu load hoặc chuyển trang, không show khi search
+            const isInitialLoad = pagination.currentPage === 1 && !debouncedSearchQuery;
+            const isPagination = pagination.currentPage > 1;
+            
+            if (isInitialLoad || isPagination) {
+                setLoading(true);
+                // Thêm độ trễ để hiển thị hiệu ứng loading chỉ khi cần thiết
+                await new Promise(resolve => setTimeout(resolve, 400));
+            }
+
             try {
                 const token = Cookies.get('auth_token');
                 if (!token) {
@@ -44,9 +82,9 @@ const StaffBookings = () => {
                 const response = await axios.get('/api/bookingList', {
                     headers: { Authorization: `Bearer ${token}` },
                     params: {
-                        per_page: itemsPerPage,
+                        per_page: pagination.perPage,
                         page: pagination.currentPage,
-                        search: searchQuery || undefined, // Gửi searchQuery nếu có
+                        search: debouncedSearchQuery || undefined, // Gửi debouncedSearchQuery nếu có
                     },
                 });
 
@@ -74,10 +112,14 @@ const StaffBookings = () => {
                 setPagination({
                     currentPage: response.data.current_page || 1,
                     lastPage: response.data.last_page || 1,
-                    perPage: response.data.per_page || itemsPerPage,
+                    perPage: response.data.per_page || pagination.perPage,
                     total: response.data.total || 0,
                 });
-                setLoading(false);
+                
+                // Chỉ tắt loading nếu đã bật
+                if (isInitialLoad || isPagination) {
+                    setLoading(false);
+                }
             } catch (err) {
                 const errorMessage = err.response?.data?.message || err.message || 'Lỗi khi lấy danh sách đặt phòng';
                 setError(errorMessage);
@@ -87,91 +129,108 @@ const StaffBookings = () => {
             }
         };
         fetchBookings();
-    }, [pagination.currentPage, searchQuery]);
+    }, [pagination.currentPage, debouncedSearchQuery]);
 
     const totalPages = pagination.lastPage;
-
-    if (loading) return <div className="text-center mt-4">Đang tải...</div>;
-    if (error) return <div className="alert alert-danger mt-4">{error}</div>;
 
     return (
         <>
             <div className="staff-bookinglist">
-                <div className="table-wrapper">
-                    <table className="staff-bookinglist-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name User</th>
-                                <th>Email User</th>
-                                <th>Phone User</th>
-                                <th>Room Type</th>
-                                <th>Number of Rooms</th>
-                                <th>Children</th>
-                                <th>Member</th>
-                                <th>Check in</th>
-                                <th>Check out</th>
-                                <th>Price</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {bookings.length === 0 ? (
-                                <tr>
-                                    <td colSpan="11" className="no-data">Không tìm thấy đặt phòng nào.</td>
-                                </tr>
-                            ) : bookings.map(booking => (
-                                <tr key={booking.id}>
-                                    <td>{booking.id}</td>
-                                    <td>{booking.name}</td>
-                                    <td>{booking.email}</td>
-                                    <td>{booking.phone || 'N/A'}</td>
-                                    <td>{booking.room_type}</td>
-                                    <td>{booking.number_of_rooms}</td>
-                                    <td>{booking.children}</td>
-                                    <td>{booking.member}</td>
-                                    <td>{new Date(booking.checkin_date).toLocaleDateString()}</td>
-                                    <td>{new Date(booking.checkout_date).toLocaleDateString()}</td>
-                                    <td>{formatCurrency(booking.total_price)}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                <h2 className="staff-bookinglist-title">Booking List</h2>
+                <p className="staff-room-description">
+                    Manage room information, including room status.
+                </p>
+                <div className="staff-booking-search-container">
+                    <div className="search-input-wrapper">
+                        <input
+                            type="text"
+                            placeholder="Search by name, email, phone, room type..."
+                            value={searchQuery}
+                            onChange={handleSearchChange}
+                            className="staff-search-input"
+                        />
+                    </div>
                 </div>
+                
+                {loading ? (
+                    <div className="text-center py-5">
+                        <div className="spinner-border text-primary mb-2" />
+                        <p>Loading data...</p>
+                    </div>
+                ) : error ? (
+                    <div className="alert alert-danger mt-4">{error}</div>
+                ) : (
+                    <div className="table-wrapper">
+                        <table className="staff-bookinglist-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name User</th>
+                                    <th>Email User</th>
+                                    <th>Phone User</th>
+                                    <th>Room Type</th>
+                                    <th>Number of Rooms</th>
+                                    <th>Children</th>
+                                    <th>Member</th>
+                                    <th>Check in</th>
+                                    <th>Check out</th>
+                                    <th>Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {bookings.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="11" className="booking-no-data">No bookings found.</td>
+                                    </tr>
+                                ) : bookings.map(booking => (
+                                    <tr key={booking.id}>
+                                        <td>{booking.id}</td>
+                                        <td>{booking.name}</td>
+                                        <td>{booking.email}</td>
+                                        <td>{booking.phone || 'N/A'}</td>
+                                        <td>{booking.room_type}</td>
+                                        <td>{booking.number_of_rooms}</td>
+                                        <td>{booking.children}</td>
+                                        <td>{booking.member}</td>
+                                        <td>{new Date(booking.checkin_date).toLocaleDateString()}</td>
+                                        <td>{new Date(booking.checkout_date).toLocaleDateString()}</td>
+                                        <td>{formatCurrency(booking.total_price)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
 
-            <div className="pagination-booklist-staff">
-                <div className="pagination-controls">
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="staff-bookinglist-pagination">
                     <button
-                        className="btn btn-primary pagination-btn"
+                        className="staff-bookinglist-page-btn"
                         onClick={() => setPagination(prev => ({ ...prev, currentPage: Math.max(prev.currentPage - 1, 1) }))}
                         disabled={pagination.currentPage === 1}
                     >
-                        <i className="fas fa-chevron-left"></i> Previous
+                        &lt;
                     </button>
-                    <span className="pagination-page">
-                        Page {pagination.currentPage} / {totalPages}
-                    </span>
-                    <input
-                        type="number"
-                        className="page-input"
-                        placeholder="1"
-                        value={pagination.currentPage}
-                        onChange={(e) => {
-                            const pageNumber = Math.min(Math.max(parseInt(e.target.value, 10) || 1, 1), totalPages);
-                            setPagination(prev => ({ ...prev, currentPage: pageNumber }));
-                        }}
-                        min="1"
-                        max={totalPages}
-                    />
+                    {[...Array(totalPages)].map((_, idx) => (
+                        <button
+                            key={idx + 1}
+                            className={`staff-bookinglist-page-btn ${pagination.currentPage === idx + 1 ? 'active' : ''}`}
+                            onClick={() => setPagination(prev => ({ ...prev, currentPage: idx + 1 }))}
+                        >
+                            {idx + 1}
+                        </button>
+                    ))}
                     <button
-                        className="btn btn-primary pagination-btn"
+                        className="staff-bookinglist-page-btn"
                         onClick={() => setPagination(prev => ({ ...prev, currentPage: Math.min(prev.currentPage + 1, totalPages) }))}
                         disabled={pagination.currentPage === totalPages}
                     >
-                        Next <i className="fas fa-chevron-right"></i>
+                        &gt;
                     </button>
                 </div>
-            </div>
+            )}
         </>
     );
 };

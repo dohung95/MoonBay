@@ -26,11 +26,15 @@ const StaffServiceManager = () => {
     const [pricingInput, setPricingInput] = useState({ type: '', value: '' });
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    
+    // Local search state - không dùng SearchContext
+    const [localSearchQuery, setLocalSearchQuery] = useState("");
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+    const [isSearching, setIsSearching] = useState(false);
     const [imagePreview, setImagePreview] = useState('');
     const [imageUploadLoading, setImageUploadLoading] = useState(false);
     const [editImagePreview, setEditImagePreview] = useState('');
-    const [editImageUploadLoading, setEditImageUploadLoading] = useState(false);
-    const [showStatusConfirm, setShowStatusConfirm] = useState(false);
+    const [editImageUploadLoading, setEditImageUploadLoading] = useState(false);    const [showStatusConfirm, setShowStatusConfirm] = useState(false);
     const [pendingStatus, setPendingStatus] = useState(null);
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
@@ -43,10 +47,27 @@ const StaffServiceManager = () => {
         fetchServices();
     }, []);
 
+    // Debounce search query to improve performance
+    useEffect(() => {
+        if (localSearchQuery !== debouncedSearchQuery) {
+            setIsSearching(true);
+        }
+        
+        const timer = setTimeout(() => {
+            setDebouncedSearchQuery(localSearchQuery);
+            setIsSearching(false);
+        }, 300); // 300ms debounce
+
+        return () => clearTimeout(timer);
+    }, [localSearchQuery]);
+
     // Fetch services
     const fetchServices = async () => {
         setLoading(true);
         try {
+            // Thêm độ trễ để hiển thị hiệu ứng loading
+            await new Promise(resolve => setTimeout(resolve, 400));
+
             const token = Cookies.get('auth_token');
             const response = await axios.get('/api/services', {
                 headers: { Authorization: `Bearer ${token}` },
@@ -211,12 +232,27 @@ const StaffServiceManager = () => {
             ...prev,
             pricing: prev.pricing.filter((_, i) => i !== idx)
         }));
-    };
-
-    // Toggle details
+    };    // Toggle details
     const toggleServiceDetails = (serviceId) => {
         if (expandedService === serviceId) setExpandedService(null);
         else setExpandedService(serviceId);
+    };
+
+    // Search handler functions
+    const handleSearchChange = (e) => {
+        const value = e.target.value;
+        setLocalSearchQuery(value);
+        if (value !== debouncedSearchQuery) {
+            setIsSearching(true);
+        }
+        setCurrentPage(1); // Reset page when searching
+    };
+
+    const clearSearch = () => {
+        setLocalSearchQuery("");
+        setDebouncedSearchQuery("");
+        setIsSearching(false);
+        setCurrentPage(1);
     };
 
     // Sorting handler
@@ -254,11 +290,9 @@ const StaffServiceManager = () => {
             if (sortOrder === 'asc') return aValue - bValue;
             return bValue - aValue;
         });
-    };
-
-    // Filtered and sorted services
+    };    // Filtered and sorted services
     const filteredServices = services.filter(service =>
-        (service.title || '').toLowerCase().includes(searchTerm.toLowerCase())
+        (service.title || '').toLowerCase().includes(debouncedSearchQuery.toLowerCase())
     );
     const sortedServices = getSortedServices(filteredServices);
     // Pagination logic
@@ -331,33 +365,43 @@ const StaffServiceManager = () => {
     const cancelStatusChange = () => {
         setShowStatusConfirm(false);
         setPendingStatus(null);
-    };
-
-    // Reset page when search term changes
+    };    // Reset page when search term changes
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm]);
+    }, [debouncedSearchQuery]);
 
     return (
         <div className="staff-service-manager">
             <h2 className="staff-service-title">Service Management</h2>
-            <p className="staff-service-description">Add, edit, delete and manage services for your hotel</p>
-            <div className="row-action-service">
+            <p className="staff-service-description">Add, edit, delete and manage services for your hotel</p>            <div className="row-action-service">
                 <div className="staff-service-add-container">
                     <button className="btn btn-primary" onClick={() => setShowAddForm(true)}>
                         <Plus size={16} className="me-2" /> Add Service
                     </button>
-                </div>
-                <div className="staff-service-search-container">
+                </div>                <div className="search-input-wrapper">
                     <input
                         type="text"
-                        className="staff-service-search-input"
+                        className="search-input"
                         placeholder="Search for services..."
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
+                        value={localSearchQuery}
+                        onChange={handleSearchChange}
                     />
+                    {isSearching && <div className="search-spinner"></div>}
+                    {localSearchQuery && !isSearching && (
+                        <button className="clear-search-btn" onClick={clearSearch}>
+                            ×
+                        </button>
+                    )}
                 </div>
             </div>
+
+            {/* Search Results Count */}
+            {debouncedSearchQuery && !loading && (
+                <div className="search-results-info">
+                    Found {filteredServices.length} service{filteredServices.length !== 1 ? 's' : ''} 
+                    matching "{debouncedSearchQuery}"
+                </div>
+            )}
             {/* Sorting controls */}
             <div className="d-flex gap-3 align-items-center mb-3">
                 <span className="fw-bold">Sort by:</span>
@@ -486,11 +530,10 @@ const StaffServiceManager = () => {
                     <div className="text-center py-5">
                         <div className="spinner-border text-primary mb-2" />
                         <p>Loading data...</p>
-                    </div>
-                ) : sortedServices.length === 0 ? (
+                    </div>                ) : sortedServices.length === 0 ? (
                     <div className="alert alert-info text-center">
                         <Info size={24} className="me-2" />
-                        {searchTerm ? 'No matching services found.' : 'No services available.'}
+                        {debouncedSearchQuery ? 'No matching services found.' : 'No services available.'}
                     </div>
                 ) : (
                     <div className="accordion" id="serviceAccordion">
@@ -665,24 +708,33 @@ const StaffServiceManager = () => {
                         ))}
                     </div>
                 )}
-            </div>
-            {/* Pagination controls */}
+            </div>            {/* Pagination controls */}
             {totalPages > 1 && (
-                <nav className="mt-3 d-flex justify-content-center">
-                    <ul className="pagination">
-                        <li className={`page-item${currentPage === 1 ? ' disabled' : ''}`}>
-                            <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>&laquo;</button>
-                        </li>
-                        {Array.from({ length: totalPages }, (_, i) => (
-                            <li key={i + 1} className={`page-item${currentPage === i + 1 ? ' active' : ''}`}>
-                                <button className="page-link" onClick={() => setCurrentPage(i + 1)}>{i + 1}</button>
-                            </li>
-                        ))}
-                        <li className={`page-item${currentPage === totalPages ? ' disabled' : ''}`}>
-                            <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages}>&raquo;</button>
-                        </li>
-                    </ul>
-                </nav>
+                <div className="staff-service-pagination">
+                    <button
+                        className="staff-service-page-btn"
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                    >
+                        &lt;
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => (
+                        <button
+                            key={i + 1}
+                            className={`staff-service-page-btn ${currentPage === i + 1 ? 'active' : ''}`}
+                            onClick={() => setCurrentPage(i + 1)}
+                        >
+                            {i + 1}
+                        </button>
+                    ))}
+                    <button
+                        className="staff-service-page-btn"
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                    >
+                        &gt;
+                    </button>
+                </div>
             )}
             {/* Modal xác nhận đổi trạng thái */}
             {showStatusConfirm && (

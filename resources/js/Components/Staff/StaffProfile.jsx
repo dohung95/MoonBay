@@ -18,7 +18,11 @@ const StaffProfile = () => {
         new_password: '',
         new_password_confirmation: '',
     });
+    const [avatarFile, setAvatarFile] = useState(null);
+    const [avatarPreview, setAvatarPreview] = useState(null);
+    const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
+    const [initialLoading, setInitialLoading] = useState(true);
 
     useEffect(() => {
         if (user) {
@@ -27,6 +31,10 @@ const StaffProfile = () => {
                 email: user.email || '',
                 phone: user.phone || '',
             });
+            // Add 400ms delay to see loading effect clearly
+            setTimeout(() => {
+                setInitialLoading(false);
+            }, 400);
         }
     }, [user]);
 
@@ -46,28 +54,104 @@ const StaffProfile = () => {
         }));
     };
 
+    const handleAvatarChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+            if (!allowedTypes.includes(file.type)) {
+                setErrors(prev => ({
+                    ...prev,
+                    avatar: 'Please select a valid image file (JPEG, PNG, JPG, GIF)'
+                }));
+                return;
+            }
+
+            // Validate file size (max 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                setErrors(prev => ({
+                    ...prev,
+                    avatar: 'File size must be less than 2MB'
+                }));
+                return;
+            }
+
+            setAvatarFile(file);
+            
+            // Create preview URL
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setAvatarPreview(e.target.result);
+            };
+            reader.readAsDataURL(file);
+
+            // Clear any previous avatar errors
+            setErrors(prev => ({
+                ...prev,
+                avatar: ''
+            }));
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         
         try {
             await axios.get('/sanctum/csrf-cookie');
-            const response = await axios.put(`/api/users/${user.id}`, formData, {
+            
+            // Always use FormData to maintain consistency
+            const submitData = new FormData();
+            submitData.append('name', formData.name);
+            submitData.append('email', formData.email);
+            submitData.append('phone', formData.phone || ''); // Ensure phone is never undefined
+            
+            // Add avatar file if selected
+            if (avatarFile) {
+                submitData.append('avatar', avatarFile);
+            }
+
+            // Debug: Log what we're sending
+            console.log('Submitting data:', {
+                name: formData.name,
+                email: formData.email,
+                phone: formData.phone,
+                hasAvatar: !!avatarFile
+            });
+
+            const response = await axios.post(`/api/users/${user.id}/update`, submitData, {
                 headers: {
                     Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data',
                 },
             });
 
             updateUser(response.data.user);
             setIsEditing(false);
+            // Only reset avatar states if new avatar was uploaded
+            if (avatarFile) {
+                setAvatarFile(null);
+                setAvatarPreview(null);
+            }
+            setErrors({});
             window.showNotification ? 
                 window.showNotification('Profile updated successfully!', 'success') : 
                 alert('Profile updated successfully!');
         } catch (err) {
             console.error('Error updating profile:', err.response?.data || err.message);
+            
+            // Handle validation errors
+            if (err.response?.status === 422 && err.response?.data?.errors) {
+                setErrors(err.response.data.errors);
+            } else {
+                setErrors({
+                    general: err.response?.data?.message || 'Failed to update profile'
+                });
+            }
+            
             window.showNotification ? 
-                window.showNotification('Failed to update profile', 'error') : 
-                alert('Failed to update profile');
+                window.showNotification(err.response?.data?.message || 'Failed to update profile', 'error') : 
+                alert(err.response?.data?.message || 'Failed to update profile');
         } finally {
             setLoading(false);
         }
@@ -125,6 +209,12 @@ const StaffProfile = () => {
             email: user?.email || '',
             phone: user?.phone || '',
         });
+        // Only reset avatar states if there was a new avatar selected
+        if (avatarFile) {
+            setAvatarFile(null);
+            setAvatarPreview(null);
+        }
+        setErrors({});
     };
 
     const handleCancelPasswordChange = () => {
@@ -142,11 +232,24 @@ const StaffProfile = () => {
                 <h2>Staff Profile</h2>
             </div>
             
-            <div className="staff-profile-content">
+            {initialLoading ? (
+                <div className="text-center py-5">
+                    <div className="spinner-border text-primary mb-2" />
+                    <p>Loading data...</p>
+                </div>
+            ) : (
+                <div className="staff-profile-content">
                 <div className="staff-profile-section">
                     <div className="staff-profile-info">
                         <div className="staff-profile-avatar">
-                            <img src={user.avatar} alt="Avatar" className="staff-avatar-img" />
+                            <img 
+                                src={user.avatar?.startsWith('http') ? user.avatar : `/storage/${user.avatar}`} 
+                                alt="Avatar" 
+                                className="staff-avatar-img"
+                                onError={(e) => {
+                                    e.target.src = '/images/Dat/avatar/default.png';
+                                }}
+                            />
                         </div>
                         <div className="staff-profile-details">
                             <h3>{user.name}</h3>
@@ -171,7 +274,51 @@ const StaffProfile = () => {
                 {isEditing && (
                     <div className="staff-edit-profile-section">
                         <h3>Edit Profile</h3>
+                        {errors.general && (
+                            <div className="alert alert-danger mb-3">
+                                {errors.general}
+                            </div>
+                        )}
                         <form onSubmit={handleSubmit}>
+                            <div className="mb-3">
+                                <label className="staff-form-label">Profile Picture</label>
+                                <div className="staff-avatar-upload">
+                                    <div className="staff-avatar-preview">
+                                        <img 
+                                            src={avatarPreview || (user.avatar?.startsWith('http') ? user.avatar : `/storage/${user.avatar}`)} 
+                                            alt="Avatar Preview" 
+                                            className="staff-avatar-img-preview" 
+                                            onError={(e) => {
+                                                e.target.src = '/images/Dat/avatar/default.png';
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="staff-avatar-controls">
+                                        <input
+                                            type="file"
+                                            id="avatar"
+                                            name="avatar"
+                                            accept="image/jpeg,image/png,image/jpg,image/gif"
+                                            onChange={handleAvatarChange}
+                                            className="staff-file-input"
+                                            style={{ display: 'none' }}
+                                        />
+                                        <label htmlFor="avatar" className="staff-btn staff-btn-outline">
+                                            Choose New Picture
+                                        </label>
+                                        {avatarFile && (
+                                            <small className="text-muted">
+                                                Selected: {avatarFile.name}
+                                            </small>
+                                        )}
+                                    </div>
+                                    {errors.avatar && (
+                                        <div className="text-danger mt-1">
+                                            {errors.avatar}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                             <div className="mb-3">
                                 <label htmlFor="name" className="staff-form-label">Name</label>
                                 <input
@@ -271,6 +418,7 @@ const StaffProfile = () => {
                     </div>
                 )}
             </div>
+            )}
         </div>
     );
 };

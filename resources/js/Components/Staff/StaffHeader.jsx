@@ -2,12 +2,17 @@ import React, { useContext, useState, useEffect } from 'react';
 import "../../../css/css_of_staff/StaffHeader.css";
 import { AuthContext } from '../AuthContext';
 import { useSearch } from './SearchContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const StaffHeader = ({ handleSearchChange }) => {
   const { user, logout } = useContext(AuthContext);
   const { searchQuery, setSearchQuery } = useSearch();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Hide search bar when on sidebar component routes
+  const shouldHideSearchBar = location.pathname !== '/staff' && location.pathname !== '/staff/';
+  
   const handleAvatarClick = () => {
     navigate('/staff/profile');
   }
@@ -23,22 +28,27 @@ const StaffHeader = ({ handleSearchChange }) => {
         <h4 className="mb-0">Staff Dashboard</h4>
       </div>
       <div className="d-flex align-items-center">
-        <div className="search-bar me-3">
-          <input
-            type="text"
-            className="form-control search-staff"
-            placeholder="Search data..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-          />
-        </div>
+        {!shouldHideSearchBar && (
+          <div className="search-bar me-3">
+            <input
+              type="text"
+              className="form-control search-staff"
+              placeholder="Search data..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
+          </div>
+        )}
         <div className="staff-box d-flex align-items-center" onClick={handleAvatarClick} style={{ cursor:'pointer' }}>
           <img
-            src={user.avatar}
+            src={user.avatar?.startsWith('http') ? user.avatar : `/storage/${user.avatar}`}
             alt="Avatar"
             width="40"
             height="40"
             className="staff-img"
+            onError={(e) => {
+              e.target.src = '/images/Dat/avatar/default.png';
+            }}
           />
           <div className="staff-info">
             <p className="staff-name mb-0">{user.name}</p>
