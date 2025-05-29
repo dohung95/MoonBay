@@ -37,26 +37,29 @@ class ChatbotController extends Controller
                         'role' => 'system',
                         'content' => 'Bạn là trợ lý khách sạn MoonBay. Phân tích câu hỏi của người dùng bằng tiếng Việt và CHỈ trả về một JSON hợp lệ có cấu trúc như sau:
                         {
-                            "intent": "lowest_price_room | highest_price_room | most_premium_room | room_recommendation | room_types | room_prices | room_capacity | offers | available_rooms | book_room | checkin_policy | cancel_policy | non_hotel",
+                            "intent": "lowest_price_room | highest_price_room | most_premium_room | room_recommendation | room_types | room_prices | room_capacity | offers | available_rooms | book_room | checkin_policy | cancel_policy | peak_season | off_peak_season | specific_room_info | non_hotel",
                             "params": {
                                 "people_count": số_người (nếu có, dùng cho gợi ý phòng),
                                 "start_date": "YYYY-MM-DD" (nếu có, dùng cho phòng trống),
-                                "end_date": "YYYY-MM-DD" (nếu có, dùng cho phòng trống)
+                                "end_date": "YYYY-MM-DD" (nếu có, dùng cho phòng trống),
+                                "room_type": "tên loại phòng" (nếu có, dùng cho thông tin phòng cụ thể)
                             },
                             "response": "Câu trả lời bằng ngôn ngữ tự nhiên nếu intent là non_hotel"
                         }
-                        - Nếu câu hỏi liên quan đến thông tin khách sạn (giá phòng, loại phòng, phòng trống, ưu đãi, đặt phòng, chính sách, v.v.), xác định intent và params thích hợp.
+                        - Nếu câu hỏi liên quan đến thông tin khách sạn (giá phòng, loại phòng, phòng trống, ưu đãi, đặt phòng, chính sách, mùa cao điểm, mùa thấp điểm, thông tin phòng cụ thể, v.v.), xác định intent và params thích hợp.
                         - Nếu câu hỏi không liên quan đến khách sạn, đặt intent là "non_hotel" và trả lời bằng ngôn ngữ tự nhiên trong "response".
                         - Ví dụ:
                           - Câu hỏi: "Phòng nào rẻ nhất?" -> {"intent": "lowest_price_room", "params": {}}
                           - Câu hỏi: "Phòng đắt nhất là gì?" -> {"intent": "highest_price_room", "params": {}}
                           - Câu hỏi: "Phòng cao cấp nhất/xinh nhất/đẹp nhất/sang nhất/xịn nhất là gì?" -> {"intent": "most_premium_room", "params": {}}
-                          - Câu hỏi: "Phòng nào đẹp/xịn/sang/xinh nhất?" -> {"intent": "most_premium_room", "params": {}}
+                          - Câu hỏi: "Phòng Family giá bao nhiêu?" -> {"intent": "specific_room_info", "params": {"room_type": "Family"}}
                           - Câu hỏi: "Tôi đi 4 người thì nên ở phòng nào?" -> {"intent": "room_recommendation", "params": {"people_count": 4}}
                           - Câu hỏi: "Có phòng trống từ 25/05/2025 đến 27/05/2025 không?" -> {"intent": "available_rooms", "params": {"start_date": "2025-05-25", "end_date": "2025-05-27"}}
                           - Câu hỏi: "Tôi muốn đặt phòng" -> {"intent": "book_room", "params": {}}
                           - Câu hỏi: "Giờ nhận phòng là khi nào?" -> {"intent": "checkin_policy", "params": {}}
                           - Câu hỏi: "Chính sách hủy phòng thế nào?" -> {"intent": "cancel_policy", "params": {}}
+                          - Câu hỏi: "Mùa nào là cao điểm nhất?" -> {"intent": "peak_season", "params": {}}
+                          - Câu hỏi: "Mùa nào là thấp điểm nhất?" -> {"intent": "off_peak_season", "params": {}}
                           - Câu hỏi: "Thời tiết ở Đà Nẵng thế nào?" -> {"intent": "non_hotel", "params": {}, "response": "Thời tiết ở Đà Nẵng hôm nay..."}
                         - CHỈ trả về JSON hợp lệ, không thêm bất kỳ văn bản nào ngoài JSON (không giải thích, không chú thích).'
                     ],
@@ -78,10 +81,9 @@ class ChatbotController extends Controller
             }
 
             $content = $response['choices'][0]['message']['content'] ?? '{}';
-            Log::info('Raw content before processing: ' . $content); // Ghi lại nội dung trước khi xử lý
-            // Làm sạch nội dung (loại bỏ ký tự không mong muốn)
-            $content = preg_replace('/^```json\n|\n```$/', '', trim($content)); // Loại bỏ ```json nếu có
-            Log::info('Raw content after cleaning: ' . $content); // Ghi lại nội dung sau khi làm sạch
+            Log::info('Raw content before processing: ' . $content);
+            $content = preg_replace('/^```json\n|\n```$/', '', trim($content));
+            Log::info('Raw content after cleaning: ' . $content);
             $decoded = json_decode($content, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 Log::error('JSON decode error: ' . json_last_error_msg() . ', Raw content: ' . $content);
@@ -102,7 +104,7 @@ class ChatbotController extends Controller
             return response()->json(['error' => 'Missing prompt'], 400);
         }
 
-        // Fallback regex cho "phòng xinh nhất", "phòng xịn nhất", v.v.
+        // Fallback regex cho các câu hỏi về phòng và mùa
         $normalizedInput = strtolower($userInput);
         if (preg_match('/\b(phong xinh nhất|phong xịn nhất|phong đẹp nhất|phong sang nhất|phong cao cấp nhất)\b/', $normalizedInput)) {
             $room = DB::table('room_types')
@@ -120,6 +122,50 @@ class ChatbotController extends Controller
                 }
             }
             $response = "Phòng xinh/xịn nhất là {$room->name} với giá " . number_format($room->price, 0, ',', '.') . " VNĐ/đêm.";
+            return response()->json(['response' => $response]);
+        }
+
+        // Fallback regex cho câu hỏi về phòng cụ thể
+        if (preg_match('/\bphong\s+([a-zA-Z\s]+)\s*(gia bao nhieu|giá bao nhiêu|co gia bao nhieu|có giá bao nhiêu)\b/', $normalizedInput, $matches)) {
+            $roomType = trim($matches[1]);
+            $room = DB::table('room_types')
+                       ->where('name', 'LIKE', '%' . $roomType . '%')
+                       ->select('name', 'price', 'capacity')
+                       ->first();
+            if (!$room) {
+                Log::warning('No room found for type: ' . $roomType);
+                return response()->json(['response' => "Không tìm thấy thông tin về phòng {$roomType} trong hệ thống."]);
+            }
+            $response = "Phòng {$room->name} có giá " . number_format($room->price, 0, ',', '.') . " VNĐ/đêm và sức chứa {$room->capacity} người.";
+            return response()->json(['response' => $response]);
+        }
+
+        // Fallback regex cho mùa cao điểm và thấp điểm
+        if (preg_match('/\b(mua cao diem nhat|mùa cao điểm nhất)\b/', $normalizedInput)) {
+            $peakSeason = Booking::select(DB::raw('MONTH(checkin_date) as month, COUNT(*) as booking_count'))
+                                 ->groupBy('month')
+                                 ->orderBy('booking_count', 'desc')
+                                 ->first();
+            if (!$peakSeason) {
+                Log::warning('No bookings found for peak season');
+                return response()->json(['response' => 'Hiện tại không có thông tin về mùa cao điểm trong hệ thống.']);
+            }
+            $monthName = Carbon::createFromFormat('m', $peakSeason->month)->locale('vi')->monthName;
+            $response = "Mùa cao điểm nhất là tháng {$monthName} với số lượng đặt phòng cao nhất.";
+            return response()->json(['response' => $response]);
+        }
+
+        if (preg_match('/\b(mua thap diem nhat|mùa thấp điểm nhất)\b/', $normalizedInput)) {
+            $offPeakSeason = Booking::select(DB::raw('MONTH(checkin_date) as month, COUNT(*) as booking_count'))
+                                    ->groupBy('month')
+                                    ->orderBy('booking_count', 'asc')
+                                    ->first();
+            if (!$offPeakSeason) {
+                Log::warning('No bookings found for off-peak season');
+                return response()->json(['response' => 'Hiện tại không có thông tin về mùa thấp điểm trong hệ thống.']);
+            }
+            $monthName = Carbon::createFromFormat('m', $offPeakSeason->month)->locale('vi')->monthName;
+            $response = "Mùa thấp điểm nhất là tháng {$monthName} với số lượng đặt phòng thấp nhất.";
             return response()->json(['response' => $response]);
         }
 
@@ -198,6 +244,23 @@ class ChatbotController extends Controller
                         }
                     }
                     $response = "Phòng cao cấp/xịn nhất là {$room->name} với giá " . number_format($room->price, 0, ',', '.') . " VNĐ/đêm.";
+                    return response()->json(['response' => $response]);
+
+                case 'specific_room_info':
+                    $roomType = $params['room_type'] ?? null;
+                    if (!$roomType) {
+                        return response()->json(['response' => 'Vui lòng cung cấp tên loại phòng để tôi có thể cung cấp thông tin.']);
+                    }
+                    $room = DB::table('room_types')
+                               ->where('name', 'LIKE', '%' . $roomType . '%')
+                               ->select('name', 'price', 'capacity')
+                               ->first();
+                    Log::info('Specific room info query result:', ['room_type' => $roomType, 'room' => $room]);
+                    if (!$room) {
+                        Log::warning('No room found for type: ' . $roomType);
+                        return response()->json(['response' => "Không tìm thấy thông tin về phòng {$roomType} trong hệ thống."]);
+                    }
+                    $response = "Phòng {$room->name} có giá " . number_format($room->price, 0, ',', '.') . " VNĐ/đêm và sức chứa {$room->capacity} người.";
                     return response()->json(['response' => $response]);
 
                 case 'room_recommendation':
@@ -343,6 +406,34 @@ class ChatbotController extends Controller
 
                 case 'cancel_policy':
                     return response()->json(['response' => 'Bạn có thể hủy đặt phòng miễn phí trước 48 giờ so với ngày nhận phòng. Sau thời gian đó, bạn sẽ bị tính phí 100% giá trị đặt phòng.']);
+
+                case 'peak_season':
+                    $peakSeason = Booking::select(DB::raw('MONTH(checkin_date) as month, COUNT(*) as booking_count'))
+                                         ->groupBy('month')
+                                         ->orderBy('booking_count', 'desc')
+                                         ->first();
+                    Log::info('Peak season query result:', ['month' => $peakSeason]);
+                    if (!$peakSeason) {
+                        Log::warning('No bookings found for peak season');
+                        return response()->json(['response' => 'Hiện tại không có thông tin về mùa cao điểm trong hệ thống.']);
+                    }
+                    $monthName = Carbon::createFromFormat('m', $peakSeason->month)->locale('vi')->monthName;
+                    $response = "Mùa cao điểm nhất là tháng {$monthName} với số lượng đặt phòng cao nhất.";
+                    return response()->json(['response' => $response]);
+
+                case 'off_peak_season':
+                    $offPeakSeason = Booking::select(DB::raw('MONTH(checkin_date) as month, COUNT(*) as booking_count'))
+                                            ->groupBy('month')
+                                            ->orderBy('booking_count', 'asc')
+                                            ->first();
+                    Log::info('Off-peak season query result:', ['month' => $offPeakSeason]);
+                    if (!$offPeakSeason) {
+                        Log::warning('No bookings found for off-peak season');
+                        return response()->json(['response' => 'Hiện tại không có thông tin về mùa thấp điểm trong hệ thống.']);
+                    }
+                    $monthName = Carbon::createFromFormat('m', $offPeakSeason->month)->locale('vi')->monthName;
+                    $response = "Mùa thấp điểm nhất là tháng {$monthName} với số lượng đặt phòng thấp nhất.";
+                    return response()->json(['response' => $response]);
 
                 case 'non_hotel':
                     return response()->json(['response' => $apiResponse['response'] ?? 'Xin lỗi, tôi không thể trả lời câu hỏi này.']);
