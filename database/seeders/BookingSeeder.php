@@ -9,6 +9,7 @@ class BookingSeeder extends Seeder
 {
     public function run()
     {
+
         BookingManager::factory()->count(90)->create();
         // 1 => 150,  // Tháng 1: Cao điểm (Tết âm lịch) - 150 bản ghi
         // 2 => 140,  // Tháng 2: Cao điểm (Tết âm lịch) - 140 bản ghi
@@ -24,3 +25,14 @@ class BookingSeeder extends Seeder
         // 12 => 150, // Tháng 12: Cao điểm (Giáng sinh, năm mới) - 150 bản ghi
     }
 }
+
+//         $totalRecords = 10000;
+//         $batchSize = 1000;
+
+//         for ($i = 0; $i < $totalRecords / $batchSize; $i++) {
+//             BookingManager::factory()->count($batchSize)->create();
+//         }
+
+//         $this->command->info("Seeded $totalRecords booking records successfully!");
+//     }
+// }
