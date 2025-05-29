@@ -15,12 +15,8 @@ export const ChatbotProvider = ({ children, isOpen: propIsOpen, setIsOpen: propS
   const faqs = [
     "Có những loại phòng nào trong hệ thống?",
     "Giá phòng bao nhiêu?",
-    "Sức chứa tối đa của phòng là bao nhiêu?",
     "Có ưu đãi nào đang áp dụng không?",
     "Làm thế nào để đặt phòng?",
-    "Phòng rẻ nhất là phòng nào?",
-    "Phòng cao cấp nhất là gì?",
-    "Tôi nên chọn phòng nào cho 4 người?"
   ];
 
   useEffect(() => {

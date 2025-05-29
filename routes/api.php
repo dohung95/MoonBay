@@ -128,7 +128,9 @@ Route::get('/special-offers', [SpecialOfferController::class, 'index']);
 Route::put('/special-offers/{id}', [SpecialOfferController::class, 'update']);
 Route::post('/send-offers', [OfferController::class, 'sendOffers']);
 Route::post('/Send_booking_email_successfully', [Booking_email_successfullyController::class, 'sendEmail']);
-Route::get('/chart/bookings-ratio/{year}', [ChartController::class, 'bookingsRatio']);
+
+Route::get('/chart/bookings-ratio/month/{year}', [ChartController::class, 'bookingsRatioMonthly']);
+Route::get('/chart/bookings-ratio/quarter/{year}', [ChartController::class, 'bookingsRatioQuarterly']);
 Route::get('/chart/revenue/{year}', [ChartController::class, 'revenue']);
 
 //Review User
