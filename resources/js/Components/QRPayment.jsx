@@ -42,7 +42,7 @@ const QRPayment = ({ amount, onClose, onConfirm, isDeposit }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       autoConfirmPayment();
-    }, 5000);
+    }, 5000); // Tự động xác nhận thanh toán sau 5 giây
     return () => {
       clearTimeout(timer);
     };
