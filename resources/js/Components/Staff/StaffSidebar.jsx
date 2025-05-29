@@ -1,14 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../../../css/css_of_staff/StaffSidebar.css";
 import { NavLink } from 'react-router-dom';
 import { useSearch } from './SearchContext';
 
-const StaffSidebar = () => {
+const StaffSidebar = ({ onToggle }) => {
   const [isOpen, setIsOpen] = useState(true);
   const { searchQuery, setSearchQuery } = useSearch();
 
   const handleToggle = () => {
-    setIsOpen((prev) => !prev);
+    const newState = !isOpen;
+    setIsOpen(newState);
+    // Truyền trạng thái mới lên component cha nếu có hàm callback
+    if (onToggle) {
+      onToggle(newState);
+    }
   };
 
   const handlenavigation = () => {
@@ -26,7 +31,7 @@ const StaffSidebar = () => {
               alt="logo icon"
             />
             {isOpen && <h4 className="logo-text-staff mb-0">MoonBay</h4>}
-          </div >
+          </div>
           <div className="toggle-icon" onClick={handleToggle} style={{ cursor: "pointer" }}>
             <i className={`bx ${isOpen ? "bx-arrow-to-left" : "bx-arrow-to-right"} text-white`}></i>
           </div>
@@ -40,7 +45,7 @@ const StaffSidebar = () => {
               className="nav-link text-white d-flex align-items-center btn " to="/staff/BookingList"
             >
               <i className="bx bx-list-ul me-2"></i>
-              {isOpen && "booking history"}
+              {isOpen && "Booking History"}
             </NavLink>
           </li>
           <li className="nav-item">
@@ -71,7 +76,7 @@ const StaffSidebar = () => {
               to="/staff/ContactAdminManager"
             >
               <i className="bx bx-envelope me-2"></i>
-              {isOpen && "Quản lý liên hệ"}
+              {isOpen && "Contact Management"}
             </NavLink>
           </li>
           {/* Add other menu items here */}
