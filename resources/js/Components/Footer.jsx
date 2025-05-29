@@ -51,7 +51,7 @@ const Footer = () => {
                                 <b>MOONBAY HOTELS</b>
                             </div>
                             Operation: <i>Monday to Sunday</i><br />
-                            Working hours: <i>7:00 AM - 10:00 PM</i><br /> <br />
+                            Working hours: <i>24/7</i><br /> <br />
                         </div>
                     </div>
                     <div className='col-md-6'>

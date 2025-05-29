@@ -71,7 +71,7 @@ const StaffSidebar = () => {
               to="/staff/ContactAdminManager"
             >
               <i className="bx bx-envelope me-2"></i>
-              {isOpen && "Quản lý liên hệ"}
+              {isOpen && "Contact Management"}
             </NavLink>
           </li>
           {/* Add other menu items here */}
