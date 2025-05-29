@@ -62,7 +62,7 @@ const ManageBookings = () => {
     fetchRooms();
   }, []);
 
-  // Fetch bookings for the current month
+  // Fetch bookings for the current month and overlapping bookings
   useEffect(() => {
     const fetchBookings = async () => {
       setIsLoading(true);
@@ -71,8 +71,9 @@ const ManageBookings = () => {
       let page = 1;
       const perPage = 30;
 
-      const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-      const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0, 23, 59, 59);
+      // Extend the range to include bookings that overlap with the current month
+      const startOfPreviousMonth = subMonths(new Date(currentDate.getFullYear(), currentDate.getMonth(), 1), 1);
+      const endOfNextMonth = addMonths(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0, 23, 59, 59), 1);
 
       try {
         while (true) {
@@ -80,8 +81,8 @@ const ManageBookings = () => {
             params: {
               per_page: perPage,
               page,
-              checkin_date: format(startOfMonth, 'yyyy-MM-dd HH:mm:ss'),
-              checkout_date: format(endOfMonth, 'yyyy-MM-dd HH:mm:ss'),
+              checkin_date_lte: format(endOfNextMonth, 'yyyy-MM-dd HH:mm:ss'), // Include bookings starting before or on endOfNextMonth
+              checkout_date_gte: format(startOfPreviousMonth, 'yyyy-MM-dd HH:mm:ss'), // Include bookings ending after or on startOfPreviousMonth
             },
           });
 
@@ -225,6 +226,20 @@ const ManageBookings = () => {
 
       let payload;
       if (actionType === 'checkin') {
+        const actualCheckIn = new Date(formData.actual_check_in);
+        const checkInDate = new Date(selectedBooking.checkin_date);
+        const checkOutDate = new Date(selectedBooking.checkout_date);
+
+        // Validate actual_check_in
+        if (
+          (isBefore(actualCheckIn, checkInDate) && !isSameDay(actualCheckIn, checkInDate)) ||
+          (isAfter(actualCheckIn, checkOutDate) && !isSameDay(actualCheckIn, checkOutDate))
+        ) {
+          setError('Actual check-in must be on or after scheduled check-in date and on or before scheduled check-out date');
+          setIsLoading(false);
+          return;
+        }
+
         payload = {
           checkin_date: format(new Date(selectedBooking.checkin_date), 'yyyy-MM-dd HH:mm:ss'),
           checkout_date: format(new Date(selectedBooking.checkout_date), 'yyyy-MM-dd HH:mm:ss'),
