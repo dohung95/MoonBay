@@ -239,19 +239,14 @@ const ManageBookings = () => {
         const currentCheckOut = new Date(selectedBooking.checkout_date);
 
         // Validate actual_check_out
-        if (isBefore(actualCheckOut, checkInDate) || isBefore(actualCheckOut, actualCheckIn)) {
-          setError('Actual check-out must be after check-in and actual check-in dates');
+        if (
+          isBefore(actualCheckOut, checkInDate) && !isSameDay(actualCheckOut, checkInDate) ||
+          isBefore(actualCheckOut, actualCheckIn) && !isSameDay(actualCheckOut, actualCheckIn) ||
+          isAfter(actualCheckOut, currentCheckOut) && !isSameDay(actualCheckOut, currentCheckOut)
+        ) {
+          setError('Actual check-out must be on or after check-in and actual check-in dates, and on or before scheduled check-out date');
           setIsLoading(false);
           return;
-        }
-
-        // Show confirmation if actual_check_out is between checkin_date and checkout_date
-        if (isBefore(actualCheckOut, currentCheckOut) && isAfter(actualCheckOut, checkInDate)) {
-          const confirmMessage = `The actual check-out time (${format(actualCheckOut, 'yyyy-MM-dd HH:mm:ss')}) is earlier than the scheduled check-out time (${format(currentCheckOut, 'yyyy-MM-dd HH:mm:ss')}). Do you want to proceed with check-out?`;
-          if (!window.confirm(confirmMessage)) {
-            setIsLoading(false);
-            return;
-          }
         }
 
         payload = {
