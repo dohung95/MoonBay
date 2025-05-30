@@ -156,7 +156,15 @@ const AdminDashboard = () => {
                 {isDashboardHome && (
                     <div align="center" style={{ padding: '2% 0' }}>
                         <h1>Welcome to Moonbay hotel management system!</h1>
-                        <img src="/images/Hung/manager_BG.jpg" alt="" style={{ width: '800px', height: '400px' }} />
+                        <img
+  src="/images/Hung/manager_BG.jpg"
+  alt=""
+  style={{
+    maxWidth: '60%',
+    height: 'auto',
+    display: 'block', // Loại bỏ khoảng trống dưới hình ảnh
+  }}
+/>
                     </div>
                 )}
 

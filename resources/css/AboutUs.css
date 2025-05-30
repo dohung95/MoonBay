@@ -30,3 +30,31 @@
 .facilities_area {
   background: url("/images/Hung/facilites_bg.jpg") no-repeat scroll center 0/cover;
 }
+.carousel_Hung .carousel-img {
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Màn hình lớn (mặc định giữ chiều cao 600px) */
+@media (min-width: 992px) {
+  .carousel_Hung .carousel-img {
+    height: 600px;
+  }
+}
+
+/* Màn hình trung (tablets, chiều cao 400px) */
+@media (max-width: 991px) {
+  .carousel_Hung .carousel-img {
+    height: 400px;
+  }
+}
+
+/* Màn hình nhỏ (mobile, chiều cao 300px) */
+@media (max-width: 576px) {
+  .carousel_Hung .carousel-img {
+    height: 300px;
+  }
+}
