@@ -306,7 +306,7 @@ const Contact = () => {
                                 <div className="attraction-item">
                                     <i className="fas fa-umbrella-beach"></i>
                                     <div className="attraction-info">
-                                        <h4>Hon Lon Beach</h4>
+                                        <h4>Bai Cay Men Beach</h4>
                                         <p>0.5 km - 5 minutes walk</p>
                                     </div>
                                 </div>
@@ -315,7 +315,7 @@ const Contact = () => {
                                     <i className="fas fa-lighthouse"></i>
                                     <div className="attraction-info">
                                         <h4>Nam Du Lighthouse</h4>
-                                        <p>2 km - 10 minutes by boat</p>
+                                        <p>2 km - 10 minutes by motobike</p>
                                     </div>
                                 </div>
 

@@ -137,17 +137,17 @@ const Rooms = ({ checkLogins }) => {
           .room-nav-horizontal .nav-item:hover {
             color: #007bff;
           }
-
-
           .room-list {
             max-width: 1000px;
             margin: 0 auto;
           }
           .room-item {
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+            border: 2px solid transparent;
           }
           .room-item:hover {
             transform: translateY(-5px);
+            border: 2px solid #FFD700;
           }
           .room-image {
             flex: 0 0 50%;
