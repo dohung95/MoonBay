@@ -248,35 +248,33 @@ const StaffBookings = () => {
                         </table>
                     </div>
                 )}
-            </div>
 
-                    {/* Pagination */}
-                    {pagination.lastPage > 1 && (
-                        <div className="d-flex justify-content-center mt-4">
-                            <nav>
-                                <div className="btn-group">
-                                    <button
-                                        className="btn btn-outline-primary"
-                                        onClick={() => setPagination(prev => ({ ...prev, currentPage: Math.max(prev.currentPage - 1, 1) }))}
-                                        disabled={pagination.currentPage === 1}
-                                    >
-                                        Previous
-                                    </button>
-                                    {getPaginationButtons()}
-                                    <button
-                                        className="btn btn-outline-primary"
-                                        onClick={() => setPagination(prev => ({ ...prev, currentPage: Math.min(prev.currentPage + 1, pagination.lastPage) }))}
-                                        disabled={pagination.currentPage === pagination.lastPage}
-                                    >
-                                        Next
-                                    </button>
-                                </div>
-                            </nav>
-                        </div>
-                    )}
-                </div>
+                {/* Pagination */}
+                {pagination.lastPage > 1 && (
+                    <div className="d-flex justify-content-center mt-4">
+                        <nav>
+                            <div className="btn-group">
+                                <button
+                                    className="btn btn-outline-primary"
+                                    onClick={() => setPagination(prev => ({ ...prev, currentPage: Math.max(prev.currentPage - 1, 1) }))}
+                                    disabled={pagination.currentPage === 1}
+                                >
+                                    Previous
+                                </button>
+                                {getPaginationButtons()}
+                                <button
+                                    className="btn btn-outline-primary"
+                                    onClick={() => setPagination(prev => ({ ...prev, currentPage: Math.min(prev.currentPage + 1, pagination.lastPage) }))}
+                                    disabled={pagination.currentPage === pagination.lastPage}
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </nav>
+                    </div>
+                )}
             </div>
-        </div>
+        </>
     );
 };
 
