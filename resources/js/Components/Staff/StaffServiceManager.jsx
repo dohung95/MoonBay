@@ -12,7 +12,7 @@ const initialService = {
     description: '',
     detailed_description: '',
     working_hours: '',
-    status: 'active', // ensure default status field
+    status: '', // no default status - let user choose
     pricing: []
 };
 
@@ -96,12 +96,14 @@ const StaffServiceManager = () => {
             minimumFractionDigits: 0,
             maximumFractionDigits: 0,
         }).format(number).replace('₫', '').trim();
-    };
-
-    // Add new service
+    };    // Add new service
     const handleAddService = async () => {
         if (!newService.title) {
             toast.error('Please enter the service name.');
+            return;
+        }
+        if (!newService.status) {
+            toast.error('Please select a status for the service.');
             return;
         }
         setLoading(true);
@@ -263,19 +265,12 @@ const StaffServiceManager = () => {
             setSortField(field);
             setSortOrder('asc');
         }
-    };
-
-    // Sorting logic
+    };    // Sorting logic
     const getSortedServices = (list) => {
         if (!sortField) return list;
         return [...list].sort((a, b) => {
             let aValue = a[sortField];
             let bValue = b[sortField];
-            // Special handling for price (use first pricing value if exists)
-            if (sortField === 'price') {
-                aValue = a.pricing && a.pricing[0] ? parseFloat(a.pricing[0].value.replace(/[^\d.]/g, '')) : 0;
-                bValue = b.pricing && b.pricing[0] ? parseFloat(b.pricing[0].value.replace(/[^\d.]/g, '')) : 0;
-            }
             // Special handling for created_at
             if (sortField === 'created_at') {
                 aValue = a.created_at ? new Date(a.created_at) : new Date(0);
@@ -290,7 +285,9 @@ const StaffServiceManager = () => {
             if (sortOrder === 'asc') return aValue - bValue;
             return bValue - aValue;
         });
-    };    // Filtered and sorted services
+    };
+
+    // Filtered and sorted services
     const filteredServices = services.filter(service =>
         (service.title || '').toLowerCase().includes(debouncedSearchQuery.toLowerCase())
     );
@@ -375,10 +372,11 @@ const StaffServiceManager = () => {
             <h2 className="staff-service-title">Service Management</h2>
             <p className="staff-service-description">Add, edit, delete and manage services for your hotel</p>            <div className="row-action-service">
                 <div className="staff-service-add-container">
-                    <button className="btn btn-primary" onClick={() => setShowAddForm(true)}>
-                        <Plus size={16} className="me-2" /> Add Service
+                    <button className="staff-add-service-btn-wow" onClick={() => setShowAddForm(true)}>
+                        <Plus size={16} className="btn-icon" />
+                        <span className="btn-text">Add Service</span>
                     </button>
-                </div>                <div className="search-input-wrapper">
+                </div><div className="search-input-wrapper">
                     <input
                         type="text"
                         className="search-input"
@@ -402,14 +400,10 @@ const StaffServiceManager = () => {
                     matching "{debouncedSearchQuery}"
                 </div>
             )}
-            {/* Sorting controls */}
-            <div className="d-flex gap-3 align-items-center mb-3">
+            {/* Sorting controls */}            <div className="d-flex gap-3 align-items-center mb-3">
                 <span className="fw-bold">Sort by:</span>
                 <button className="btn btn-outline-secondary btn-sm d-flex align-items-center" onClick={() => handleSort('title')}>
                     Name {sortField === 'title' && (sortOrder === 'asc' ? <ArrowUp size={16} /> : <ArrowDown size={16} />)}
-                </button>
-                <button className="btn btn-outline-secondary btn-sm d-flex align-items-center" onClick={() => handleSort('price')}>
-                    Price {sortField === 'price' && (sortOrder === 'asc' ? <ArrowUp size={16} /> : <ArrowDown size={16} />)}
                 </button>
                 <button className="btn btn-outline-secondary btn-sm d-flex align-items-center" onClick={() => handleSort('created_at')}>
                     Created Date {sortField === 'created_at' && (sortOrder === 'asc' ? <ArrowUp size={16} /> : <ArrowDown size={16} />)}
@@ -457,14 +451,14 @@ const StaffServiceManager = () => {
                                         value={newService.working_hours}
                                         onChange={e => setNewService({ ...newService, working_hours: e.target.value })}
                                     />
-                                </div>
-                                <div className="col-md-6">
+                                </div>                                <div className="col-md-6">
                                     <label className="form-label">Status</label>
                                     <select
                                         className="form-control"
-                                        value={newService.status || 'inactive'}
+                                        value={newService.status}
                                         onChange={e => setNewService({ ...newService, status: e.target.value })}
                                     >
+                                        <option value="">-- Select Status --</option>
                                         <option value="active">Active</option>
                                         <option value="inactive">Inactive</option>
                                     </select>
@@ -533,7 +527,7 @@ const StaffServiceManager = () => {
                     </div>                ) : sortedServices.length === 0 ? (
                     <div className="alert alert-info text-center">
                         <Info size={24} className="me-2" />
-                        {debouncedSearchQuery ? 'No matching services found.' : 'No services available.'}
+                        No services found. You can add a new service using the button above.
                     </div>
                 ) : (
                     <div className="accordion" id="serviceAccordion">

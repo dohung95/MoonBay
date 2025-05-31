@@ -231,22 +231,46 @@
 }
 
 .staff-room-status-filter {
-    padding-top: 10px;
-    padding-bottom: 10px;
-    border: 1.5px solid #d1d5db;
+    padding: 10px 35px 10px 15px;
+    border: 2px solid #e2e8f0;
     border-radius: 8px;
-    font-size: 1rem;
-    background: white;
+    font-size: 14px;
+    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    transition: all 0.3s ease;
     min-width: 160px;
-    color: #4b5563;
-    transition: border 0.2s;
+    height: 42px;
     cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M10.293 3.293L6 7.586 1.707 3.293A1 1 0 00.293 4.707l5 5a1 1 0 001.414 0l5-5a1 1 0 10-1.414-1.414z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    color: #374151;
     margin-bottom: 10px;
 }
 
+.staff-room-status-filter:hover {
+    border-color: #cbd5e1;
+    background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
 .staff-room-status-filter:focus {
-    border: 1.5px solid #0077ff;
     outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.staff-room-status-filter:hover {
+    border-color: #cbd5e1;
+    background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.staff-room-status-filter:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .staff-room-status-select {
@@ -421,4 +445,13 @@
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* No data message styling - consistent with other components */
+.staff-room-data-table .staff-room-no-data {
+    text-align: center !important;
+    color: #888;
+    font-style: italic;
+    padding: 18px 0;
+    font-size: 1rem;
 }

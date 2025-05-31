@@ -20,15 +20,21 @@ const ServicePopup = ({ service, onClose }) => {
             <img src={service.image} alt={service.title} />
           </div>
           <div className="service-popup-description">
-            <p>{service.description}</p>
+            {service.status !== 'active' && (
+              <div className="alert alert-warning mb-3" role="alert">
+                <i className="fas fa-exclamation-triangle me-2"></i>
+                <strong>Service Temporarily Suspended</strong> - This service is currently unavailable. Please contact us for more information.
+              </div>
+            )}
+            <p className={service.status !== 'active' ? 'text-muted' : ''}>{service.description}</p>
             {service.detailedDescription && (
-              <div className="service-details-extra">
+              <div className={`service-details-extra ${service.status !== 'active' ? 'text-muted' : ''}`}>
                 <h3>Details of the Service</h3>
                 <p>{service.detailedDescription}</p>
               </div>
             )}
             {service.pricing && (
-              <div className="service-pricing">
+              <div className={`service-pricing ${service.status !== 'active' ? 'text-muted' : ''}`}>
                 <h3>Pricing</h3>
                 <ul>
                   {service.pricing.map((price, index) => (
@@ -38,7 +44,7 @@ const ServicePopup = ({ service, onClose }) => {
               </div>
             )}
             {service.workingHours && (
-              <div className="service-hours">
+              <div className={`service-hours ${service.status !== 'active' ? 'text-muted' : ''}`}>
                 <h3>Working Hours</h3>
                 <p>{service.workingHours}</p>
               </div>
@@ -141,14 +147,21 @@ const Services = () => {
                       <h5 className="mb-0 me-3">{service.title}</h5>
                       <span className={`badge ${service.status === 'active' ? 'bg-success' : 'bg-secondary'}`}>{service.status === 'active' ? 'Active' : 'Inactive'}</span>
                     </div>
+                    
+                    {service.status !== 'active' && (
+                      <div className="alert alert-warning mt-2 mb-3" role="alert">
+                        <i className="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Service Temporarily Suspended</strong> - This service is currently unavailable
+                      </div>
+                    )}
+                    
                     <p className="text-muted mb-3">
                       <i className="fas fa-clock me-1"></i> {service.workingHours}
                     </p>
-                    <p>{service.description}</p>
+                    <p className={service.status !== 'active' ? 'text-muted' : ''}>{service.description}</p>
                     <button 
-                      className="btn btn-primary mt-3"
+                      className={`btn mt-3 ${service.status === 'active' ? 'btn-primary' : 'btn-outline-secondary'}`}
                       onClick={() => openServicePopup(service)}
-                      disabled={service.status !== 'active'}
                     >
                       View Details
                     </button>

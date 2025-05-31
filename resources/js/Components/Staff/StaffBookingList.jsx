@@ -32,6 +32,7 @@ const StaffBookings = () => {
     const { searchQuery, setSearchQuery } = useSearch(); // Lấy searchQuery và setSearchQuery từ SearchContext
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
     const [isSearching, setIsSearching] = useState(false);
+    const [isInitialLoad, setIsInitialLoad] = useState(true); // Track initial load
 
     // Debounce search query to improve performance
     useEffect(() => {
@@ -58,13 +59,14 @@ const StaffBookings = () => {
     // Clear search
     const clearSearch = () => {
         setSearchQuery('');
+        setDebouncedSearchQuery('');
+        setIsSearching(false);
         setPagination(prev => ({ ...prev, currentPage: 1 }));
     };
 
     useEffect(() => {
         const fetchBookings = async () => {
-            // Chỉ show loading khi lần đầu load hoặc chuyển trang, không show khi search
-            const isInitialLoad = pagination.currentPage === 1 && !debouncedSearchQuery;
+            // Chỉ show loading khi lần đầu load hoặc chuyển trang, không show khi search hoặc clear search
             const isPagination = pagination.currentPage > 1;
             
             if (isInitialLoad || isPagination) {
@@ -116,9 +118,12 @@ const StaffBookings = () => {
                     total: response.data.total || 0,
                 });
                 
-                // Chỉ tắt loading nếu đã bật
+                // Tắt loading nếu đã bật và đánh dấu không còn là initial load
                 if (isInitialLoad || isPagination) {
                     setLoading(false);
+                }
+                if (isInitialLoad) {
+                    setIsInitialLoad(false);
                 }
             } catch (err) {
                 const errorMessage = err.response?.data?.message || err.message || 'Lỗi khi lấy danh sách đặt phòng';
@@ -147,10 +152,27 @@ const StaffBookings = () => {
                             placeholder="Search by name, email, phone, room type..."
                             value={searchQuery}
                             onChange={handleSearchChange}
-                            className="staff-search-input"
+                            className="search-input"
                         />
+                        {isSearching && <div className="search-spinner"></div>}
+                        {searchQuery && !isSearching && (
+                            <button
+                                className="clear-search-btn"
+                                onClick={clearSearch}
+                            >
+                                ×
+                            </button>
+                        )}
                     </div>
                 </div>
+                
+                {/* Search Results Count */}
+                {debouncedSearchQuery && !loading && (
+                    <div className="search-results-info">
+                        Found {pagination.total} booking{pagination.total !== 1 ? "s" : ""}
+                        matching "{debouncedSearchQuery}"
+                    </div>
+                )}
                 
                 {loading ? (
                     <div className="text-center py-5">

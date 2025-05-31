@@ -24,6 +24,7 @@ class ServiceController extends Controller
             'description' => 'nullable|string',
             'detailed_description' => 'nullable|string',
             'working_hours' => 'nullable|string',
+            'status' => 'required|in:active,inactive',
         ]);
         $service = Service::create($validated);
         return response()->json($service, 201);

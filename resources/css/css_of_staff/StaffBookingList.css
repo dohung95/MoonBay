@@ -26,8 +26,86 @@
     
 .staff-booking-search-container {
     margin-bottom: 18px;
-  display: flex;
-  justify-content: flex-end;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Search Input Wrapper and Components */
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 320px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 40px 10px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    height: 42px;
+    box-sizing: border-box;
+}
+
+.search-input:hover {
+    border-color: #cbd5e1;
+    background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.search-spinner {
+    position: absolute;
+    right: 12px;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #e5e7eb;
+    border-top: 2px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.clear-search-btn {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.clear-search-btn:hover {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+.search-results-info {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #0369a1;
+    text-align: center;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .staff-bookinglist-table {
@@ -66,11 +144,12 @@
     transition: background 0.18s;
 }
 
-.staff-bookinglist .booking-no-data {
-    text-align: center;
+.staff-bookinglist-table .booking-no-data {
+    text-align: center !important;
     color: #888;
     font-style: italic;
     padding: 18px 0;
+    font-size: 1rem;
 }
 
 /* Pagination styles */
@@ -117,6 +196,9 @@
         padding: 7px 4px;
         font-size: 0.95rem;
     }
+    .search-input-wrapper {
+        width: 280px;
+    }
 }
 @media (max-width: 600px) {
     .staff-bookinglist {
@@ -137,5 +219,11 @@
     .pagination-booklist-staff .page-input {
         width: 44px;
         font-size: 0.95rem;
+    }
+    .search-input-wrapper {
+        width: 100%;
+    }
+    .staff-booking-search-container {
+        justify-content: center;
     }
 }

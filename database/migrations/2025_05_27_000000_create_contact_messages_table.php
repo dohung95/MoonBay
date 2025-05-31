@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('email');
             $table->string('subject')->nullable();
             $table->text('message');
-            $table->enum('status', ['new', 'read', 'responded', 'archived', 'pending', 'spam'])->default('new'); // new, read, responded, archived, pending, spam
+            $table->enum('status', ['new', 'responded', 'pending', 'spam'])->default('new'); // new, responded, pending, spam
             $table->timestamps();
         });
     }

@@ -193,7 +193,8 @@ function StaffRoomManagement() {
                         className="staff-room-status-filter"
                     >
                         <option value="all">All</option>
-                        <option value="available">Available</option>                        <option value="maintenance">Maintenance</option>
+                        <option value="available">Available</option>{" "}
+                        <option value="maintenance">Maintenance</option>
                     </select>
                 </div>
                 <div className="search-input-wrapper">
@@ -205,7 +206,8 @@ function StaffRoomManagement() {
                         onChange={handleSearchChange}
                     />
                     {isSearching && <div className="search-spinner"></div>}
-                    {localSearchQuery && !isSearching && (                        <button
+                    {localSearchQuery && !isSearching && (
+                        <button
                             className="clear-search-btn"
                             onClick={clearSearch}
                         >
@@ -316,7 +318,7 @@ function StaffRoomManagement() {
                                     </button>
                                 </div>
                             </form>
-                        )}
+                        )}{" "}
                         <table className="staff-room-data-table">
                             <thead>
                                 <tr>
@@ -329,53 +331,67 @@ function StaffRoomManagement() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredRooms
-                                    .slice(
-                                        (currentPage - 1) * itemsPerPage,
-                                        currentPage * itemsPerPage
-                                    )
-                                    .map((room) => (
-                                        <tr key={room.id}>
-                                            <td>{room.room_number}</td>
-                                            <td>{room.type}</td>
-                                            <td>{room.description}</td>
-                                            <td>{room.price}</td>
-                                            <td>
-                                                <span
-                                                    className={`staff-room-badge staff-room-badge-${room.status.toLowerCase()}`}
-                                                >
-                                                    {room.status}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <button
-                                                    className="btn btn-history staff-room-btn-history"
-                                                    onClick={() =>
-                                                        handleEdit(room)
-                                                    }
-                                                    disabled={actionLoading}
-                                                >
-                                                    <Edit
-                                                        size={16}
-                                                        className="mr-1"
-                                                    />
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    className="btn btn-note staff-room-btn-note"
-                                                    onClick={() =>
-                                                        handleDelete(room.id)
-                                                    }
-                                                    disabled={actionLoading}
-                                                >
-                                                    <Trash2
-                                                        size={16}
-                                                        className="mr-1"
-                                                    />                                                    Delete
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                {filteredRooms.length === 0 ? (
+                                    <tr>
+                                        <td
+                                            colSpan="6"
+                                            className="staff-room-no-data"
+                                        >
+                                            No rooms found.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    filteredRooms
+                                        .slice(
+                                            (currentPage - 1) * itemsPerPage,
+                                            currentPage * itemsPerPage
+                                        )
+                                        .map((room) => (
+                                            <tr key={room.id}>
+                                                <td>{room.room_number}</td>
+                                                <td>{room.type}</td>
+                                                <td>{room.description}</td>
+                                                <td>{room.price}</td>
+                                                <td>
+                                                    <span
+                                                        className={`staff-room-badge staff-room-badge-${room.status.toLowerCase()}`}
+                                                    >
+                                                        {room.status}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <button
+                                                        className="btn btn-history staff-room-btn-history"
+                                                        onClick={() =>
+                                                            handleEdit(room)
+                                                        }
+                                                        disabled={actionLoading}
+                                                    >
+                                                        <Edit
+                                                            size={16}
+                                                            className="mr-1"
+                                                        />
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        className="btn btn-note staff-room-btn-note"
+                                                        onClick={() =>
+                                                            handleDelete(
+                                                                room.id
+                                                            )
+                                                        }
+                                                        disabled={actionLoading}
+                                                    >
+                                                        <Trash2
+                                                            size={16}
+                                                            className="mr-1"
+                                                        />
+                                                        Delete
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                )}
                             </tbody>
                         </table>
                         {/* Phân trang */}

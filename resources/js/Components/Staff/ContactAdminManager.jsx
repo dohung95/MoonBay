@@ -6,10 +6,8 @@ import "../../../css/css_of_staff/ContactAdminManager.css";
 const STATUS_OPTIONS = [
     { value: "", label: "All" },
     { value: "new", label: "New" },
-    { value: "read", label: "Read" },
-    { value: "responded", label: "Responded" },
-    { value: "archived", label: "Archived" },
     { value: "pending", label: "Pending" },
+    { value: "responded", label: "Responded" },
     { value: "spam", label: "Spam" },
 ];
 
@@ -17,12 +15,8 @@ const PAGE_SIZE = 5;
 
 function ContactAdminManager() {
     const [messages, setMessages] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [searchLoading, setSearchLoading] = useState(false);
-    const [error, setError] = useState("");
-    const [search, setSearch] = useState("");
-
-    // Local search state - không dùng SearchContext
+    const [loading, setLoading] = useState(true); // Bắt đầu với loading = true
+    const [error, setError] = useState(""); // Local search state - không dùng SearchContext
     const [localSearchQuery, setLocalSearchQuery] = useState("");
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
     const [isSearching, setIsSearching] = useState(false);
@@ -33,12 +27,12 @@ function ContactAdminManager() {
     const [sortDir, setSortDir] = useState("desc");
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedMessage, setSelectedMessage] = useState(null);
+    const [isInitialLoad, setIsInitialLoad] = useState(true); // Track initial load
+
     useEffect(() => {
         fetchMessages();
         // eslint-disable-next-line
-    }, [debouncedSearchQuery, status, page, sortBy, sortDir]);
-
-    // Debounce search query to improve performance
+    }, [debouncedSearchQuery, status, page, sortBy, sortDir]); // Debounce search query to improve performance
     useEffect(() => {
         if (localSearchQuery !== debouncedSearchQuery) {
             setIsSearching(true);
@@ -52,14 +46,9 @@ function ContactAdminManager() {
         return () => clearTimeout(timer);
     }, [localSearchQuery]);
     const fetchMessages = async () => {
-        // Chỉ hiển thị full loading khi lần đầu load hoặc khi chưa có data
-        const isInitialLoad = messages.length === 0;
-        const isSearchOrFilter = debouncedSearchQuery || status || page > 1;
-
+        // Chỉ hiển thị loading ở lần đầu load
         if (isInitialLoad) {
             setLoading(true);
-        } else if (isSearchOrFilter) {
-            setSearchLoading(true);
         }
 
         setError("");
@@ -79,8 +68,12 @@ function ContactAdminManager() {
         } catch (err) {
             setError("Failed to load contact messages.");
         }
+
+        // Sau lần đầu load, set loading = false và đánh dấu không còn là initial load
         setLoading(false);
-        setSearchLoading(false);
+        if (isInitialLoad) {
+            setIsInitialLoad(false);
+        }
     };
 
     const handleStatusChange = async (id, newStatus) => {
@@ -103,11 +96,11 @@ function ContactAdminManager() {
             setSortDir(sortDir === "asc" ? "desc" : "asc");
         } else {
             setSortBy(field);
-            setSortDir("asc");
+            // Đặc biệt cho cột Date (created_at): mặc định sort desc (mới nhất trước)
+            // để hiển thị thời gian gần nhất với thời gian hệ thống
+            setSortDir(field === "created_at" ? "desc" : "asc");
         }
-    };
-
-    // Search handler functions
+    }; // Search handler functions
     const handleSearchChange = (e) => {
         const value = e.target.value;
         setLocalSearchQuery(value);
@@ -183,40 +176,100 @@ function ContactAdminManager() {
                 </div>
             ) : error ? (
                 <div className="contact-admin-error">{error}</div>
-            ) : (
-                <div className="contact-admin-table-container">
-                    {/* Search loading indicator */}
-                    {searchLoading && (
-                        <div className="search-loading-overlay">
-                            <div className="search-loading-indicator">
-                                <div className="spinner-border spinner-border-sm text-primary" />
-                                <span className="ms-2">Searching...</span>
-                            </div>
-                        </div>
-                    )}
+            ) : (                <div className="contact-admin-table-container">
                     <table className="contact-admin-table">
                         <thead>
                             <tr>
-                                <th onClick={() => handleSort("name")}>
+                                <th
+                                    onClick={() => handleSort("name")}
+                                    style={{
+                                        cursor: "pointer",
+                                        userSelect: "none",
+                                    }}
+                                >
                                     Name{" "}
-                                    {sortBy === "name" &&
-                                        (sortDir === "asc" ? "▲" : "▼")}
+                                    <span
+                                        style={{
+                                            marginLeft: 4,
+                                            opacity:
+                                                sortBy === "name" ? 1 : 0.3,
+                                        }}
+                                    >
+                                        {sortBy === "name"
+                                            ? sortDir === "asc"
+                                                ? "▲"
+                                                : "▼"
+                                            : "▲"}
+                                    </span>
                                 </th>
-                                <th onClick={() => handleSort("email")}>
+                                <th
+                                    onClick={() => handleSort("email")}
+                                    style={{
+                                        cursor: "pointer",
+                                        userSelect: "none",
+                                    }}
+                                >
                                     Email{" "}
-                                    {sortBy === "email" &&
-                                        (sortDir === "asc" ? "▲" : "▼")}
+                                    <span
+                                        style={{
+                                            marginLeft: 4,
+                                            opacity:
+                                                sortBy === "email" ? 1 : 0.3,
+                                        }}
+                                    >
+                                        {sortBy === "email"
+                                            ? sortDir === "asc"
+                                                ? "▲"
+                                                : "▼"
+                                            : "▲"}
+                                    </span>
                                 </th>
                                 <th>Message</th>
-                                <th onClick={() => handleSort("status")}>
+                                <th
+                                    onClick={() => handleSort("status")}
+                                    style={{
+                                        cursor: "pointer",
+                                        userSelect: "none",
+                                    }}
+                                >
                                     Status{" "}
-                                    {sortBy === "status" &&
-                                        (sortDir === "asc" ? "▲" : "▼")}
+                                    <span
+                                        style={{
+                                            marginLeft: 4,
+                                            opacity:
+                                                sortBy === "status" ? 1 : 0.3,
+                                        }}
+                                    >
+                                        {sortBy === "status"
+                                            ? sortDir === "asc"
+                                                ? "▲"
+                                                : "▼"                                            : "▲"}
+                                    </span>
                                 </th>
-                                <th onClick={() => handleSort("created_at")}>
+                                <th
+                                    onClick={() => handleSort("created_at")}
+                                    style={{
+                                        cursor: "pointer",
+                                        userSelect: "none",
+                                    }}
+                                    title="Default sort: Newest first (closest to current time)"
+                                >
                                     Date{" "}
-                                    {sortBy === "created_at" &&
-                                        (sortDir === "asc" ? "▲" : "▼")}
+                                    <span
+                                        style={{
+                                            marginLeft: 4,
+                                            opacity:
+                                                sortBy === "created_at"
+                                                    ? 1
+                                                    : 0.3,
+                                        }}
+                                    >
+                                        {sortBy === "created_at"
+                                            ? sortDir === "asc"
+                                                ? "▲"
+                                                : "▼"
+                                            : "▼"}
+                                    </span>
                                 </th>
                                 <th>Action</th>
                             </tr>
@@ -226,7 +279,7 @@ function ContactAdminManager() {
                                 <tr>
                                     <td
                                         colSpan="6"
-                                        style={{ textAlign: "center" }}
+                                        className="contact-admin-no-data"
                                     >
                                         No messages found.
                                     </td>
@@ -237,9 +290,12 @@ function ContactAdminManager() {
                                         key={msg.id}
                                         className={`contact-admin-row contact-admin-status-${msg.status}`}
                                     >
-                                        <td>{msg.name}</td>
+                                        <td title={msg.name}>{msg.name}</td>
                                         <td>{msg.email}</td>
-                                        <td className="contact-admin-message-cell">
+                                        <td
+                                            className="contact-admin-message-cell"
+                                            title={msg.message}
+                                        >
                                             {msg.message}
                                         </td>
                                         <td>
@@ -249,7 +305,11 @@ function ContactAdminManager() {
                                                 {msg.status}
                                             </span>
                                         </td>
-                                        <td>
+                                        <td
+                                            title={new Date(
+                                                msg.created_at
+                                            ).toLocaleString()}
+                                        >
                                             {new Date(
                                                 msg.created_at
                                             ).toLocaleString()}

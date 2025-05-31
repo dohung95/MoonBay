@@ -29,11 +29,10 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
   justify-content: flex-end;
   gap: 16px;
   min-height: 50px;
-  padding: 8px 0;
 }
 
 /* Điều chỉnh container tìm kiếm */
@@ -150,6 +149,11 @@
   text-align: left;
   border-bottom: 1px solid #e5e7eb;
   font-size: 1rem;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
 }
 
 .contact-admin-table th {
@@ -161,6 +165,116 @@
 
 .contact-admin-table tr:last-child td {
   border-bottom: none;
+}
+
+/* Styling đặc biệt cho cột message để giới hạn nội dung */
+.contact-admin-message-cell {
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Styling cho các cột khác */
+.contact-admin-table td:nth-child(1) { /* Name */
+  max-width: 120px;
+}
+
+.contact-admin-table td:nth-child(2) { /* Email - hiển thị đầy đủ */
+  max-width: none;
+  white-space: nowrap;
+  min-width: 180px;
+}
+
+.contact-admin-table td:nth-child(4) { /* Status */
+  max-width: 120px;
+}
+
+.contact-admin-table td:nth-child(5) { /* Date */
+  max-width: 160px;
+  white-space: nowrap;
+}
+
+.contact-admin-table td:last-child { /* Action - hiển thị đầy đủ */
+  max-width: none;
+  min-width: 190px;
+  white-space: nowrap;
+}
+
+/* Styling cho table headers tương ứng */
+.contact-admin-table th:nth-child(1) { /* Name header */
+  max-width: 120px;
+}
+
+.contact-admin-table th:nth-child(2) { /* Email header - hiển thị đầy đủ */
+  max-width: none;
+  white-space: nowrap;
+  min-width: 180px;
+}
+
+.contact-admin-table th:nth-child(4) { /* Status header */
+  max-width: 120px;
+}
+
+.contact-admin-table th:nth-child(5) { /* Date header */
+  max-width: 160px;
+  white-space: nowrap;
+}
+
+.contact-admin-table th:last-child { /* Action header - hiển thị đầy đủ */
+  max-width: none;
+  min-width: 190px;
+  white-space: nowrap;
+}
+
+/* Styling cho sortable headers - làm mờ các cột có thể sort */
+.contact-admin-table th[onclick] {
+  cursor: pointer;
+  opacity: 0.7;
+  transition: all 0.3s ease;
+  position: relative;
+  user-select: none;
+}
+
+.contact-admin-table th[onclick]:hover {
+  opacity: 1;
+  background: #dbeafe !important;
+  color: #1976d2 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Làm nổi bật cột Date làm sort mặc định (theo thời gian gần nhất) */
+.contact-admin-table th[onclick]:nth-child(5) { /* Date column */
+  opacity: 1;
+  background: #e1f5fe !important;
+  color: #0277bd !important;
+  font-weight: 700;
+  border-left: 3px solid #0277bd;
+  box-shadow: 0 0 8px rgba(2, 119, 189, 0.2);
+  position: relative;
+}
+
+/* Thêm nhãn "Default Sort" cho cột Date */
+.contact-admin-table th[onclick]:nth-child(5)::before {
+  content: "📅";
+  position: absolute;
+  left: 4px;
+  font-size: 0.9rem;
+}
+
+/* Thêm icon gợi ý sort cho các cột có thể sort */
+.contact-admin-table th[onclick]::after {
+  content: "↕";
+  position: absolute;
+  right: 8px;
+  opacity: 0.5;
+  font-size: 0.8rem;
+  transition: opacity 0.3s ease;
+}
+
+.contact-admin-table th[onclick]:hover::after {
+  opacity: 1;
 }
 
 /* Cập nhật style cho badges giống StaffCustomerManagement */
@@ -180,21 +294,10 @@
   box-shadow: 0 1px 4px #1976d233;
 }
 
-.contact-admin-badge-read {
-  background: linear-gradient(90deg, #43cea2 60%, #185a9d 100%);
-  color: #fff;
-  box-shadow: 0 1px 4px #43cea233;
-}
-
 .contact-admin-badge-responded {
   background: linear-gradient(90deg, #43cea2 60%, #1976d2 100%);
   color: #fff;
   box-shadow: 0 1px 4px #43cea233;
-}
-
-.contact-admin-badge-archived {
-  background: #6c757d;
-  color: #fff;
 }
 
 .contact-admin-badge-pending {
@@ -260,9 +363,16 @@
 }
 
 /* Đảm bảo cột action đủ rộng */
-.contact-admin-table td:last-child {
-  min-width: 190px;
-}   
+/* Styling đã được cập nhật ở phần trên */
+
+/* Thêm tooltip effect khi hover vào các cell bị cắt */
+.contact-admin-table td[title] {
+  cursor: help;
+}
+
+.contact-admin-table td:hover {
+  position: relative;
+}
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
@@ -451,10 +561,37 @@
   .contact-admin-modal-message {
     padding: 12px;
     max-height: 250px;
-  }
-  .contact-admin-table th, .contact-admin-table td {
+  }  .contact-admin-table th, .contact-admin-table td {
     padding: 7px 4px;
     font-size: 0.95rem;
+    max-width: 120px;
+  }
+  
+  .contact-admin-message-cell {
+    max-width: 80px;
+  }
+  
+  .contact-admin-table td:nth-child(1) { /* Name */
+    max-width: 70px;
+  }
+  
+  .contact-admin-table td:nth-child(2) { /* Email - vẫn hiển thị đầy đủ */
+    max-width: none;
+    min-width: 140px;
+    font-size: 0.85rem;
+  }
+  
+  .contact-admin-table td:nth-child(4) { /* Status */
+    max-width: 60px;
+  }
+  
+  .contact-admin-table td:nth-child(5) { /* Date */
+    max-width: 80px;
+  }
+  
+  .contact-admin-table td:last-child { /* Action - vẫn hiển thị đầy đủ */
+    max-width: none;
+    min-width: 160px;
   }
 }
 
@@ -560,4 +697,13 @@
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+/* No data message styling - giống StaffBookingList */
+.contact-admin-table .contact-admin-no-data {
+    text-align: center !important;
+    color: #888;
+    font-style: italic;
+    padding: 18px 0;
+    font-size: 1rem;
 }

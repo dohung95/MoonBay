@@ -29,6 +29,179 @@
 .staff-service-add-container {
   margin-bottom: 10px;
 }
+
+/* 🌟 WOW ADD SERVICE BUTTON - Ultra Enhanced Styling */
+.staff-add-service-btn-wow {
+  position: relative;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #6B73FF 100%);
+  border: none;
+  border-radius: 16px;
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 
+    0 8px 25px rgba(102, 126, 234, 0.4),
+    0 4px 12px rgba(118, 75, 162, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform, box-shadow, background;
+  min-width: 180px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* 🎨 Subtle background pattern */
+.staff-add-service-btn-wow::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ✨ Animated gradient background */
+.staff-add-service-btn-wow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(255, 255, 255, 0.3) 50%, 
+    transparent 100%);
+  transition: left 0.6s ease;
+  z-index: 2;
+}
+
+/* 🎭 Hover Effects */
+.staff-add-service-btn-wow:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 50%, #9B59B6 100%);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 
+    0 15px 35px rgba(102, 126, 234, 0.6),
+    0 8px 20px rgba(118, 75, 162, 0.4),
+    0 0 30px rgba(107, 115, 255, 0.3),
+    inset 0 2px 0 rgba(255, 255, 255, 0.3);
+  animation: pulseGlow 2s infinite, subtleFloat 3s ease-in-out infinite;
+}
+
+.staff-add-service-btn-wow:hover::before {
+  left: 100%;
+}
+
+/* 🎯 Active state */
+.staff-add-service-btn-wow:active {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 
+    0 8px 20px rgba(102, 126, 234, 0.5),
+    0 4px 12px rgba(118, 75, 162, 0.3);
+}
+
+/* 🌈 Pulsing glow animation */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 
+      0 15px 35px rgba(102, 126, 234, 0.6),
+      0 8px 20px rgba(118, 75, 162, 0.4),
+      0 0 30px rgba(107, 115, 255, 0.3),
+      inset 0 2px 0 rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    box-shadow: 
+      0 20px 45px rgba(102, 126, 234, 0.8),
+      0 12px 25px rgba(118, 75, 162, 0.6),
+      0 0 40px rgba(107, 115, 255, 0.5),
+      inset 0 2px 0 rgba(255, 255, 255, 0.4);
+  }
+}
+
+/* 🌊 Subtle floating animation */
+@keyframes subtleFloat {
+  0%, 100% {
+    transform: translateY(-3px) scale(1.05);
+  }
+  50% {
+    transform: translateY(-5px) scale(1.05);
+  }
+}
+
+/* 🎨 Enhanced gradient variation on focus */
+.staff-add-service-btn-wow:focus:not(:active) {
+  background: linear-gradient(135deg, #8B5CF6 0%, #06B6D4 50%, #10B981 100%);
+  animation: colorShift 4s ease-in-out infinite;
+}
+
+@keyframes colorShift {
+  0%, 100% {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #6B73FF 100%);
+  }
+  33% {
+    background: linear-gradient(135deg, #8B5CF6 0%, #06B6D4 50%, #10B981 100%);
+  }
+  66% {
+    background: linear-gradient(135deg, #F59E0B 0%, #EF4444 50%, #8B5CF6 100%);
+  }
+}
+
+.staff-add-service-btn-wow .btn-icon {
+  position: relative;
+  z-index: 3;
+  transition: transform 0.3s ease;
+}
+
+.staff-add-service-btn-wow:hover .btn-icon {
+  transform: rotate(180deg) scale(1.1);
+}
+
+/* 🎨 Text styling within button */
+.staff-add-service-btn-wow .btn-text {
+  position: relative;
+  z-index: 3;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* 💫 Focus state for accessibility */
+.staff-add-service-btn-wow:focus {
+  outline: none;
+  box-shadow: 
+    0 15px 35px rgba(102, 126, 234, 0.6),
+    0 8px 20px rgba(118, 75, 162, 0.4),
+    0 0 0 4px rgba(107, 115, 255, 0.3);
+}
+
+/* 🌟 Loading state animation */
+.staff-add-service-btn-wow.loading {
+  pointer-events: none;
+  background: linear-gradient(135deg, #94A3B8 0%, #64748B 100%);
+}
+
+.staff-add-service-btn-wow.loading .btn-icon {
+  animation: spinIcon 1s linear infinite;
+}
+
+@keyframes spinIcon {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .staff-service-search-container {   
     margin-bottom: 10px;
 }
@@ -376,6 +549,18 @@
     100% { transform: rotate(360deg); }
 }
 
+/* No data message styling - consistent with other Staff components */
+.staff-service-manager .alert.alert-info.text-center {
+    text-align: center !important;
+    color: #888;
+    font-style: italic;
+    padding: 18px 0;
+    font-size: 1rem;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+}
+
 @media (max-width: 900px) {
   .staff-service-manager {
     padding: 18px 6px 24px 6px;
@@ -396,5 +581,13 @@
   .staff-service-table th, .staff-service-table td {
     padding: 7px 4px;
     font-size: 0.95rem;
+  }
+}
+/* 📱 Responsive adjustments */
+@media (max-width: 768px) {
+  .staff-add-service-btn-wow {
+    padding: 12px 20px;
+    font-size: 14px;
+    min-width: 150px;
   }
 }
