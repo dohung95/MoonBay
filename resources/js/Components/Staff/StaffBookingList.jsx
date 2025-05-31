@@ -7,17 +7,13 @@ import '../../../css/css_of_staff/StaffBookingList.css';
 
 const formatCurrency = (amount) => {
     if (typeof amount !== 'number') amount = Number(amount);
-
-    // Nếu giá nhỏ hơn 10.000 thì giả định là "nghìn đồng" (ví dụ: 500 = 500k)
     const amountInDong = amount < 10000 ? amount * 1000 : amount;
-
     return new Intl.NumberFormat('vi-VN', {
         style: 'currency',
         currency: 'VND',
-        minimumFractionDigits: 0, // VND không có số lẻ
+        minimumFractionDigits: 0,
     }).format(amountInDong);
 };
-
 
 const StaffBookings = () => {
     const [bookings, setBookings] = useState([]);
@@ -29,30 +25,26 @@ const StaffBookings = () => {
         perPage: 6,
         total: 0,
     });
-    const { searchQuery, setSearchQuery } = useSearch(); // Lấy searchQuery và setSearchQuery từ SearchContext
+    const { searchQuery, setSearchQuery } = useSearch();
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
     const [isSearching, setIsSearching] = useState(false);
     const [isInitialLoad, setIsInitialLoad] = useState(true); // Track initial load
 
-    // Debounce search query to improve performance
+    // Debounce search query
     useEffect(() => {
         if (searchQuery !== debouncedSearchQuery) {
             setIsSearching(true);
         }
-        
         const timer = setTimeout(() => {
             setDebouncedSearchQuery(searchQuery);
             setIsSearching(false);
-        }, 300); // 300ms debounce - nhanh hơn cho search
-
+        }, 300);
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    // Handle search with debounce effect
+    // Handle search input
     const handleSearchChange = (e) => {
-        const value = e.target.value;
-        setSearchQuery(value);
-        // Reset to first page when searching
+        setSearchQuery(e.target.value);
         setPagination(prev => ({ ...prev, currentPage: 1 }));
     };
 
@@ -64,14 +56,14 @@ const StaffBookings = () => {
         setPagination(prev => ({ ...prev, currentPage: 1 }));
     };
 
+    // Fetch bookings
     useEffect(() => {
         const fetchBookings = async () => {
-            // Chỉ show loading khi lần đầu load hoặc chuyển trang, không show khi search hoặc clear search
+            // Chỉ show loading khi lần đầu load hoặc chuyển trang, không show khi search
+            const isInitialLoad = pagination.currentPage === 1 && !debouncedSearchQuery;
             const isPagination = pagination.currentPage > 1;
-            
             if (isInitialLoad || isPagination) {
                 setLoading(true);
-                // Thêm độ trễ để hiển thị hiệu ứng loading chỉ khi cần thiết
                 await new Promise(resolve => setTimeout(resolve, 400));
             }
 
@@ -86,11 +78,10 @@ const StaffBookings = () => {
                     params: {
                         per_page: pagination.perPage,
                         page: pagination.currentPage,
-                        search: debouncedSearchQuery || undefined, // Gửi debouncedSearchQuery nếu có
+                        search: debouncedSearchQuery || undefined,
                     },
                 });
 
-                // Kiểm tra và trích xuất dữ liệu
                 let bookingsData = [];
                 if (Array.isArray(response.data)) {
                     bookingsData = response.data;
@@ -103,9 +94,8 @@ const StaffBookings = () => {
                     bookingsData = [];
                 }
 
-                // Sắp xếp dữ liệu mới nhất, kiểm tra cột tồn tại
                 bookingsData.sort((a, b) => {
-                    const dateA = a.created_at || a.id; // Fallback nếu không có created_at
+                    const dateA = a.created_at || a.id;
                     const dateB = b.created_at || b.id;
                     return typeof dateA === 'number' ? dateB - dateA : new Date(dateB) - new Date(dateA);
                 });
@@ -118,7 +108,7 @@ const StaffBookings = () => {
                     total: response.data.total || 0,
                 });
                 
-                // Tắt loading nếu đã bật và đánh dấu không còn là initial load
+                // Chỉ tắt loading nếu đã bật
                 if (isInitialLoad || isPagination) {
                     setLoading(false);
                 }
@@ -136,7 +126,59 @@ const StaffBookings = () => {
         fetchBookings();
     }, [pagination.currentPage, debouncedSearchQuery]);
 
-    const totalPages = pagination.lastPage;
+    // Generate pagination buttons
+    const getPaginationButtons = () => {
+        const { currentPage, lastPage } = pagination;
+        const maxButtons = 5; // Show max 5 page buttons
+        const buttons = [];
+        let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+        let endPage = Math.min(lastPage, startPage + maxButtons - 1);
+
+        if (endPage - startPage + 1 < maxButtons) {
+            startPage = Math.max(1, endPage - maxButtons + 1);
+        }
+
+        // Add "First" button
+        if (startPage > 1) {
+            buttons.push(
+                <button
+                    key="first"
+                    className="btn btn-outline-primary mx-1"
+                    onClick={() => setPagination(prev => ({ ...prev, currentPage: 1 }))}
+                >
+                    First
+                </button>
+            );
+        }
+
+        // Add page buttons
+        for (let i = startPage; i <= endPage; i++) {
+            buttons.push(
+                <button
+                    key={i}
+                    className={`btn ${currentPage === i ? 'btn-primary' : 'btn-outline-primary'} mx-1`}
+                    onClick={() => setPagination(prev => ({ ...prev, currentPage: i }))}
+                >
+                    {i}
+                </button>
+            );
+        }
+
+        // Add "Last" button
+        if (endPage < lastPage) {
+            buttons.push(
+                <button
+                    key="last"
+                    className="btn btn-outline-primary mx-1"
+                    onClick={() => setPagination(prev => ({ ...prev, currentPage: lastPage }))}
+                >
+                    Last
+                </button>
+            );
+        }
+
+        return buttons;
+    };
 
     return (
         <>
@@ -152,27 +194,10 @@ const StaffBookings = () => {
                             placeholder="Search by name, email, phone, room type..."
                             value={searchQuery}
                             onChange={handleSearchChange}
-                            className="search-input"
+                            className="staff-search-input"
                         />
-                        {isSearching && <div className="search-spinner"></div>}
-                        {searchQuery && !isSearching && (
-                            <button
-                                className="clear-search-btn"
-                                onClick={clearSearch}
-                            >
-                                ×
-                            </button>
-                        )}
                     </div>
                 </div>
-                
-                {/* Search Results Count */}
-                {debouncedSearchQuery && !loading && (
-                    <div className="search-results-info">
-                        Found {pagination.total} booking{pagination.total !== 1 ? "s" : ""}
-                        matching "{debouncedSearchQuery}"
-                    </div>
-                )}
                 
                 {loading ? (
                     <div className="text-center py-5">
@@ -225,35 +250,33 @@ const StaffBookings = () => {
                 )}
             </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-                <div className="staff-bookinglist-pagination">
-                    <button
-                        className="staff-bookinglist-page-btn"
-                        onClick={() => setPagination(prev => ({ ...prev, currentPage: Math.max(prev.currentPage - 1, 1) }))}
-                        disabled={pagination.currentPage === 1}
-                    >
-                        &lt;
-                    </button>
-                    {[...Array(totalPages)].map((_, idx) => (
-                        <button
-                            key={idx + 1}
-                            className={`staff-bookinglist-page-btn ${pagination.currentPage === idx + 1 ? 'active' : ''}`}
-                            onClick={() => setPagination(prev => ({ ...prev, currentPage: idx + 1 }))}
-                        >
-                            {idx + 1}
-                        </button>
-                    ))}
-                    <button
-                        className="staff-bookinglist-page-btn"
-                        onClick={() => setPagination(prev => ({ ...prev, currentPage: Math.min(prev.currentPage + 1, totalPages) }))}
-                        disabled={pagination.currentPage === totalPages}
-                    >
-                        &gt;
-                    </button>
+                    {/* Pagination */}
+                    {pagination.lastPage > 1 && (
+                        <div className="d-flex justify-content-center mt-4">
+                            <nav>
+                                <div className="btn-group">
+                                    <button
+                                        className="btn btn-outline-primary"
+                                        onClick={() => setPagination(prev => ({ ...prev, currentPage: Math.max(prev.currentPage - 1, 1) }))}
+                                        disabled={pagination.currentPage === 1}
+                                    >
+                                        Previous
+                                    </button>
+                                    {getPaginationButtons()}
+                                    <button
+                                        className="btn btn-outline-primary"
+                                        onClick={() => setPagination(prev => ({ ...prev, currentPage: Math.min(prev.currentPage + 1, pagination.lastPage) }))}
+                                        disabled={pagination.currentPage === pagination.lastPage}
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </nav>
+                        </div>
+                    )}
                 </div>
-            )}
-        </>
+            </div>
+        </div>
     );
 };
 

@@ -15,7 +15,7 @@ MoonBay Hotel is a user-friendly online booking platform for MoonBay Hotel, a 3-
 ### Project Components  
 - **Backend**: Laravel (REST API) – in the `Backend/` folder  
 - **Frontend**: ReactJS (User Interface) – in the `Frontend/` folder  
-- **Database**: MySQL (initialization file: `projectsem2ver5.sql`)  
+- **Database**: MySQL (initialization file: `Moonbay_Database.sql`)  
 
 ## 🚀 Installation & Usage Guide  
 ### 1. Requirements  
@@ -33,7 +33,7 @@ git clone https://github.com/dohung95/MoonBay.git
 ## 📂 Documentation  
 The following resources are included in the main folder:  
 - **Installation Guide**: Instructions for setting up the project  
-- **Database Source**: `projectsem2ver5.sql`  
+- **Database Source**: `Moonbay_Database.sql`  
 - **Documentation**: [https://github.com/dohung95/MoonBay/tree/master/Documents](https://github.com/dohung95/MoonBay/tree/master/Documents)  
 - **Video Demonstration**: [https://www.youtube.com/watch?v=KmXvISU4l6w](https://www.youtube.com/watch?v=KmXvISU4l6w)  
 
